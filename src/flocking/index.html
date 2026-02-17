@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Do Flocks of Birds Move as One?</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Figtree:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #FAF9F7;
+  --demo-bg:      #F3F2EE;
+  --text:         #2D2D2D;
+  --text-secondary:#666;
+  --accent:       #C2410C;
+  --accent-light: #FFF7ED;
+  --accent-hover: #9A3412;
+  --blue:         #2563EB;
+  --red:          #DC2626;
+  --green:        #16A34A;
+  --amber:        #D97706;
+  --purple:       #7C3AED;
+  --orange:       #EA580C;
+  --border:       #E5E5E0;
+  --radius:       12px;
+  --max-w:        680px;
+  --font-serif:   'Newsreader', Georgia, serif;
+  --font-sans:    'Figtree', system-ui, sans-serif;
+  --font-mono:    'Source Code Pro', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+article {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 24px 120px;
+}
+
+/* ============================================================
+   HEADER (hero)
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #7C2D12 0%, #C2410C 40%, #F97316 70%, #FDBA74 100%);
+  padding: 80px 24px 60px;
+  margin-bottom: 48px;
+  border-radius: 0 0 16px 16px;
+  text-align: left;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 6vw, 70px);
+  font-weight: 700;
+  line-height: 0.94;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.hero .subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  max-width: 540px;
+  line-height: 1.35;
+}
+
+/* ============================================================
+   SECTION HEADINGS
+   ============================================================ */
+section {
+  margin-bottom: 72px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.section-number {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.section-heading h2 {
+  font-family: var(--font-sans);
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+section h3 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+p { margin-bottom: 12px; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+/* ============================================================
+   CALLOUT BOXES
+   ============================================================ */
+.callout {
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  padding: 18px 22px;
+  margin: 28px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.callout.fun {
+  background: #FEF3C7;
+  border-left-color: var(--amber);
+}
+
+.callout.math-box {
+  background: #FFF7ED;
+  border-left-color: var(--orange);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.figure-caption {
+  text-align: center;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+/* ============================================================
+   DEMO / WIDGET CONTAINERS
+   ============================================================ */
+.demo {
+  background: var(--demo-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin: 32px 0;
+  position: relative;
+}
+
+.demo-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+
+.demo canvas {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  background: white;
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.control-group label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.control-group .value-display {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  min-width: 50px;
+  text-align: right;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #D4D4D0;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: #F5F5F0; }
+.btn-secondary.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-group {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.btn-group .btn-secondary {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+  font-size: 13px;
+  padding: 7px 14px;
+}
+.btn-group .btn-secondary:last-child { border-right: none; }
+
+/* ============================================================
+   PREDICTION CARDS
+   ============================================================ */
+.predict-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.predict-card .question {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 17px;
+  margin-bottom: 14px;
+}
+.predict-card .options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.predict-card .reveal-area {
+  display: none;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.predict-card.revealed .reveal-area { display: block; }
+
+/* ============================================================
+   SECTION REVEAL ANIMATION
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   TABLE OF CONTENTS
+   ============================================================ */
+.toc {
+  max-width: var(--max-w);
+  margin: 0 auto 48px;
+  padding: 0 24px;
+}
+.toc h3 {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.toc ol {
+  list-style: none;
+  counter-reset: toc;
+  padding: 0;
+}
+.toc li {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  padding: 6px 0;
+  color: var(--text);
+}
+.toc li::before {
+  counter-increment: toc;
+  content: counter(toc, upper-roman) ". ";
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-right: 8px;
+}
+.toc a {
+  text-decoration: none;
+  color: var(--text);
+}
+.toc a:hover { color: var(--accent); }
+
+/* ============================================================
+   FOOTNOTES
+   ============================================================ */
+.footnote {
+  font-size: 17px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+  margin-top: 56px;
+  line-height: 1.5;
+}
+
+.katex-display { margin: 24px 0; overflow-x: auto; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  body { font-size: 19px; }
+  article { padding: 0 16px 80px; }
+  .hero { padding: 60px 20px 44px; }
+  .hero h1 { font-size: 36px; }
+  .demo { padding: 18px; }
+  .controls { gap: 10px; }
+  .control-group { min-width: 120px; }
+  .section-heading { gap: 10px; }
+  .section-number { font-size: 24px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 30px; line-height: 1; }
+  .btn-group { flex-wrap: wrap; }
+  .btn-group .btn-secondary {
+    flex: 1;
+    min-width: 70px;
+    text-align: center;
+    justify-content: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO HEADER
+     ============================================================ -->
+<div class="hero reveal">
+  <div class="hero-inner">
+    <h1>Why Do Flocks of Birds Move as One?</h1>
+    <p class="subtitle">And what 3 simple rules reveal about the hidden logic of crowds, swarms, and cities.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     TABLE OF CONTENTS
+     ============================================================ -->
+<nav class="toc reveal">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#sec-murmuration">The mystery of the murmuration</a></li>
+    <li><a href="#sec-rules">Three rules to rule them all</a></li>
+    <li><a href="#sec-tuning">Tuning the flock</a></li>
+    <li><a href="#sec-predator">The predator arrives</a></li>
+    <li><a href="#sec-order">From disorder to order</a></li>
+    <li><a href="#sec-emergence">Emergence: more than the sum</a></li>
+    <li><a href="#sec-real-world">Swarms in the real world</a></li>
+    <li><a href="#sec-quiz">Testing your intuition</a></li>
+  </ol>
+</nav>
+
+<article>
+
+<!-- ============================================================
+     INTRO / HOOK
+     ============================================================ -->
+<section id="intro" class="reveal">
+  <p>
+    You've seen it before. Maybe at dusk, on a cold evening, looking up at the sky. A thousand starlings twist and fold through the air like a single living thing &mdash; expanding, contracting, splitting, and merging in a dance so fluid it looks choreographed.
+  </p>
+  <p>
+    It's called a <strong>murmuration</strong>, and it's one of the most beautiful things in nature. Millions of people have watched it. Almost no one understands how it works. The obvious question: who's in charge? Which bird is the leader?
+  </p>
+  <p>
+    The answer is: <em>none of them</em>. There is no leader. No bird has a map. No bird knows the shape of the flock. Each bird follows the same tiny set of rules, paying attention only to the few neighbors nearest to it. And from that &mdash; from a thousand individuals following simple local rules &mdash; the breathtaking global pattern emerges.
+  </p>
+  <p>
+    This is <strong>emergence</strong>: complex, intelligent-looking behavior that arises from the interaction of simple parts. It's how ant colonies solve optimization problems, how brains produce consciousness, how economies self-organize without a planner, and how a flock of starlings moves as one.
+  </p>
+  <div class="callout">
+    <strong>The key insight:</strong> You don't need a conductor to get an orchestra. Sometimes, the right set of local rules is enough to produce global harmony. Let's see how.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 1: The Mystery of the Murmuration
+     ============================================================ -->
+<section id="sec-murmuration" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">I.</span>
+    <h2>The Mystery of the Murmuration</h2>
+  </div>
+  <p>
+    For centuries, people assumed flocks must have a leader &mdash; a single bird at the front, directing the others. Some even proposed telepathy or magnetic fields. The real explanation is stranger and more beautiful than any of those.
+  </p>
+  <p>
+    In 1986, a computer graphics researcher named Craig Reynolds asked a simple question: <em>What's the minimum set of rules that produces realistic flocking?</em> He didn't try to model bird biology or aerodynamics. He just wanted to know: what local rules, followed by every individual, produce the global pattern we see?
+  </p>
+  <p>
+    He found the answer. Three rules. That's it. Three rules, and you get <em>this</em>:
+  </p>
+
+  <!-- DEMO 1: The Murmuration -->
+  <div class="demo" id="demo-murmuration">
+    <div class="demo-title">Demo 1 &middot; The Murmuration</div>
+    <canvas id="murmuration-canvas" height="400"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Flock Size</label>
+          <span class="value-display" id="flock-size-val">200</span>
+        </div>
+        <input type="range" id="flock-size-slider" min="20" max="500" step="10" value="200">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Speed</label>
+          <span class="value-display" id="flock-speed-val">1.0&times;</span>
+        </div>
+        <input type="range" id="flock-speed-slider" min="0.3" max="2.5" step="0.1" value="1.0">
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    200 birds, zero leaders. Every bird follows three simple rules. Try cranking the flock size up to 500.
+  </p>
+
+  <p>
+    Every triangle on the screen is a "boid" &mdash; Reynolds' term for a simulated bird. None of them knows what the flock looks like from the outside. None of them is trying to form a pattern. Each one is just following three rules, paying attention only to its nearby neighbors.
+  </p>
+  <p>
+    Let's see what those rules are.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 2: Three Rules to Rule Them All
+     ============================================================ -->
+<section id="sec-rules" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">II.</span>
+    <h2>Three Rules to Rule Them All</h2>
+  </div>
+  <p>
+    Reynolds called his simulated birds "boids," and gave each one three simple steering behaviors:
+  </p>
+  <p>
+    <strong>1. Separation</strong> &mdash; Don't crowd your neighbors. If another boid is too close, steer away from it. This prevents collisions and keeps the flock from collapsing into a single point.
+  </p>
+  <p>
+    <strong>2. Alignment</strong> &mdash; Steer toward the average heading of your neighbors. If the birds around you are going left, you go left too. This is what creates those beautiful parallel streams.
+  </p>
+  <p>
+    <strong>3. Cohesion</strong> &mdash; Steer toward the average position of your neighbors. Don't drift too far from the group. This is what holds the flock together.
+  </p>
+  <div class="callout math-box">
+    <strong>The Boid Update Rules</strong><br>
+    Each boid $i$ finds its neighbors $N$ within a perception radius, then computes:<br><br>
+    <strong>Separation:</strong> $\vec{v}_{sep} = -\sum_{j \in N} \dfrac{\vec{r}_j - \vec{r}_i}{|\vec{r}_j - \vec{r}_i|^2}$<br><br>
+    <strong>Alignment:</strong> $\vec{v}_{align} = \dfrac{1}{|N|}\sum_{j \in N} \hat{v}_j - \hat{v}_i$<br><br>
+    <strong>Cohesion:</strong> $\vec{v}_{coh} = \dfrac{1}{|N|}\sum_{j \in N} \vec{r}_j - \vec{r}_i$<br><br>
+    <strong>Update:</strong> $\vec{v}_i \leftarrow \vec{v}_i + w_s \vec{v}_{sep} + w_a \vec{v}_{align} + w_c \vec{v}_{coh}$
+  </div>
+  <p>
+    That's the entire algorithm. No intelligence, no planning, no leader. Now watch what happens when you toggle each rule on and off:
+  </p>
+
+  <!-- DEMO 2: The Three Rules -->
+  <div class="demo" id="demo-rules">
+    <div class="demo-title">Demo 2 &middot; The Three Rules</div>
+    <canvas id="rules-canvas" height="380"></canvas>
+    <div class="controls">
+      <button class="btn btn-secondary active" id="toggle-separation" data-rule="separation">Separation: ON</button>
+      <button class="btn btn-secondary active" id="toggle-alignment" data-rule="alignment">Alignment: ON</button>
+      <button class="btn btn-secondary active" id="toggle-cohesion" data-rule="cohesion">Cohesion: ON</button>
+      <button class="btn btn-primary" id="rules-reset">Reset</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Toggle each rule independently. Start by turning them all off, then add them back one at a time. Notice how each rule alone is boring &mdash; but together, they're magic.
+  </p>
+
+  <p>
+    Here's what you should notice:
+  </p>
+  <p>
+    <strong>Separation alone:</strong> Boids repel each other and spread out evenly &mdash; like gas molecules in a box. No structure.<br>
+    <strong>Alignment alone:</strong> Boids line up into parallel streams but drift apart. Coordinated but diffuse.<br>
+    <strong>Cohesion alone:</strong> Boids collapse into a tight clump. Together but chaotic.<br>
+    <strong>All three together:</strong> A living, breathing flock. Order and structure emerge from the combination.
+  </p>
+  <div class="callout">
+    <strong>This is the lesson of emergence:</strong> The interesting behavior isn't in any single rule. It lives in the <em>interaction</em> between rules. Three boring ingredients, one extraordinary result.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 3: Tuning the Flock
+     ============================================================ -->
+<section id="sec-tuning" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">III.</span>
+    <h2>Tuning the Flock</h2>
+  </div>
+  <p>
+    The three rules are simple, but their <em>relative strengths</em> determine the character of the flock. Crank up separation and you get a loose, spread-out swarm. Crank up cohesion and the flock tightens into a dense ball. Widen the perception radius and each boid pays attention to more neighbors, producing smoother, more coordinated motion.
+  </p>
+  <p>
+    Play with the parameters and notice how tiny changes in the rules produce dramatically different collective behaviors:
+  </p>
+
+  <!-- DEMO 3: Parameter Explorer -->
+  <div class="demo" id="demo-params">
+    <div class="demo-title">Demo 3 &middot; Parameter Explorer</div>
+    <canvas id="params-canvas" height="380"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Separation</label>
+          <span class="value-display" id="param-sep-val">1.5</span>
+        </div>
+        <input type="range" id="param-sep" min="0" max="4" step="0.1" value="1.5">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Alignment</label>
+          <span class="value-display" id="param-align-val">1.0</span>
+        </div>
+        <input type="range" id="param-align" min="0" max="4" step="0.1" value="1.0">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Cohesion</label>
+          <span class="value-display" id="param-coh-val">1.0</span>
+        </div>
+        <input type="range" id="param-coh" min="0" max="4" step="0.1" value="1.0">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Perception</label>
+          <span class="value-display" id="param-radius-val">50</span>
+        </div>
+        <input type="range" id="param-radius" min="20" max="120" step="5" value="50">
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Drag the sliders to reshape the flock. Try maxing out one rule while zeroing the others to see extreme behaviors.
+  </p>
+
+  <div class="callout fun">
+    <strong>Fish vs. birds:</strong> Real fish schools tend to have higher cohesion and lower alignment than bird flocks. That's why schools look like dense, pulsing balls while flocks look like flowing ribbons. Same algorithm, different parameters, different species.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 4: The Predator Arrives
+     ============================================================ -->
+<section id="sec-predator" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IV.</span>
+    <h2>The Predator Arrives</h2>
+  </div>
+  <p>
+    Flocking isn't just pretty &mdash; it's a survival strategy. When a hawk dives into a flock of starlings, something amazing happens: the flock splits around the predator like water around a stone, then reforms behind it. It looks like a coordinated military maneuver.
+  </p>
+  <p>
+    But no bird "decided" to split the flock. Each bird simply added one more rule to its behavior: <strong>if something scary is nearby, steer away from it</strong>. That's it. The spectacular split-and-reform is emergent &mdash; it arises from a thousand individual acts of fleeing.
+  </p>
+  <p>
+    Click anywhere on the canvas to place a predator and watch the flock respond:
+  </p>
+
+  <!-- DEMO 4: Predator & Prey -->
+  <div class="demo" id="demo-predator">
+    <div class="demo-title">Demo 4 &middot; Predator &amp; Prey</div>
+    <canvas id="predator-canvas" height="400" style="cursor:crosshair"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Fear Radius</label>
+          <span class="value-display" id="fear-val">80</span>
+        </div>
+        <input type="range" id="fear-slider" min="30" max="200" step="5" value="80">
+      </div>
+      <button class="btn btn-secondary" id="predator-clear">Clear Predator</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Click to place a predator (the red dot). The flock splits and reforms with no central coordination &mdash; each boid is simply running away.
+  </p>
+
+  <p>
+    Notice how the flock becomes <em>more</em> cohesive when threatened. This is a well-documented phenomenon in real birds: the presence of a predator tightens the flock, because boids that wander too far from the group become easy targets. Safety in numbers, encoded in three rules and a fear response.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 5: From Disorder to Order
+     ============================================================ -->
+<section id="sec-order" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">V.</span>
+    <h2>From Disorder to Order</h2>
+  </div>
+  <p>
+    Perhaps the most striking thing about flocking is how fast it happens. Take two hundred birds moving in completely random directions. Enable the three rules. Within <em>seconds</em>, order crystallizes out of chaos.
+  </p>
+  <p>
+    This is a <strong>phase transition</strong> &mdash; the same kind of thing that happens when water freezes into ice or when iron becomes magnetized. The system flips from a disordered state to an ordered one, not because someone flipped a switch, but because local interactions propagated through the whole system.
+  </p>
+
+  <!-- DEMO 5: Order From Disorder -->
+  <div class="demo" id="demo-order">
+    <div class="demo-title">Demo 5 &middot; From Disorder to Order</div>
+    <canvas id="order-canvas" height="380"></canvas>
+    <div class="controls">
+      <button class="btn btn-primary" id="order-scramble">Scramble</button>
+      <button class="btn btn-primary" id="order-organize">Organize</button>
+      <div class="control-group" style="min-width:100px">
+        <div class="label-row">
+          <label>Speed</label>
+          <span class="value-display" id="order-speed-val">1.0&times;</span>
+        </div>
+        <input type="range" id="order-speed" min="0.3" max="3" step="0.1" value="1">
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Click "Scramble" to randomize, then "Organize" to enable the rules. Watch order emerge from chaos in real time.
+  </p>
+
+  <div class="callout">
+    <strong>How fast is "fast"?</strong> In real starling murmurations, the response time is about 15 milliseconds per bird &mdash; information propagates through a flock of 400 birds in under a second. That's faster than any central command system could achieve. Decentralization wins.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 6: Emergence: More Than the Sum
+     ============================================================ -->
+<section id="sec-emergence" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VI.</span>
+    <h2>Emergence: More Than the Sum</h2>
+  </div>
+  <p>
+    Flocking is an example of something much bigger: <strong>emergence</strong>, the phenomenon where a system exhibits behavior that none of its individual parts possess. No single boid can flock. Flocking is a property of the <em>collective</em>.
+  </p>
+  <p>
+    This pattern shows up everywhere in nature:
+  </p>
+
+  <h3>Ant Colonies</h3>
+  <p>
+    An individual ant has a brain with about 250,000 neurons and can barely find its way to food. But a colony of ants can build complex underground cities, farm fungi, wage wars, and find the shortest path between two points &mdash; an optimization problem that takes computers millions of operations.
+  </p>
+  <p>
+    How? Each ant follows simple rules based on pheromone trails. When an ant finds food, it leaves a chemical trail back to the nest. Other ants follow strong trails and reinforce them. Shorter paths accumulate more pheromone faster. The colony as a whole "discovers" the optimal route, even though no individual ant can.
+  </p>
+
+  <h3>Neurons and Consciousness</h3>
+  <p>
+    A single neuron fires or doesn't. That's it. But 86 billion neurons, connected in networks, following simple rules (fire if input exceeds threshold, strengthen connections that fire together) produce thought, memory, emotion, and consciousness. The mind is an emergent property of the brain, just as flocking is an emergent property of birds.
+  </p>
+
+  <h3>Markets and Economies</h3>
+  <p>
+    No one plans an economy. No one decides how many loaves of bread a city needs. And yet, bread appears in every store, every morning. Adam Smith called it the "invisible hand" &mdash; but it's really emergence. Millions of individuals following local rules (buy low, sell high, produce what's demanded) create a self-organizing system that allocates resources across the planet.
+  </p>
+
+  <div class="callout">
+    <strong>The deep pattern:</strong> Simple local rules + many interacting agents = complex global behavior. This is the recipe for emergence, whether the agents are birds, ants, neurons, or traders. No leader required.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 7: Swarms in the Real World
+     ============================================================ -->
+<section id="sec-real-world" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VII.</span>
+    <h2>Swarms in the Real World</h2>
+  </div>
+  <p>
+    Craig Reynolds didn't set out to revolutionize science. He was making computer graphics for movies. His boids algorithm was first used in the 1992 film <em>Batman Returns</em> to animate swarms of bats and armies of penguins. But the ideas have gone far beyond Hollywood.
+  </p>
+
+  <h3>Robot Swarms</h3>
+  <p>
+    Drones that deliver packages, inspect bridges, or search for survivors after an earthquake don't need a central controller. Each drone follows local rules &mdash; avoid collisions, maintain spacing, move toward the target &mdash; and the swarm self-organizes to cover the area efficiently. If one drone fails, the swarm adapts without missing a beat. No single point of failure.
+  </p>
+
+  <h3>Crowd Simulation</h3>
+  <p>
+    Architects designing stadiums and airports use boid-like simulations to model how crowds evacuate during emergencies. Each simulated person follows simple rules (move toward exit, avoid walls, don't collide with others), and the simulation reveals bottlenecks and dangerous crush points before a single brick is laid.
+  </p>
+
+  <h3>Optimization Algorithms</h3>
+  <p>
+    <strong>Particle Swarm Optimization (PSO)</strong> uses virtual "boids" to search for the best solution to a mathematical problem. Each particle flies through the solution space, attracted toward the best solution it's found personally and the best solution found by its neighbors. The swarm converges on the global optimum the way a flock converges on its direction &mdash; collectively, without any particle knowing the full landscape.
+  </p>
+  <p>
+    <strong>Ant Colony Optimization (ACO)</strong> simulates pheromone trails to solve routing problems like the Traveling Salesman Problem. It's used by real delivery companies to plan efficient routes.
+  </p>
+
+  <div class="callout fun">
+    <strong>Life imitates art imitates life:</strong> Reynolds' boids were inspired by real birds. His algorithm was used in movies. Then roboticists used the algorithm to build real robot swarms. And biologists used the simulations to better understand real birds. The circle is complete.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 8: Testing Your Intuition
+     ============================================================ -->
+<section id="sec-quiz" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VIII.</span>
+    <h2>Testing Your Intuition</h2>
+  </div>
+  <p>
+    Let's see how well you've internalized the logic of emergence.
+  </p>
+
+  <!-- PREDICT CARD 1 -->
+  <div class="predict-card" id="predict-1">
+    <div class="question">If you remove just ONE of the three boid rules, which removal causes the flock to collapse into a single point?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="alignment">Remove alignment</button>
+      <button class="btn btn-secondary" data-answer="separation">Remove separation</button>
+      <button class="btn btn-secondary" data-answer="cohesion">Remove cohesion</button>
+    </div>
+    <div class="reveal-area">
+      <p></p>
+    </div>
+  </div>
+
+  <!-- PREDICT CARD 2 -->
+  <div class="predict-card" id="predict-2">
+    <div class="question">Can just 3 boids produce flocking behavior?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="no">No &mdash; you need at least 20-30</button>
+      <button class="btn btn-secondary" data-answer="yes">Yes &mdash; even 3 is enough</button>
+      <button class="btn btn-secondary" data-answer="sort-of">Sort of &mdash; they move together but it doesn't look like flocking</button>
+    </div>
+    <div class="reveal-area">
+      <p></p>
+    </div>
+  </div>
+
+  <!-- PREDICT CARD 3 -->
+  <div class="predict-card" id="predict-3">
+    <div class="question">A flock of 1,000 birds splits perfectly around a building. How many birds "know" the building is there?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="all">All of them &mdash; information spreads instantly</button>
+      <button class="btn btn-secondary" data-answer="front">Just the ones at the front</button>
+      <button class="btn btn-secondary" data-answer="nearby">Only the ones close enough to see it</button>
+    </div>
+    <div class="reveal-area">
+      <p></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTNOTES
+     ============================================================ -->
+<div class="footnote reveal">
+  <p><strong>Further reading:</strong></p>
+  <p>Craig Reynolds, <em>"Flocks, Herds, and Schools: A Distributed Behavioral Model"</em> (SIGGRAPH 1987) &mdash; the original paper that started it all.</p>
+  <p>Steven Johnson, <em>Emergence: The Connected Lives of Ants, Brains, Cities, and Software</em> (2001) &mdash; an accessible tour of emergence across disciplines.</p>
+  <p>Iain Couzin, <em>"Collective cognition in animal groups"</em> (Trends in Cognitive Sciences, 2009) &mdash; the science of collective intelligence in animals.</p>
+</div>
+
+</article>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ============================================================
+   BOID UTILITIES
+   ============================================================ */
+
+// Spatial hash grid for efficient neighbor lookups
+function createSpatialHash(cellSize) {
+  const cells = {};
+  return {
+    clear() { for (const k in cells) delete cells[k]; },
+    insert(boid) {
+      const cx = Math.floor(boid.x / cellSize);
+      const cy = Math.floor(boid.y / cellSize);
+      const key = cx + ',' + cy;
+      if (!cells[key]) cells[key] = [];
+      cells[key].push(boid);
+    },
+    query(x, y, radius) {
+      const results = [];
+      const minCx = Math.floor((x - radius) / cellSize);
+      const maxCx = Math.floor((x + radius) / cellSize);
+      const minCy = Math.floor((y - radius) / cellSize);
+      const maxCy = Math.floor((y + radius) / cellSize);
+      for (let cx = minCx; cx <= maxCx; cx++) {
+        for (let cy = minCy; cy <= maxCy; cy++) {
+          const key = cx + ',' + cy;
+          if (cells[key]) {
+            for (const b of cells[key]) results.push(b);
+          }
+        }
+      }
+      return results;
+    }
+  };
+}
+
+function createBoids(n, w, h) {
+  const boids = [];
+  for (let i = 0; i < n; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1.5 + Math.random();
+    boids.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed
+    });
+  }
+  return boids;
+}
+
+function updateBoids(boids, w, h, opts) {
+  const {
+    separation = 1.5,
+    alignment = 1.0,
+    cohesion = 1.0,
+    radius = 50,
+    maxSpeed = 3,
+    minSpeed = 1,
+    useSeparation = true,
+    useAlignment = true,
+    useCohesion = true,
+    predator = null,
+    fearRadius = 80,
+    speedMul = 1
+  } = opts;
+
+  const hash = createSpatialHash(radius);
+  for (const b of boids) hash.insert(b);
+
+  for (const b of boids) {
+    const nearby = hash.query(b.x, b.y, radius);
+    let sepX = 0, sepY = 0;
+    let alignX = 0, alignY = 0;
+    let cohX = 0, cohY = 0;
+    let count = 0;
+
+    for (const other of nearby) {
+      if (other === b) continue;
+      let dx = other.x - b.x;
+      let dy = other.y - b.y;
+      // Handle wrapping
+      if (dx > w / 2) dx -= w;
+      if (dx < -w / 2) dx += w;
+      if (dy > h / 2) dy -= h;
+      if (dy < -h / 2) dy += h;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > radius || dist < 0.001) continue;
+
+      count++;
+      // Separation: steer away, weighted by inverse distance
+      if (useSeparation) {
+        sepX -= dx / (dist * dist);
+        sepY -= dy / (dist * dist);
+      }
+      // Alignment: match heading
+      if (useAlignment) {
+        alignX += other.vx;
+        alignY += other.vy;
+      }
+      // Cohesion: steer toward center of neighbors
+      if (useCohesion) {
+        cohX += dx;
+        cohY += dy;
+      }
+    }
+
+    if (count > 0) {
+      if (useAlignment) {
+        alignX = alignX / count - b.vx;
+        alignY = alignY / count - b.vy;
+      }
+      if (useCohesion) {
+        cohX /= count;
+        cohY /= count;
+      }
+    }
+
+    b.vx += sepX * separation * 8 + alignX * alignment * 0.1 + cohX * cohesion * 0.005;
+    b.vy += sepY * separation * 8 + alignY * alignment * 0.1 + cohY * cohesion * 0.005;
+
+    // Predator avoidance
+    if (predator) {
+      let dx = b.x - predator.x;
+      let dy = b.y - predator.y;
+      if (dx > w / 2) dx -= w;
+      if (dx < -w / 2) dx += w;
+      if (dy > h / 2) dy -= h;
+      if (dy < -h / 2) dy += h;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < fearRadius && dist > 0.001) {
+        const force = (fearRadius - dist) / fearRadius;
+        b.vx += (dx / dist) * force * 2;
+        b.vy += (dy / dist) * force * 2;
+      }
+    }
+
+    // Clamp speed
+    const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+    const effectiveMax = maxSpeed * speedMul;
+    const effectiveMin = minSpeed * speedMul;
+    if (sp > effectiveMax) { b.vx = (b.vx / sp) * effectiveMax; b.vy = (b.vy / sp) * effectiveMax; }
+    if (sp < effectiveMin && sp > 0.001) { b.vx = (b.vx / sp) * effectiveMin; b.vy = (b.vy / sp) * effectiveMin; }
+
+    // Move
+    b.x += b.vx;
+    b.y += b.vy;
+
+    // Wrap
+    if (b.x < 0) b.x += w;
+    if (b.x > w) b.x -= w;
+    if (b.y < 0) b.y += h;
+    if (b.y > h) b.y -= h;
+  }
+}
+
+function drawBoids(ctx, boids, w, h, color) {
+  ctx.fillStyle = color || '#C2410C';
+  for (const b of boids) {
+    const angle = Math.atan2(b.vy, b.vx);
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(6, 0);
+    ctx.lineTo(-3, -3);
+    ctx.lineTo(-3, 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function setupCanvas(canvas, fixedHeight) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = fixedHeight * dpr;
+  canvas.style.height = fixedHeight + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w: rect.width, h: fixedHeight };
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ============================================================
+   DEMO 1: THE MURMURATION
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('murmuration-canvas');
+  const sizeSlider = document.getElementById('flock-size-slider');
+  const sizeVal = document.getElementById('flock-size-val');
+  const speedSlider = document.getElementById('flock-speed-slider');
+  const speedVal = document.getElementById('flock-speed-val');
+
+  let ctx, w, h, boids, isVisible = false;
+
+  function resize() {
+    ({ ctx, w, h } = setupCanvas(canvas, 400));
+  }
+
+  function init() {
+    const n = parseInt(sizeSlider.value);
+    resize();
+    boids = createBoids(n, w, h);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isVisible) return;
+    const speed = parseFloat(speedSlider.value);
+    updateBoids(boids, w, h, { speedMul: speed });
+    ctx.clearRect(0, 0, w, h);
+    drawBoids(ctx, boids, w, h);
+  }
+
+  sizeSlider.addEventListener('input', () => {
+    sizeVal.textContent = sizeSlider.value;
+    const n = parseInt(sizeSlider.value);
+    // Add or remove boids to match target
+    while (boids.length < n) {
+      const angle = Math.random() * Math.PI * 2;
+      boids.push({ x: Math.random() * w, y: Math.random() * h, vx: Math.cos(angle) * 2, vy: Math.sin(angle) * 2 });
+    }
+    while (boids.length > n) boids.pop();
+  });
+  speedSlider.addEventListener('input', () => {
+    speedVal.textContent = parseFloat(speedSlider.value).toFixed(1) + '\u00d7';
+  });
+
+  const visObs = new IntersectionObserver(entries => { isVisible = entries[0].isIntersecting; }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  init();
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 2: THE THREE RULES
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('rules-canvas');
+  const toggleSep = document.getElementById('toggle-separation');
+  const toggleAlign = document.getElementById('toggle-alignment');
+  const toggleCoh = document.getElementById('toggle-cohesion');
+  const resetBtn = document.getElementById('rules-reset');
+
+  let ctx, w, h, boids, isVisible = false;
+  let useSep = true, useAlign = true, useCoh = true;
+
+  function resize() {
+    ({ ctx, w, h } = setupCanvas(canvas, 380));
+  }
+
+  function init() {
+    resize();
+    boids = createBoids(150, w, h);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isVisible) return;
+    updateBoids(boids, w, h, {
+      useSeparation: useSep,
+      useAlignment: useAlign,
+      useCohesion: useCoh
+    });
+    ctx.clearRect(0, 0, w, h);
+    drawBoids(ctx, boids, w, h);
+  }
+
+  function toggleBtn(btn, state) {
+    const rule = btn.dataset.rule;
+    const labels = { separation: 'Separation', alignment: 'Alignment', cohesion: 'Cohesion' };
+    if (state) {
+      btn.classList.add('active');
+      btn.textContent = labels[rule] + ': ON';
+    } else {
+      btn.classList.remove('active');
+      btn.textContent = labels[rule] + ': OFF';
+    }
+  }
+
+  toggleSep.addEventListener('click', () => { useSep = !useSep; toggleBtn(toggleSep, useSep); });
+  toggleAlign.addEventListener('click', () => { useAlign = !useAlign; toggleBtn(toggleAlign, useAlign); });
+  toggleCoh.addEventListener('click', () => { useCoh = !useCoh; toggleBtn(toggleCoh, useCoh); });
+  resetBtn.addEventListener('click', () => {
+    useSep = true; useAlign = true; useCoh = true;
+    toggleBtn(toggleSep, true); toggleBtn(toggleAlign, true); toggleBtn(toggleCoh, true);
+    init();
+  });
+
+  const visObs = new IntersectionObserver(entries => { isVisible = entries[0].isIntersecting; }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  init();
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 3: PARAMETER EXPLORER
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('params-canvas');
+  const sepSlider = document.getElementById('param-sep');
+  const alignSlider = document.getElementById('param-align');
+  const cohSlider = document.getElementById('param-coh');
+  const radiusSlider = document.getElementById('param-radius');
+  const sepVal = document.getElementById('param-sep-val');
+  const alignVal = document.getElementById('param-align-val');
+  const cohVal = document.getElementById('param-coh-val');
+  const radiusVal = document.getElementById('param-radius-val');
+
+  let ctx, w, h, boids, isVisible = false;
+
+  function resize() {
+    ({ ctx, w, h } = setupCanvas(canvas, 380));
+  }
+
+  function init() {
+    resize();
+    boids = createBoids(180, w, h);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isVisible) return;
+    updateBoids(boids, w, h, {
+      separation: parseFloat(sepSlider.value),
+      alignment: parseFloat(alignSlider.value),
+      cohesion: parseFloat(cohSlider.value),
+      radius: parseFloat(radiusSlider.value)
+    });
+    ctx.clearRect(0, 0, w, h);
+    drawBoids(ctx, boids, w, h);
+  }
+
+  sepSlider.addEventListener('input', () => { sepVal.textContent = parseFloat(sepSlider.value).toFixed(1); });
+  alignSlider.addEventListener('input', () => { alignVal.textContent = parseFloat(alignSlider.value).toFixed(1); });
+  cohSlider.addEventListener('input', () => { cohVal.textContent = parseFloat(cohSlider.value).toFixed(1); });
+  radiusSlider.addEventListener('input', () => { radiusVal.textContent = radiusSlider.value; });
+
+  const visObs = new IntersectionObserver(entries => { isVisible = entries[0].isIntersecting; }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  init();
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 4: PREDATOR & PREY
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('predator-canvas');
+  const fearSlider = document.getElementById('fear-slider');
+  const fearVal = document.getElementById('fear-val');
+  const clearBtn = document.getElementById('predator-clear');
+
+  let ctx, w, h, boids, predator = null, isVisible = false;
+
+  function resize() {
+    ({ ctx, w, h } = setupCanvas(canvas, 400));
+  }
+
+  function init() {
+    resize();
+    boids = createBoids(200, w, h);
+    predator = null;
+  }
+
+  function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  canvas.addEventListener('click', (e) => {
+    predator = getCanvasPos(e);
+  });
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    predator = getCanvasPos(e);
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isVisible) return;
+    updateBoids(boids, w, h, {
+      predator: predator,
+      fearRadius: parseFloat(fearSlider.value)
+    });
+    ctx.clearRect(0, 0, w, h);
+    drawBoids(ctx, boids, w, h);
+    // Draw predator
+    if (predator) {
+      const fr = parseFloat(fearSlider.value);
+      ctx.beginPath();
+      ctx.arc(predator.x, predator.y, fr, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.06)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(predator.x, predator.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#DC2626';
+      ctx.fill();
+    }
+  }
+
+  fearSlider.addEventListener('input', () => { fearVal.textContent = fearSlider.value; });
+  clearBtn.addEventListener('click', () => { predator = null; });
+
+  const visObs = new IntersectionObserver(entries => { isVisible = entries[0].isIntersecting; }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  init();
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 5: ORDER FROM DISORDER
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('order-canvas');
+  const scrambleBtn = document.getElementById('order-scramble');
+  const organizeBtn = document.getElementById('order-organize');
+  const speedSlider = document.getElementById('order-speed');
+  const speedVal = document.getElementById('order-speed-val');
+
+  let ctx, w, h, boids, rulesEnabled = false, isVisible = false;
+
+  function resize() {
+    ({ ctx, w, h } = setupCanvas(canvas, 380));
+  }
+
+  function scramble() {
+    resize();
+    boids = [];
+    for (let i = 0; i < 200; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1 + Math.random() * 3;
+      boids.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed
+      });
+    }
+    rulesEnabled = false;
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isVisible) return;
+    const speed = parseFloat(speedSlider.value);
+    if (rulesEnabled) {
+      updateBoids(boids, w, h, { speedMul: speed });
+    } else {
+      // Just move, no rules
+      for (const b of boids) {
+        b.x += b.vx * speed;
+        b.y += b.vy * speed;
+        if (b.x < 0) b.x += w;
+        if (b.x > w) b.x -= w;
+        if (b.y < 0) b.y += h;
+        if (b.y > h) b.y -= h;
+      }
+    }
+    ctx.clearRect(0, 0, w, h);
+    // Color changes based on rules state
+    drawBoids(ctx, boids, w, h, rulesEnabled ? '#C2410C' : '#999');
+  }
+
+  scrambleBtn.addEventListener('click', scramble);
+  organizeBtn.addEventListener('click', () => { rulesEnabled = true; });
+  speedSlider.addEventListener('input', () => {
+    speedVal.textContent = parseFloat(speedSlider.value).toFixed(1) + '\u00d7';
+  });
+
+  const visObs = new IntersectionObserver(entries => { isVisible = entries[0].isIntersecting; }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  scramble();
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 6: PREDICTION QUIZ
+   ============================================================ */
+(function() {
+  const cards = [
+    {
+      id: 'predict-1',
+      correct: 'separation',
+      msg: 'Without separation, there\'s nothing to stop boids from piling on top of each other. Cohesion pulls them together, alignment makes them move in the same direction, but without separation to push them apart, they collapse into a single point. It\'s like removing personal space from a crowd.'
+    },
+    {
+      id: 'predict-2',
+      correct: 'yes',
+      msg: 'Yes! Even 3 boids will follow the rules and coordinate their movement. The flock won\'t look as dramatic as 200 birds, but the fundamental dynamics \u2014 separation, alignment, cohesion \u2014 work at any scale. Emergence doesn\'t require a minimum number. It starts with 2.'
+    },
+    {
+      id: 'predict-3',
+      correct: 'nearby',
+      msg: 'Only the birds close enough to perceive the building change their direction. The birds behind them don\'t know about the building at all \u2014 they\'re just following their neighbors, who happen to be turning. Information propagates through the flock via local interactions, like a wave. This is how the flock splits "perfectly" without any bird having a bird\'s-eye view.'
+    }
+  ];
+
+  cards.forEach(({ id, correct, msg }) => {
+    const card = document.getElementById(id);
+    card.querySelectorAll('.options .btn-secondary').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const answer = btn.dataset.answer;
+        card.querySelectorAll('.options .btn-secondary').forEach(b => {
+          b.disabled = true;
+          if (b.dataset.answer === correct) {
+            b.classList.add('active');
+            b.style.background = 'var(--green)';
+            b.style.color = 'white';
+            b.style.borderColor = 'var(--green)';
+          }
+          if (b === btn && answer !== correct) {
+            b.style.background = 'var(--red)';
+            b.style.color = 'white';
+            b.style.borderColor = 'var(--red)';
+          }
+        });
+        card.classList.add('revealed');
+        card.querySelector('.reveal-area p').textContent =
+          (answer === correct ? 'Correct! ' : 'Not quite. ') + msg;
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
