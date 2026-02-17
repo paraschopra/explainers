@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Can't We Predict the Weather?</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Figtree:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #FAF9F7;
+  --demo-bg:      #F3F2EE;
+  --text:         #2D2D2D;
+  --text-secondary:#666;
+  --accent:       #0D9488;
+  --accent-light: #CCFBF1;
+  --accent-hover: #0F766E;
+  --blue:         #2563EB;
+  --red:          #DC2626;
+  --green:        #16A34A;
+  --amber:        #D97706;
+  --purple:       #7C3AED;
+  --orange:       #EA580C;
+  --pink:         #DB2777;
+  --teal:         #0D9488;
+  --teal-dark:    #134E4A;
+  --border:       #E5E5E0;
+  --radius:       12px;
+  --max-w:        680px;
+  --font-serif:   'Newsreader', Georgia, serif;
+  --font-sans:    'Figtree', system-ui, sans-serif;
+  --font-mono:    'Source Code Pro', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+article {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 24px 120px;
+}
+
+/* ============================================================
+   HEADER (hero)
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #134E4A 0%, #0D9488 40%, #2DD4BF 70%, #99F6E4 100%);
+  padding: 80px 24px 60px;
+  margin-bottom: 48px;
+  border-radius: 0 0 16px 16px;
+  text-align: left;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 6vw, 70px);
+  font-weight: 700;
+  line-height: 0.94;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.hero .subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  max-width: 540px;
+  line-height: 1.35;
+}
+
+/* ============================================================
+   SECTION HEADINGS
+   ============================================================ */
+section {
+  margin-bottom: 72px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.section-number {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.section-heading h2 {
+  font-family: var(--font-sans);
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+section h3 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+p { margin-bottom: 12px; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+/* ============================================================
+   CALLOUT BOXES
+   ============================================================ */
+.callout {
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  padding: 18px 22px;
+  margin: 28px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.callout.fun {
+  background: #FEF3C7;
+  border-left-color: var(--amber);
+}
+
+.callout.math-box {
+  background: #F0FDFA;
+  border-left-color: var(--teal);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.figure-caption {
+  text-align: center;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+/* ============================================================
+   DEMO / WIDGET CONTAINERS
+   ============================================================ */
+.demo {
+  background: var(--demo-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin: 32px 0;
+  position: relative;
+}
+
+.demo.dark-canvas {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+}
+
+.demo.dark-canvas .demo-title {
+  color: rgba(255,255,255,0.6);
+}
+
+.demo.dark-canvas .control-group label {
+  color: rgba(255,255,255,0.6);
+}
+
+.demo.dark-canvas .control-group .value-display {
+  color: #2DD4BF;
+}
+
+.demo-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+
+.demo svg {
+  width: 100%;
+  display: block;
+}
+
+.demo svg text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  fill: var(--text-secondary);
+}
+
+.demo canvas {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  background: white;
+}
+
+.demo.dark-canvas canvas {
+  background: #0f0f23;
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.control-group label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.control-group .value-display {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  min-width: 50px;
+  text-align: right;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #D4D4D0;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.demo.dark-canvas input[type="range"] {
+  background: #333;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: #F5F5F0; }
+.btn-secondary.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-group {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.btn-group .btn-secondary {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+  font-size: 13px;
+  padding: 7px 14px;
+}
+.btn-group .btn-secondary:last-child { border-right: none; }
+
+/* ============================================================
+   DUAL VIEW
+   ============================================================ */
+.dual-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.dual-pane {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.dual-pane h4 {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* ============================================================
+   PREDICTION CARDS
+   ============================================================ */
+.predict-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.predict-card .question {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 17px;
+  margin-bottom: 14px;
+}
+.predict-card .options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.predict-card .reveal-area {
+  display: none;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.predict-card.revealed .reveal-area { display: block; }
+
+/* ============================================================
+   SECTION REVEAL ANIMATION
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   TABLE OF CONTENTS
+   ============================================================ */
+.toc {
+  max-width: var(--max-w);
+  margin: 0 auto 48px;
+  padding: 0 24px;
+}
+.toc h3 {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.toc ol {
+  list-style: none;
+  counter-reset: toc;
+  padding: 0;
+}
+.toc li {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  padding: 6px 0;
+  color: var(--text);
+}
+.toc li::before {
+  counter-increment: toc;
+  content: counter(toc, upper-roman) ". ";
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-right: 8px;
+}
+.toc a {
+  text-decoration: none;
+  color: var(--text);
+}
+.toc a:hover { color: var(--accent); }
+
+/* ============================================================
+   FOOTNOTES
+   ============================================================ */
+.footnote {
+  font-size: 17px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+  margin-top: 56px;
+  line-height: 1.5;
+}
+
+.katex-display { margin: 24px 0; overflow-x: auto; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  body { font-size: 19px; }
+  article { padding: 0 16px 80px; }
+  .hero { padding: 60px 20px 44px; }
+  .hero h1 { font-size: 36px; }
+  .demo { padding: 18px; }
+  .dual-view { grid-template-columns: 1fr; }
+  .controls { gap: 10px; }
+  .control-group { min-width: 120px; }
+  .section-heading { gap: 10px; }
+  .section-number { font-size: 24px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 30px; line-height: 1; }
+  .btn-group { flex-wrap: wrap; }
+  .btn-group .btn-secondary {
+    flex: 1;
+    min-width: 70px;
+    text-align: center;
+    justify-content: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO HEADER
+     ============================================================ -->
+<div class="hero reveal">
+  <div class="hero-inner">
+    <h1>Why Can't We Predict the Weather?</h1>
+    <p class="subtitle">And what butterflies, pendulums, and infinite fractals have to do with it.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     TABLE OF CONTENTS
+     ============================================================ -->
+<nav class="toc reveal">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#sec-weather">Why is the weatherman always wrong?</a></li>
+    <li><a href="#sec-butterfly">The butterfly that changed everything</a></li>
+    <li><a href="#sec-logistic">The simplest chaos machine</a></li>
+    <li><a href="#sec-attractors">Chaos has a shape</a></li>
+    <li><a href="#sec-pendulum">The double pendulum</a></li>
+    <li><a href="#sec-order">Order inside chaos</a></li>
+    <li><a href="#sec-everywhere">Chaos is everywhere</a></li>
+    <li><a href="#sec-quiz">Testing your intuition</a></li>
+    <li><a href="#sec-conclusion">Deterministic but unpredictable</a></li>
+  </ol>
+</nav>
+
+<article>
+
+<!-- ============================================================
+     INTRO / HOOK
+     ============================================================ -->
+<section id="intro" class="reveal">
+  <p>
+    It's Monday morning. You check the weather app: sunny all week. You plan a picnic for Saturday. By Thursday, the forecast has changed: rain. By Saturday it's changed again: partly cloudy. You go anyway. It pours.
+  </p>
+  <p>
+    This isn't because meteorologists are bad at their jobs. They have satellites watching every cloud, weather stations on every continent, and some of the most powerful supercomputers on Earth crunching billions of equations every hour.
+  </p>
+  <p>
+    And yet, forecasts beyond about 10 days are essentially useless. Not because we lack data. Not because we lack computing power. But because of something deeply strange about the mathematics of the atmosphere itself.
+  </p>
+  <p>
+    In 1961, a meteorologist named Edward Lorenz accidentally discovered why. What he found didn't just explain weather &mdash; it revealed a hidden property of nature that touches everything from your heartbeat to the stock market to the orbit of Pluto.
+  </p>
+  <div class="callout">
+    <strong>The punchline:</strong> Some systems are <em>deterministic</em> &mdash; every future state is completely determined by the present &mdash; and yet they are fundamentally unpredictable. This is <strong>chaos</strong>, and it's not a bug. It's a feature of the universe.
+  </div>
+  <p>Let's see it in action.</p>
+</section>
+
+<!-- ============================================================
+     SECTION 1: Why Is the Weatherman Always Wrong?
+     ============================================================ -->
+<section id="sec-weather" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">I.</span>
+    <h2>Why Is the Weatherman Always Wrong?</h2>
+  </div>
+  <p>
+    Here's the core mystery. The atmosphere obeys the laws of physics. Every air molecule, every pressure wave, every gust of wind follows Newton's laws and the equations of fluid dynamics. In principle, if you knew the exact position and velocity of every molecule, you could compute the future perfectly.
+  </p>
+  <p>
+    So why can't we? The answer is that weather is a <strong>chaotic system</strong>. In a chaotic system, tiny differences in starting conditions &mdash; differences so small they're unmeasurable &mdash; get amplified exponentially over time until the predictions become meaningless.
+  </p>
+  <p>
+    Watch what happens when two nearly identical "weather systems" evolve over time. They start almost the same. Give it a few seconds.
+  </p>
+
+  <!-- DEMO 1: Sensitivity to Initial Conditions -->
+  <div class="demo" id="demo-sensitivity">
+    <div class="demo-title">Demo 1 &middot; Sensitivity to Initial Conditions</div>
+    <canvas id="sensitivity-canvas" height="280"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Initial Difference</label>
+          <span class="value-display" id="eps-val">0.0001</span>
+        </div>
+        <input type="range" id="eps-slider" min="-6" max="-1" step="0.1" value="-4">
+      </div>
+      <button class="btn btn-primary" id="sensitivity-reset">Reset</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Two trajectories of the Lorenz system start with a tiny difference. They track each other at first, then diverge wildly. Try making the difference even smaller &mdash; it only delays the inevitable.
+  </p>
+
+  <p>
+    Notice something crucial: making the initial difference <em>smaller</em> doesn't fix the problem. It just buys you a little more time before the trajectories diverge. Whether the difference is 0.01 or 0.000001, divergence always happens. And it happens <em>fast</em>.
+  </p>
+  <p>
+    This is the hallmark of chaos: <strong>exponential sensitivity to initial conditions</strong>. Double the precision of your measurements, and you get only a tiny bit more prediction time. To predict twice as far ahead, you'd need exponentially more precision &mdash; more than any instrument in the universe can provide.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 2: The Butterfly That Changed Everything
+     ============================================================ -->
+<section id="sec-butterfly" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">II.</span>
+    <h2>The Butterfly That Changed Everything</h2>
+  </div>
+  <p>
+    In the winter of 1961, Edward Lorenz was running a simple weather simulation on his Royal McBee computer. He wanted to re-examine a particular sequence, so he restarted the simulation from the middle &mdash; but instead of typing the full number <strong>0.506127</strong>, he rounded it to <strong>0.506</strong>.
+  </p>
+  <p>
+    He went to get a coffee. When he came back, the new simulation had diverged completely from the original. Not slightly different &mdash; <em>totally</em> different weather.
+  </p>
+  <p>
+    That rounding error &mdash; 0.000127 &mdash; had been amplified by the equations until it dominated everything. This was the moment chaos theory was born.
+  </p>
+
+  <!-- DEMO 2: Lorenz's Discovery -->
+  <div class="demo" id="demo-lorenz-discovery">
+    <div class="demo-title">Demo 2 &middot; Lorenz's Discovery</div>
+    <div class="dual-view">
+      <div class="dual-pane">
+        <h4>Full Precision</h4>
+        <canvas id="lorenz-full-canvas" height="200"></canvas>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent);margin-top:6px" id="lorenz-full-val"></div>
+      </div>
+      <div class="dual-pane">
+        <h4>Truncated</h4>
+        <canvas id="lorenz-trunc-canvas" height="200"></canvas>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--red);margin-top:6px" id="lorenz-trunc-val"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Decimal Precision</label>
+          <span class="value-display" id="precision-val">3 digits</span>
+        </div>
+        <input type="range" id="precision-slider" min="1" max="6" step="1" value="3">
+      </div>
+      <button class="btn btn-primary" id="lorenz-discovery-reset">Run Again</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Lorenz's original discovery: rounding to fewer decimal places produces completely different "weather." More precision delays the divergence, but never prevents it.
+  </p>
+
+  <p>
+    Lorenz later gave a famous talk titled <em>"Does the Flap of a Butterfly's Wings in Brazil Set Off a Tornado in Texas?"</em> The point wasn't that butterflies cause tornadoes. The point was that in a chaotic system, causes so small they're invisible can produce effects so large they're catastrophic.
+  </p>
+  <div class="callout math-box">
+    <strong>The Lorenz System</strong><br>
+    Lorenz's weather model boils down to just three equations:
+    $$\frac{dx}{dt} = \sigma(y - x), \quad \frac{dy}{dt} = x(\rho - z) - y, \quad \frac{dz}{dt} = xy - \beta z$$
+    With the classic parameters $\sigma = 10$, $\rho = 28$, $\beta = 8/3$. These three simple equations produce infinitely complex, never-repeating behavior.
+  </div>
+  <p>
+    How fast do nearby trajectories diverge? That's measured by the <strong>Lyapunov exponent</strong> ($\lambda$). If $\lambda > 0$, nearby trajectories separate exponentially at rate $e^{\lambda t}$. For the Lorenz system, $\lambda \approx 0.9$ &mdash; meaning the distance between trajectories roughly <em>doubles</em> every 0.8 time units.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 3: The Simplest Chaos Machine
+     ============================================================ -->
+<section id="sec-logistic" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">III.</span>
+    <h2>The Simplest Chaos Machine</h2>
+  </div>
+  <p>
+    The Lorenz system has three variables and differential equations. Surely chaos requires some complexity? Not at all. Here's the simplest equation that produces chaos:
+  </p>
+  <div class="callout math-box">
+    <strong>The Logistic Map</strong><br>
+    $$x_{n+1} = r \cdot x_n \cdot (1 - x_n)$$
+    One variable. One parameter. One line of code. And yet this tiny equation contains an entire universe of behavior.
+  </div>
+  <p>
+    Think of it as a model for population dynamics. $x_n$ is the population this year (as a fraction of the maximum), and $r$ is the growth rate. The term $(1 - x_n)$ prevents unlimited growth &mdash; as the population approaches its limit, growth slows down.
+  </p>
+  <p>
+    The magic happens when you change $r$. Watch:
+  </p>
+
+  <!-- DEMO 3: Logistic Map Explorer -->
+  <div class="demo" id="demo-logistic">
+    <div class="demo-title">Demo 3 &middot; Logistic Map Explorer</div>
+    <div class="btn-group" id="logistic-view-toggle">
+      <button class="btn btn-secondary active" data-view="cobweb">Cobweb</button>
+      <button class="btn btn-secondary" data-view="timeseries">Time Series</button>
+    </div>
+    <canvas id="logistic-canvas" height="320" style="margin-top:14px"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Growth Rate (r)</label>
+          <span class="value-display" id="r-val">2.80</span>
+        </div>
+        <input type="range" id="r-slider" min="1.0" max="4.0" step="0.01" value="2.80">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Starting Value (x₀)</label>
+          <span class="value-display" id="x0-val">0.40</span>
+        </div>
+        <input type="range" id="x0-slider" min="0.01" max="0.99" step="0.01" value="0.40">
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Drag the growth rate slider slowly from left to right. Watch order dissolve into chaos.
+  </p>
+
+  <p>
+    Here's what you just saw:
+  </p>
+  <p>
+    <strong>$r < 3$:</strong> The population settles to a single stable value. Boring. Predictable. <br>
+    <strong>$r \approx 3.2$:</strong> The population oscillates between two values &mdash; boom year, bust year, repeat. <br>
+    <strong>$r \approx 3.45$:</strong> Four values. A four-year cycle. <br>
+    <strong>$r \approx 3.57$:</strong> Complete chaos. The population bounces around apparently at random, never repeating.
+  </p>
+  <p>
+    And here's the truly remarkable thing: this isn't random at all. Given the exact same starting value, you get the exact same sequence every time. It's <strong>deterministic chaos</strong> &mdash; perfectly predictable in theory, utterly unpredictable in practice.
+  </p>
+
+  <h3>The Full Picture</h3>
+  <p>
+    What if we plot <em>all</em> the behavior at once? For each value of $r$, we let the system run for a while, then plot where it ends up. The result is one of the most famous images in mathematics:
+  </p>
+
+  <!-- DEMO 4: Bifurcation Diagram -->
+  <div class="demo" id="demo-bifurcation">
+    <div class="demo-title">Demo 4 &middot; Bifurcation Diagram</div>
+    <canvas id="bifurcation-canvas" height="360"></canvas>
+    <div class="controls">
+      <button class="btn btn-primary" id="bifurcation-zoom-in">Zoom to Chaos Edge</button>
+      <button class="btn btn-secondary" id="bifurcation-reset">Reset Zoom</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    The bifurcation diagram of the logistic map. Click "Zoom to Chaos Edge" to see the period-doubling cascade. The fine structure repeats at every scale &mdash; it's a fractal.
+  </p>
+
+  <p>
+    The single line splits into two, then four, then eight, then &mdash; chaos. Those splits are called <strong>period-doubling bifurcations</strong>, and they follow a pattern we'll return to in Section VI.
+  </p>
+  <div class="callout fun">
+    <strong>Windows of order:</strong> Look carefully at the chaotic region. You'll see thin white bands &mdash; "windows" where order briefly re-emerges from the chaos. The largest is around $r \approx 3.83$, where a stable 3-cycle appears. These windows contain their own miniature bifurcation cascades. It's chaos all the way down.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 4: Chaos Has a Shape
+     ============================================================ -->
+<section id="sec-attractors" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IV.</span>
+    <h2>Chaos Has a Shape</h2>
+  </div>
+  <p>
+    If chaotic systems are unpredictable, you might expect them to wander off to infinity or fill up all of space. But they don't. Chaotic systems are often confined to a specific region &mdash; a shape in state space called a <strong>strange attractor</strong>.
+  </p>
+  <p>
+    The Lorenz system has the most famous strange attractor of all: the "butterfly." The trajectory traces out two lobes, switching between them unpredictably, never quite following the same path twice, yet always staying on the attractor.
+  </p>
+
+  <!-- DEMO 5: Lorenz Attractor -->
+  <div class="demo dark-canvas" id="demo-lorenz">
+    <div class="demo-title">Demo 5 &middot; The Lorenz Attractor</div>
+    <canvas id="lorenz-canvas" height="420"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Rho (ρ)</label>
+          <span class="value-display" id="rho-val">28.0</span>
+        </div>
+        <input type="range" id="rho-slider" min="20" max="35" step="0.1" value="28">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Speed</label>
+          <span class="value-display" id="speed-val">1.0×</span>
+        </div>
+        <input type="range" id="speed-slider" min="0.2" max="3" step="0.1" value="1">
+      </div>
+      <button class="btn btn-primary" id="lorenz-reset">Reset</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    The Lorenz attractor: chaotic, never-repeating, yet always confined to this butterfly shape. Try adjusting rho to see how the attractor changes.
+  </p>
+
+  <p>
+    The strange attractor is what makes chaos different from randomness. A random process can go anywhere. A chaotic process is trapped on its attractor forever, endlessly exploring its intricate structure without ever exactly repeating.
+  </p>
+  <p>
+    Strange attractors have <strong>fractal dimension</strong> &mdash; they're not a simple curve (dimension 1) or a surface (dimension 2) but something in between. The Lorenz attractor has a dimension of about 2.06. It's a surface that's been folded and stretched infinitely many times, like taffy.
+  </p>
+  <div class="callout">
+    <strong>Key insight:</strong> Chaos is not randomness. It is <em>determinism</em> that looks random. The attractor is the hidden structure that determinism creates.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 5: The Double Pendulum
+     ============================================================ -->
+<section id="sec-pendulum" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">V.</span>
+    <h2>The Double Pendulum</h2>
+  </div>
+  <p>
+    A single pendulum is the most predictable thing in physics. It swings back and forth, forever. Newton solved it in the 1600s. You can set your clock by it.
+  </p>
+  <p>
+    Now attach a second pendulum to the end of the first one. Two rigid rods, two masses, connected end to end. Same physics. Same deterministic equations. And yet:
+  </p>
+
+  <!-- DEMO 6: Double Pendulum -->
+  <div class="demo" id="demo-pendulum">
+    <div class="demo-title">Demo 6 &middot; Double Pendulum</div>
+    <canvas id="pendulum-canvas" height="400"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Number of Pendulums</label>
+          <span class="value-display" id="npend-val">3</span>
+        </div>
+        <input type="range" id="npend-slider" min="2" max="10" step="1" value="3">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Initial Spread (degrees)</label>
+          <span class="value-display" id="spread-val">0.10°</span>
+        </div>
+        <input type="range" id="spread-slider" min="-3" max="1" step="0.1" value="-1">
+      </div>
+      <button class="btn btn-primary" id="pendulum-drop">Drop</button>
+      <button class="btn btn-secondary" id="pendulum-reset">Reset</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Multiple double pendulums, starting from nearly identical positions. They stay in sync at first &mdash; then suddenly fly apart. Try increasing the number of pendulums and making the spread even smaller.
+  </p>
+
+  <p>
+    This is chaos you can <em>feel</em>. The single pendulum is predictable because it has one degree of freedom &mdash; the angle. The double pendulum has two angles, and their interaction creates a feedback loop: the motion of the first arm affects the second, which feeds back into the first, amplifying tiny differences until the system is wildly unpredictable.
+  </p>
+  <div class="callout fun">
+    <strong>Build one yourself:</strong> You can make a double pendulum from two rulers and a pin. Hold the top ruler steady, let it go, and watch chaos unfold on your kitchen table. No two releases will ever produce the same motion.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 6: Order Inside Chaos
+     ============================================================ -->
+<section id="sec-order" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VI.</span>
+    <h2>Order Inside Chaos</h2>
+  </div>
+  <p>
+    In the mid-1970s, physicist Mitchell Feigenbaum was studying the period-doubling cascade &mdash; the way stable orbits split into 2-cycles, then 4-cycles, then 8-cycles on the route to chaos. He measured the values of $r$ at which each doubling occurs:
+  </p>
+  <p>
+    $r_1 = 3.0$, $r_2 = 3.449$, $r_3 = 3.544$, $r_4 = 3.564$, ...
+  </p>
+  <p>
+    Then he computed the ratio of successive intervals:
+  </p>
+  <div class="callout math-box">
+    <strong>Feigenbaum's Constant</strong><br>
+    $$\delta = \lim_{n \to \infty} \frac{r_{n} - r_{n-1}}{r_{n+1} - r_n} = 4.669201...$$
+    The ratio between successive period-doubling intervals converges to a universal constant. This is not a property of the logistic map &mdash; it's a property of <em>nature</em>.
+  </div>
+  <p>
+    What Feigenbaum discovered is that this ratio &mdash; 4.669... &mdash; appears in <em>every</em> system that undergoes period-doubling. It doesn't matter if you're looking at fluid flow, laser dynamics, electronic circuits, or rabbit populations. The same number shows up, like a fingerprint of chaos.
+  </p>
+
+  <!-- DEMO 7: Bifurcation Zoom -->
+  <div class="demo" id="demo-feigenbaum">
+    <div class="demo-title">Demo 7 &middot; Self-Similarity in the Bifurcation Diagram</div>
+    <canvas id="feigenbaum-canvas" height="320"></canvas>
+    <div class="controls">
+      <button class="btn btn-primary" id="feigen-zoom1">Zoom Level 1</button>
+      <button class="btn btn-primary" id="feigen-zoom2">Zoom Level 2</button>
+      <button class="btn btn-primary" id="feigen-zoom3">Zoom Level 3</button>
+      <button class="btn btn-secondary" id="feigen-reset">Reset</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Zoom into the bifurcation diagram. Each zoom reveals a copy of the whole &mdash; the same branching pattern appears at every scale. This is fractal self-similarity.
+  </p>
+
+  <p>
+    This self-similarity is why Feigenbaum's constant is universal. At every scale, the period-doubling cascade looks the same, just rescaled by a factor of 4.669. It's a fractal &mdash; infinite structure, encoded by a single number.
+  </p>
+</section>
+
+<!-- ============================================================
+     SECTION 7: Chaos Is Everywhere
+     ============================================================ -->
+<section id="sec-everywhere" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VII.</span>
+    <h2>Chaos Is Everywhere</h2>
+  </div>
+  <p>
+    Once you know what to look for, chaos shows up in the most unexpected places:
+  </p>
+
+  <h3>Your Heartbeat</h3>
+  <p>
+    A healthy heart is <em>chaotic</em>. The intervals between heartbeats vary subtly and unpredictably &mdash; this is called <strong>heart rate variability</strong>. Paradoxically, a heart that beats too <em>regularly</em> is a sign of disease. The healthy heart dances on a strange attractor; the failing heart has fallen off.
+  </p>
+
+  <h3>Turbulence</h3>
+  <p>
+    Turn on a faucet slowly: the water flows in a smooth, predictable stream (laminar flow). Turn it up: the stream breaks into a wild, churning mess (turbulent flow). This transition from order to chaos follows the same period-doubling route we saw in the logistic map. The physicist Werner Heisenberg reportedly said that if he could ask God two questions, they would be: "Why relativity? And why turbulence?" He expected God might know the answer to the first.
+  </p>
+
+  <h3>Financial Markets</h3>
+  <p>
+    Markets are often modeled as random walks, but the reality is closer to chaos: deterministic dynamics driven by feedback loops (fear, greed, momentum), with extreme sensitivity to initial conditions. This is why no model has ever reliably predicted the market &mdash; not because it's random, but because it's chaotic.
+  </p>
+
+  <h3>Climate vs. Weather</h3>
+  <p>
+    Here's a beautiful subtlety: <strong>weather</strong> is chaotic but <strong>climate</strong> is not. Weather is about where the trajectory is right now &mdash; and that's unpredictable. Climate is about the shape of the attractor &mdash; and that's stable. You can't predict whether it will rain on March 15, 2050. But you <em>can</em> predict the average temperature of the decade, because you're describing the attractor, not the trajectory.
+  </p>
+  <div class="callout">
+    <strong>This is why climate change predictions are reliable even though weather predictions fail after 10 days.</strong> Changing CO₂ levels changes the shape of the attractor itself &mdash; shifting the entire range of possible weather states. You don't need to predict individual storms to know that the whole system is moving to a warmer state.
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 8: Testing Your Intuition
+     ============================================================ -->
+<section id="sec-quiz" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VIII.</span>
+    <h2>Testing Your Intuition</h2>
+  </div>
+  <p>
+    Let's see how well you've internalized chaos theory. No peeking at the answers.
+  </p>
+
+  <!-- PREDICT CARD 1 -->
+  <div class="predict-card" id="predict-1">
+    <div class="question">Two trajectories start 0.001 apart. After 100 iterations of a chaotic system, how far apart are they?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="close">About 0.1</button>
+      <button class="btn btn-secondary" data-answer="medium">About 10</button>
+      <button class="btn btn-secondary" data-answer="far">Completely unrelated</button>
+    </div>
+    <div class="reveal-area">
+      <p></p>
+    </div>
+  </div>
+
+  <!-- PREDICT CARD 2 -->
+  <div class="predict-card" id="predict-2">
+    <div class="question">A sequence of numbers looks random: 0.73, 0.82, 0.59, 0.97, 0.12, 0.42... Is it actually random?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="random">Yes, must be random</button>
+      <button class="btn btn-secondary" data-answer="cant-tell">Impossible to tell</button>
+      <button class="btn btn-secondary" data-answer="deterministic">Could be deterministic chaos</button>
+    </div>
+    <div class="reveal-area">
+      <p></p>
+    </div>
+  </div>
+
+  <!-- PREDICT CARD 3 -->
+  <div class="predict-card" id="predict-3">
+    <div class="question">If we can't predict weather 2 weeks out, how can climate scientists predict the climate 50 years from now?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="cant">They can't &mdash; it's guesswork</button>
+      <button class="btn btn-secondary" data-answer="better-computers">Better computers will solve it</button>
+      <button class="btn btn-secondary" data-answer="attractor">Climate is the attractor, not the trajectory</button>
+    </div>
+    <div class="reveal-area">
+      <p></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 9: Deterministic But Unpredictable
+     ============================================================ -->
+<section id="sec-conclusion" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IX.</span>
+    <h2>Deterministic But Unpredictable</h2>
+  </div>
+  <p>
+    In 1814, the mathematician Pierre-Simon Laplace imagined a supreme intelligence that knew the position and velocity of every particle in the universe. Such an intelligence, Laplace argued, could compute the entire future &mdash; and the entire past. Free will was an illusion. The universe was a clockwork.
+  </p>
+  <p>
+    Chaos theory is Laplace's nightmare.
+  </p>
+  <p>
+    The equations of a chaotic system are perfectly deterministic. There is no randomness, no coin flip, no quantum uncertainty needed. Given the <em>exact</em> initial conditions, the future is uniquely determined. And yet, prediction is impossible in practice, because "exact" means <em>infinitely precise</em> &mdash; not 6 decimal places, not 6 billion, but infinite.
+  </p>
+  <p>
+    Any finite measurement leaves a gap. In a chaotic system, that gap grows exponentially until it swallows the entire prediction. The universe is deterministic, and yet the future is unknowable. Not because of what we don't know about the laws &mdash; but because of what we can't measure about the present.
+  </p>
+  <div class="callout">
+    <strong>The deepest lesson of chaos:</strong> Determinism does not imply predictability. Simple rules can produce infinite complexity. And sometimes, the flap of a butterfly's wings really does change everything.
+  </div>
+  <p>
+    Lorenz discovered this by accident, staring at a printout from a computer the size of a refrigerator. Sixty years later, chaos theory has reshaped our understanding of weather, ecology, medicine, engineering, and the very nature of knowledge itself.
+  </p>
+  <p>
+    The weather forecast is still wrong sometimes. But now we know <em>why</em>.
+  </p>
+</section>
+
+<!-- ============================================================
+     FOOTNOTES
+     ============================================================ -->
+<div class="footnote reveal">
+  <p><strong>Further reading:</strong></p>
+  <p>James Gleick, <em>Chaos: Making a New Science</em> (1987) &mdash; the classic popular account of the field.</p>
+  <p>Edward Lorenz, <em>The Essence of Chaos</em> (1993) &mdash; Lorenz's own accessible explanation.</p>
+  <p>Steven Strogatz, <em>Nonlinear Dynamics and Chaos</em> &mdash; the standard textbook, beautifully written.</p>
+</div>
+
+</article>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+// Runge-Kutta 4th order integrator
+function rk4(derivs, state, dt) {
+  const n = state.length;
+  const k1 = derivs(state);
+  const s2 = state.map((s, i) => s + k1[i] * dt / 2);
+  const k2 = derivs(s2);
+  const s3 = state.map((s, i) => s + k2[i] * dt / 2);
+  const k3 = derivs(s3);
+  const s4 = state.map((s, i) => s + k3[i] * dt / 2);
+  const k4 = derivs(s4);
+  return state.map((s, i) => s + (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]) * dt / 6);
+}
+
+// Lorenz system derivatives
+function lorenzDerivs(sigma, rho, beta) {
+  return function([x, y, z]) {
+    return [
+      sigma * (y - x),
+      x * (rho - z) - y,
+      x * y - beta * z
+    ];
+  };
+}
+
+// Logistic map
+function logistic(x, r) {
+  return r * x * (1 - x);
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ============================================================
+   DEMO 1: SENSITIVITY TO INITIAL CONDITIONS
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('sensitivity-canvas');
+  const ctx = canvas.getContext('2d');
+  const slider = document.getElementById('eps-slider');
+  const valDisplay = document.getElementById('eps-val');
+  const resetBtn = document.getElementById('sensitivity-reset');
+
+  const sigma = 10, rho = 28, beta = 8/3;
+  const derivs = lorenzDerivs(sigma, rho, beta);
+  const dt = 0.01;
+  const stepsPerFrame = 8;
+  const maxPoints = 600;
+
+  let state1, state2, trail1, trail2, animId, isVisible = false;
+
+  function init() {
+    const eps = Math.pow(10, parseFloat(slider.value));
+    state1 = [1, 1, 1];
+    state2 = [1 + eps, 1, 1];
+    trail1 = [];
+    trail2 = [];
+  }
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = canvas.height; // keep logical height
+    canvas.style.height = '280px';
+    canvas.width = rect.width * dpr;
+    canvas.height = 280 * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function draw() {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw both trails as x(t) time series
+    const len = trail1.length;
+    if (len < 2) return;
+
+    function drawTrail(trail, color) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      for (let i = 0; i < trail.length; i++) {
+        const px = (i / maxPoints) * w;
+        const py = h/2 + (trail[i][0] - 0) * (h * 0.018);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+
+    drawTrail(trail1, '#0D9488');
+    drawTrail(trail2, '#DC2626');
+
+    // Labels
+    ctx.font = '12px Figtree, sans-serif';
+    ctx.fillStyle = '#0D9488';
+    ctx.fillText('Trajectory A', 8, 16);
+    ctx.fillStyle = '#DC2626';
+    ctx.fillText('Trajectory B', 8, 32);
+  }
+
+  function step() {
+    for (let s = 0; s < stepsPerFrame; s++) {
+      state1 = rk4(derivs, state1, dt);
+      state2 = rk4(derivs, state2, dt);
+      trail1.push(state1.slice());
+      trail2.push(state2.slice());
+      if (trail1.length > maxPoints) {
+        trail1.shift();
+        trail2.shift();
+      }
+    }
+  }
+
+  function animate() {
+    if (!isVisible) { animId = requestAnimationFrame(animate); return; }
+    step();
+    draw();
+    animId = requestAnimationFrame(animate);
+  }
+
+  slider.addEventListener('input', () => {
+    const eps = Math.pow(10, parseFloat(slider.value));
+    valDisplay.textContent = eps.toExponential(0);
+    init();
+  });
+
+  resetBtn.addEventListener('click', init);
+
+  // Visibility observer to pause when off-screen
+  const visObs = new IntersectionObserver(entries => {
+    isVisible = entries[0].isIntersecting;
+  }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  resize();
+  init();
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 2: LORENZ'S DISCOVERY
+   ============================================================ */
+(function() {
+  const fullCanvas = document.getElementById('lorenz-full-canvas');
+  const truncCanvas = document.getElementById('lorenz-trunc-canvas');
+  const fullCtx = fullCanvas.getContext('2d');
+  const truncCtx = truncCanvas.getContext('2d');
+  const precSlider = document.getElementById('precision-slider');
+  const precVal = document.getElementById('precision-val');
+  const fullValDisplay = document.getElementById('lorenz-full-val');
+  const truncValDisplay = document.getElementById('lorenz-trunc-val');
+  const resetBtn = document.getElementById('lorenz-discovery-reset');
+
+  const sigma = 10, rho = 28, beta = 8/3;
+  const derivs = lorenzDerivs(sigma, rho, beta);
+  const dt = 0.01;
+  const stepsPerFrame = 6;
+  const maxPoints = 400;
+
+  let state1, state2, trail1, trail2, animId, isVisible = false;
+  const initState = [1.508127, 1.0, 1.0];
+
+  function truncate(val, decimals) {
+    const factor = Math.pow(10, decimals);
+    return Math.round(val * factor) / factor;
+  }
+
+  function init() {
+    const prec = parseInt(precSlider.value);
+    state1 = initState.slice();
+    state2 = initState.map(v => truncate(v, prec));
+    trail1 = [];
+    trail2 = [];
+    fullValDisplay.textContent = 'x₀ = ' + initState[0];
+    truncValDisplay.textContent = 'x₀ = ' + truncate(initState[0], prec);
+  }
+
+  function resize(canvas) {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 200 * dpr;
+    canvas.style.height = '200px';
+    const c = canvas.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function drawCanvas(c, canvas, trail, color) {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+    c.clearRect(0, 0, w, h);
+    if (trail.length < 2) return;
+    c.beginPath();
+    c.strokeStyle = color;
+    c.lineWidth = 1.5;
+    for (let i = 0; i < trail.length; i++) {
+      const px = (i / maxPoints) * w;
+      const py = h/2 + (trail[i][0]) * (h * 0.015);
+      if (i === 0) c.moveTo(px, py);
+      else c.lineTo(px, py);
+    }
+    c.stroke();
+  }
+
+  function step() {
+    for (let s = 0; s < stepsPerFrame; s++) {
+      state1 = rk4(derivs, state1, dt);
+      state2 = rk4(derivs, state2, dt);
+      trail1.push(state1.slice());
+      trail2.push(state2.slice());
+      if (trail1.length > maxPoints) { trail1.shift(); trail2.shift(); }
+    }
+  }
+
+  function animate() {
+    if (!isVisible) { animId = requestAnimationFrame(animate); return; }
+    step();
+    drawCanvas(fullCtx, fullCanvas, trail1, '#0D9488');
+    drawCanvas(truncCtx, truncCanvas, trail2, '#DC2626');
+    animId = requestAnimationFrame(animate);
+  }
+
+  precSlider.addEventListener('input', () => {
+    precVal.textContent = precSlider.value + ' digits';
+    init();
+  });
+  resetBtn.addEventListener('click', init);
+
+  const visObs = new IntersectionObserver(entries => {
+    isVisible = entries[0].isIntersecting;
+  }, { threshold: 0.1 });
+  visObs.observe(fullCanvas);
+
+  resize(fullCanvas);
+  resize(truncCanvas);
+  init();
+  animate();
+  window.addEventListener('resize', () => { resize(fullCanvas); resize(truncCanvas); });
+})();
+
+/* ============================================================
+   DEMO 3: LOGISTIC MAP EXPLORER
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('logistic-canvas');
+  const ctx = canvas.getContext('2d');
+  const rSlider = document.getElementById('r-slider');
+  const x0Slider = document.getElementById('x0-slider');
+  const rVal = document.getElementById('r-val');
+  const x0Val = document.getElementById('x0-val');
+  const toggleBtns = document.querySelectorAll('#logistic-view-toggle .btn-secondary');
+
+  let viewMode = 'cobweb';
+  let w, h;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 320 * dpr;
+    canvas.style.height = '320px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    w = rect.width;
+    h = 320;
+    draw();
+  }
+
+  function draw() {
+    const r = parseFloat(rSlider.value);
+    const x0 = parseFloat(x0Slider.value);
+    ctx.clearRect(0, 0, w, h);
+
+    const pad = 40;
+    const pw = w - 2 * pad;
+    const ph = h - 2 * pad;
+
+    // Axes
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad); ctx.lineTo(pad, pad + ph); ctx.lineTo(pad + pw, pad + ph);
+    ctx.stroke();
+
+    // Labels
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.fillText('0', pad - 8, pad + ph + 14);
+    ctx.fillText('1', pad + pw - 4, pad + ph + 14);
+    ctx.fillText('1', pad - 14, pad + 4);
+
+    if (viewMode === 'cobweb') {
+      drawCobweb(r, x0, pad, pw, ph);
+    } else {
+      drawTimeSeries(r, x0, pad, pw, ph);
+    }
+  }
+
+  function drawCobweb(r, x0, pad, pw, ph) {
+    // Draw parabola y = r*x*(1-x)
+    ctx.beginPath();
+    ctx.strokeStyle = '#0D9488';
+    ctx.lineWidth = 2;
+    for (let i = 0; i <= 200; i++) {
+      const x = i / 200;
+      const y = r * x * (1 - x);
+      const px = pad + x * pw;
+      const py = pad + ph - y * ph;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Draw y = x line
+    ctx.beginPath();
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.moveTo(pad, pad + ph);
+    ctx.lineTo(pad + pw, pad);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Cobweb iteration
+    ctx.beginPath();
+    ctx.strokeStyle = '#DC2626';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.7;
+    let x = x0;
+    let px = pad + x * pw;
+    let py = pad + ph;
+    ctx.moveTo(px, py);
+
+    for (let i = 0; i < 80; i++) {
+      const y = logistic(x, r);
+      // Vertical to parabola
+      py = pad + ph - y * ph;
+      ctx.lineTo(px, py);
+      // Horizontal to y=x
+      px = pad + y * pw;
+      ctx.lineTo(px, py);
+      x = y;
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawTimeSeries(r, x0, pad, pw, ph) {
+    const N = 80;
+    const xs = [x0];
+    for (let i = 0; i < N; i++) xs.push(logistic(xs[i], r));
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#0D9488';
+    ctx.lineWidth = 2;
+    for (let i = 0; i <= N; i++) {
+      const px = pad + (i / N) * pw;
+      const py = pad + ph - xs[i] * ph;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Dots
+    ctx.fillStyle = '#0D9488';
+    for (let i = 0; i <= N; i++) {
+      const px = pad + (i / N) * pw;
+      const py = pad + ph - xs[i] * ph;
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // x-axis label
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.fillText('iteration (n)', pad + pw / 2 - 30, pad + ph + 30);
+  }
+
+  rSlider.addEventListener('input', () => { rVal.textContent = parseFloat(rSlider.value).toFixed(2); draw(); });
+  x0Slider.addEventListener('input', () => { x0Val.textContent = parseFloat(x0Slider.value).toFixed(2); draw(); });
+
+  toggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      viewMode = btn.dataset.view;
+      draw();
+    });
+  });
+
+  resize();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 4: BIFURCATION DIAGRAM
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('bifurcation-canvas');
+  const ctx = canvas.getContext('2d');
+  const zoomBtn = document.getElementById('bifurcation-zoom-in');
+  const resetBtn = document.getElementById('bifurcation-reset');
+
+  let w, h;
+  let rMin = 2.5, rMax = 4.0, xMin = 0, xMax = 1;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 360 * dpr;
+    canvas.style.height = '360px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    w = rect.width;
+    h = 360;
+    drawBifurcation();
+  }
+
+  function drawBifurcation() {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+
+    const pad = 40;
+    const pw = w - pad - 10;
+    const ph = h - pad - 20;
+
+    // Axes
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, 10); ctx.lineTo(pad, 10 + ph); ctx.lineTo(pad + pw, 10 + ph);
+    ctx.stroke();
+
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.fillText('r = ' + rMin.toFixed(2), pad, 10 + ph + 16);
+    ctx.fillText('r = ' + rMax.toFixed(2), pad + pw - 40, 10 + ph + 16);
+    ctx.fillText('x', pad - 14, 18);
+
+    // Plot
+    const cols = Math.min(pw * 2, 1200);
+    for (let col = 0; col < cols; col++) {
+      const r = rMin + (col / cols) * (rMax - rMin);
+      let x = 0.5;
+      // Warm up
+      for (let i = 0; i < 300; i++) x = logistic(x, r);
+      // Plot
+      for (let i = 0; i < 150; i++) {
+        x = logistic(x, r);
+        const px = pad + (col / cols) * pw;
+        const py = 10 + ph - ((x - xMin) / (xMax - xMin)) * ph;
+        if (py >= 10 && py <= 10 + ph) {
+          ctx.fillStyle = 'rgba(13, 148, 136, 0.25)';
+          ctx.fillRect(px, py, 1.5, 1.5);
+        }
+      }
+    }
+  }
+
+  zoomBtn.addEventListener('click', () => {
+    // Zoom to the edge of chaos
+    rMin = 3.4; rMax = 3.65; xMin = 0.3; xMax = 0.95;
+    drawBifurcation();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    rMin = 2.5; rMax = 4.0; xMin = 0; xMax = 1;
+    drawBifurcation();
+  });
+
+  resize();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 5: LORENZ ATTRACTOR
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('lorenz-canvas');
+  const ctx = canvas.getContext('2d');
+  const rhoSlider = document.getElementById('rho-slider');
+  const rhoVal = document.getElementById('rho-val');
+  const speedSlider = document.getElementById('speed-slider');
+  const speedVal = document.getElementById('speed-val');
+  const resetBtn = document.getElementById('lorenz-reset');
+
+  const sigma = 10, beta = 8/3;
+  const dt = 0.005;
+  const trailMax = 4000;
+  let w, h;
+
+  let rho, speed, state, trail, animId, isVisible = false;
+
+  function init() {
+    rho = parseFloat(rhoSlider.value);
+    speed = parseFloat(speedSlider.value);
+    state = [0.1, 0.1, 0.1];
+    trail = [];
+  }
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 420 * dpr;
+    canvas.style.height = '420px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    w = rect.width;
+    h = 420;
+  }
+
+  function project(x, y, z) {
+    // Simple rotation for 3D effect
+    const angle = -0.5;
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const rx = x * cos - z * sin;
+    const ry = y;
+    // Scale and center
+    const scale = Math.min(w, h) / 55;
+    return [w / 2 + rx * scale, h * 0.55 - ry * scale + 5 * scale];
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(15, 15, 35, 0.08)';
+    ctx.fillRect(0, 0, w, h);
+
+    if (trail.length < 2) return;
+
+    const len = trail.length;
+    for (let i = 1; i < len; i++) {
+      const alpha = (i / len) * 0.9 + 0.1;
+      const [x1, y1] = project(trail[i-1][0], trail[i-1][1], trail[i-1][2]);
+      const [x2, y2] = project(trail[i][0], trail[i][1], trail[i][2]);
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(45, 212, 191, ${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    // Draw current point
+    const [cx, cy] = project(state[0], state[1], state[2]);
+    ctx.beginPath();
+    ctx.fillStyle = '#fff';
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function step() {
+    const derivs = lorenzDerivs(sigma, rho, beta);
+    const steps = Math.round(speed * 12);
+    for (let i = 0; i < steps; i++) {
+      state = rk4(derivs, state, dt);
+      trail.push(state.slice());
+      if (trail.length > trailMax) trail.shift();
+    }
+  }
+
+  function animate() {
+    if (!isVisible) { animId = requestAnimationFrame(animate); return; }
+    step();
+    draw();
+    animId = requestAnimationFrame(animate);
+  }
+
+  rhoSlider.addEventListener('input', () => {
+    rho = parseFloat(rhoSlider.value);
+    rhoVal.textContent = rho.toFixed(1);
+  });
+  speedSlider.addEventListener('input', () => {
+    speed = parseFloat(speedSlider.value);
+    speedVal.textContent = speed.toFixed(1) + '\u00d7';
+  });
+  resetBtn.addEventListener('click', () => {
+    init();
+    ctx.fillStyle = '#0f0f23';
+    ctx.fillRect(0, 0, w, h);
+  });
+
+  const visObs = new IntersectionObserver(entries => {
+    isVisible = entries[0].isIntersecting;
+  }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  resize();
+  init();
+  // Clear canvas to dark bg
+  ctx.fillStyle = '#0f0f23';
+  ctx.fillRect(0, 0, w, h);
+  animate();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 6: DOUBLE PENDULUM
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('pendulum-canvas');
+  const ctx = canvas.getContext('2d');
+  const npendSlider = document.getElementById('npend-slider');
+  const npendVal = document.getElementById('npend-val');
+  const spreadSlider = document.getElementById('spread-slider');
+  const spreadVal = document.getElementById('spread-val');
+  const dropBtn = document.getElementById('pendulum-drop');
+  const resetBtn = document.getElementById('pendulum-reset');
+
+  const g = 9.81, l1 = 1, l2 = 1, m1 = 1, m2 = 1;
+  let w, h, pendulums, running = false, animId, isVisible = false;
+  const trailMax = 300;
+
+  const colors = ['#0D9488', '#DC2626', '#2563EB', '#D97706', '#7C3AED',
+                  '#DB2777', '#16A34A', '#EA580C', '#6366F1', '#F59E0B'];
+
+  function dpDerivs([th1, w1, th2, w2]) {
+    const delta = th1 - th2;
+    const sinD = Math.sin(delta);
+    const cosD = Math.cos(delta);
+    const den = 2 * m1 + m2 - m2 * Math.cos(2 * delta);
+
+    const a1 = (-g * (2 * m1 + m2) * Math.sin(th1)
+                - m2 * g * Math.sin(th1 - 2 * th2)
+                - 2 * sinD * m2 * (w2 * w2 * l2 + w1 * w1 * l1 * cosD))
+               / (l1 * den);
+
+    const a2 = (2 * sinD * (w1 * w1 * l1 * (m1 + m2)
+                + g * (m1 + m2) * Math.cos(th1)
+                + w2 * w2 * l2 * m2 * cosD))
+               / (l2 * den);
+
+    return [w1, a1, w2, a2];
+  }
+
+  function init() {
+    const n = parseInt(npendSlider.value);
+    const spreadDeg = Math.pow(10, parseFloat(spreadSlider.value));
+    const spreadRad = spreadDeg * Math.PI / 180;
+    const baseAngle = Math.PI * 0.75;
+
+    pendulums = [];
+    for (let i = 0; i < n; i++) {
+      const offset = (i - (n - 1) / 2) * spreadRad / Math.max(n - 1, 1);
+      pendulums.push({
+        state: [baseAngle + offset, 0, baseAngle + offset * 0.5, 0],
+        trail: [],
+        color: colors[i % colors.length]
+      });
+    }
+    running = false;
+  }
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 400 * dpr;
+    canvas.style.height = '400px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    w = rect.width;
+    h = 400;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    const ox = w / 2, oy = h * 0.3;
+    const scale = Math.min(w, h) * 0.18;
+
+    // Pivot
+    ctx.fillStyle = '#ccc';
+    ctx.beginPath();
+    ctx.arc(ox, oy, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    pendulums.forEach((p, pi) => {
+      const [th1, , th2] = p.state;
+      const x1 = ox + l1 * scale * Math.sin(th1);
+      const y1 = oy + l1 * scale * Math.cos(th1);
+      const x2 = x1 + l2 * scale * Math.sin(th2);
+      const y2 = y1 + l2 * scale * Math.cos(th2);
+
+      // Trail
+      if (p.trail.length > 1) {
+        ctx.beginPath();
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.4;
+        for (let i = 0; i < p.trail.length; i++) {
+          if (i === 0) ctx.moveTo(p.trail[i][0], p.trail[i][1]);
+          else ctx.lineTo(p.trail[i][0], p.trail[i][1]);
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      // Rods
+      ctx.beginPath();
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2;
+      ctx.moveTo(ox, oy);
+      ctx.lineTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      // Masses
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x2, y2, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      p.trail.push([x2, y2]);
+      if (p.trail.length > trailMax) p.trail.shift();
+    });
+  }
+
+  function step() {
+    const substeps = 10;
+    const subdt = 0.02 / substeps;
+    pendulums.forEach(p => {
+      for (let i = 0; i < substeps; i++) {
+        p.state = rk4(dpDerivs, p.state, subdt);
+      }
+    });
+  }
+
+  function animate() {
+    if (!isVisible || !running) {
+      if (running) animId = requestAnimationFrame(animate);
+      draw();
+      return;
+    }
+    step();
+    draw();
+    animId = requestAnimationFrame(animate);
+  }
+
+  npendSlider.addEventListener('input', () => {
+    npendVal.textContent = npendSlider.value;
+    init();
+    draw();
+  });
+  spreadSlider.addEventListener('input', () => {
+    const deg = Math.pow(10, parseFloat(spreadSlider.value));
+    spreadVal.textContent = deg < 0.01 ? deg.toExponential(0) + '\u00b0' : deg.toFixed(2) + '\u00b0';
+    init();
+    draw();
+  });
+  dropBtn.addEventListener('click', () => {
+    if (!running) {
+      running = true;
+      animate();
+    }
+  });
+  resetBtn.addEventListener('click', () => {
+    running = false;
+    if (animId) cancelAnimationFrame(animId);
+    init();
+    draw();
+  });
+
+  const visObs = new IntersectionObserver(entries => {
+    isVisible = entries[0].isIntersecting;
+  }, { threshold: 0.1 });
+  visObs.observe(canvas);
+
+  resize();
+  init();
+  draw();
+  animate();
+  window.addEventListener('resize', () => { resize(); draw(); });
+})();
+
+/* ============================================================
+   DEMO 7: FEIGENBAUM / SELF-SIMILARITY ZOOM
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('feigenbaum-canvas');
+  const ctx = canvas.getContext('2d');
+  const zoom1Btn = document.getElementById('feigen-zoom1');
+  const zoom2Btn = document.getElementById('feigen-zoom2');
+  const zoom3Btn = document.getElementById('feigen-zoom3');
+  const resetBtn = document.getElementById('feigen-reset');
+
+  let w, h;
+
+  const levels = [
+    { rMin: 2.5, rMax: 4.0, xMin: 0, xMax: 1 },
+    { rMin: 3.4, rMax: 3.6, xMin: 0.3, xMax: 1.0 },
+    { rMin: 3.54, rMax: 3.575, xMin: 0.34, xMax: 0.9 },
+    { rMin: 3.564, rMax: 3.569, xMin: 0.35, xMax: 0.89 }
+  ];
+  let current = 0;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 320 * dpr;
+    canvas.style.height = '320px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    w = rect.width;
+    h = 320;
+    drawLevel(current);
+  }
+
+  function drawLevel(lvl) {
+    const { rMin, rMax, xMin, xMax } = levels[lvl];
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+
+    const pad = 40;
+    const pw = w - pad - 10;
+    const ph = h - pad - 20;
+
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, 10); ctx.lineTo(pad, 10 + ph); ctx.lineTo(pad + pw, 10 + ph);
+    ctx.stroke();
+
+    ctx.font = '11px Figtree, sans-serif';
+    ctx.fillStyle = '#999';
+    ctx.fillText('r=' + rMin.toFixed(3), pad, 10 + ph + 16);
+    ctx.fillText('r=' + rMax.toFixed(3), pad + pw - 50, 10 + ph + 16);
+
+    const cols = Math.min(pw * 2, 1200);
+    for (let col = 0; col < cols; col++) {
+      const r = rMin + (col / cols) * (rMax - rMin);
+      let x = 0.5;
+      for (let i = 0; i < 400; i++) x = logistic(x, r);
+      for (let i = 0; i < 200; i++) {
+        x = logistic(x, r);
+        const px = pad + (col / cols) * pw;
+        const py = 10 + ph - ((x - xMin) / (xMax - xMin)) * ph;
+        if (py >= 10 && py <= 10 + ph) {
+          ctx.fillStyle = 'rgba(13, 148, 136, 0.3)';
+          ctx.fillRect(px, py, 1.5, 1.5);
+        }
+      }
+    }
+
+    // Zoom level indicator
+    ctx.font = '13px Figtree, sans-serif';
+    ctx.fillStyle = '#0D9488';
+    ctx.fillText(lvl === 0 ? 'Full view' : 'Zoom level ' + lvl, pad + 4, 26);
+  }
+
+  zoom1Btn.addEventListener('click', () => { current = 1; drawLevel(1); });
+  zoom2Btn.addEventListener('click', () => { current = 2; drawLevel(2); });
+  zoom3Btn.addEventListener('click', () => { current = 3; drawLevel(3); });
+  resetBtn.addEventListener('click', () => { current = 0; drawLevel(0); });
+
+  resize();
+  window.addEventListener('resize', resize);
+})();
+
+/* ============================================================
+   DEMO 8: PREDICTION QUIZ
+   ============================================================ */
+(function() {
+  const cards = [
+    {
+      id: 'predict-1',
+      correct: 'far',
+      msg: 'In a chaotic system, the separation between trajectories grows exponentially. After 100 iterations, a gap of 0.001 can easily grow to span the entire attractor. The trajectories become completely unrelated \u2014 this is the essence of the butterfly effect.'
+    },
+    {
+      id: 'predict-2',
+      correct: 'deterministic',
+      msg: 'That sequence was generated by the logistic map with r = 3.99 and x\u2080 = 0.4. It looks random, but it\'s completely deterministic \u2014 the same starting value always produces the same sequence. Distinguishing chaos from randomness is one of the deepest challenges in science.'
+    },
+    {
+      id: 'predict-3',
+      correct: 'attractor',
+      msg: 'Climate is the shape of the attractor \u2014 the statistical properties of the system (average temperatures, rainfall patterns). Weather is where the trajectory is at any given moment. You can predict the attractor without predicting the trajectory, just as you can predict a die will average 3.5 without predicting any single roll.'
+    }
+  ];
+
+  cards.forEach(({ id, correct, msg }) => {
+    const card = document.getElementById(id);
+    card.querySelectorAll('.options .btn-secondary').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const answer = btn.dataset.answer;
+        card.querySelectorAll('.options .btn-secondary').forEach(b => {
+          b.disabled = true;
+          if (b.dataset.answer === correct) {
+            b.classList.add('active');
+            b.style.background = 'var(--green)';
+            b.style.color = 'white';
+            b.style.borderColor = 'var(--green)';
+          }
+          if (b === btn && answer !== correct) {
+            b.style.background = 'var(--red)';
+            b.style.color = 'white';
+            b.style.borderColor = 'var(--red)';
+          }
+        });
+        card.classList.add('revealed');
+        card.querySelector('.reveal-area p').textContent =
+          (answer === correct ? 'Correct! ' : 'Not quite. ') + msg;
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
