@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Do LLMs Actually Work?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --serif: "Newsreader", Georgia, serif;
+      --sans: "Figtree", system-ui, sans-serif;
+      --mono: "JetBrains Mono", "SF Mono", "Consolas", monospace;
+      --bg: #FAF9F7;
+      --text: #2d2d2d;
+      --brand: #6C3CE0;
+      --brand-light: #8B5CF6;
+      --link: #6C3CE0;
+      --accent-blue: #3B82F6;
+      --accent-coral: #FF6B6B;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --widget-bg: #F0ECFF;
+      --border: #E5E5E5;
+      --content-width: 700px;
+      --content-padding: 45px;
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-size: 21px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--serif);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 32px;
+      font-family: var(--sans);
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .logo-secondary {
+      font-style: italic;
+      font-weight: 400;
+      color: #666;
+    }
+
+    /* ===== HERO HEADER ===== */
+    .post-header {
+      max-width: 960px;
+      margin: 0 auto 40px;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      min-height: 260px;
+      display: flex;
+      align-items: flex-end;
+    }
+    .header__bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #6C3CE0 0%, #3B82F6 40%, #10B981 70%, #F59E0B 100%);
+      z-index: 0;
+    }
+    .header__bg svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.15;
+    }
+    .header__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.05) 100%);
+      z-index: 1;
+    }
+    .header__text {
+      position: relative;
+      z-index: 2;
+      padding: 40px 48px;
+      color: white;
+    }
+    .post-title {
+      font-family: var(--sans);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .post-subtitle {
+      font-family: var(--sans);
+      font-size: 1.15rem;
+      font-weight: 400;
+      opacity: 0.9;
+      line-height: 1.3;
+    }
+
+    /* ===== NUTSHELL (intro paragraph) ===== */
+    .nutshell {
+      max-width: var(--content-width);
+      margin: 0 auto 24px;
+      padding: 0 var(--content-padding);
+      font-style: italic;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #444;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    hr.full-width {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px auto;
+      max-width: 960px;
+    }
+
+    article {
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 0 var(--content-padding);
+      border-left: 2px solid var(--border);
+    }
+
+    /* ===== TABLE OF CONTENTS ===== */
+    .toc-wrapper {
+      margin: 32px 0 48px;
+      padding: 24px 28px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .toc-wrapper h4 {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      color: #888;
+    }
+    .toc ol {
+      list-style: none;
+      counter-reset: toc-counter;
+    }
+    .toc ol li {
+      counter-increment: toc-counter;
+      padding: 4px 0;
+      font-family: var(--sans);
+      font-size: 0.8rem;
+    }
+    .toc ol li::before {
+      content: counter(toc-counter, upper-roman) ".";
+      display: inline-block;
+      width: 40px;
+      font-family: var(--sans);
+      font-weight: 400;
+      color: #aaa;
+    }
+    .toc a {
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .toc a:hover {
+      color: var(--brand);
+    }
+
+    /* ===== SECTION HEADINGS ===== */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 72px -60px 32px -60px;
+      padding: 16px 0;
+      border-top: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      background: var(--bg);
+    }
+    .section-number {
+      font-family: var(--sans);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: #bbb;
+      min-width: 50px;
+      text-align: right;
+    }
+    .section-heading h2 {
+      font-family: var(--sans);
+      font-size: 1.7rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    /* ===== BODY TEXT ===== */
+    article p {
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+    article p + p {
+      margin-top: 0;
+    }
+    article em {
+      font-style: italic;
+    }
+    article strong {
+      font-weight: 700;
+    }
+    article a {
+      color: var(--brand);
+      text-decoration: underline;
+      text-decoration-color: rgba(108, 60, 224, 0.3);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.2s;
+    }
+    article a:hover {
+      text-decoration-color: var(--brand);
+    }
+
+    /* ===== FIGURE / INTERACTIVE CONTAINERS ===== */
+    .figure-container {
+      margin: 32px -20px;
+      padding: 24px;
+      background: var(--widget-bg);
+      border-radius: 12px;
+      border: 1px solid rgba(108, 60, 224, 0.1);
+    }
+    .figure-container.neutral {
+      background: #F5F5F5;
+      border-color: var(--border);
+    }
+    .figure-caption {
+      text-align: center;
+      font-style: italic;
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 16px;
+      line-height: 1.4;
+    }
+    .widget-label {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #666;
+    }
+
+    /* ===== SIDENOTE / CALLOUT ===== */
+    .sidenote {
+      margin: 24px 0;
+      padding: 16px 20px;
+      background: rgba(108, 60, 224, 0.05);
+      border-left: 3px solid var(--brand-light);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    /* ===== SLIDERS ===== */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #ddd;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--brand);
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* ===== TABLES ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.8rem;
+    }
+    th {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border);
+      color: #888;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    /* ===== BULLET LISTS ===== */
+    article ul, article ol {
+      margin: 16px 0 20px 24px;
+      font-size: 1rem;
+    }
+    article li {
+      margin-bottom: 8px;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      max-width: var(--content-width);
+      margin: 64px auto 48px;
+      padding: 0 var(--content-padding);
+      font-size: 0.75rem;
+      color: #999;
+      text-align: center;
+    }
+
+    /* ===== TOGGLE BUTTONS ===== */
+    .toggle-btn {
+      padding: 6px 14px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      background: white;
+      font-family: var(--sans);
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #666;
+    }
+    .toggle-btn:hover {
+      border-color: var(--brand-light);
+      color: var(--brand);
+    }
+    .toggle-btn.active {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+    }
+
+    /* ===== RATER OPTION CARDS ===== */
+    .rater-option {
+      padding: 12px 16px;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      line-height: 1.5;
+      color: #555;
+    }
+    .rater-option:hover {
+      border-color: var(--brand-light);
+      background: #faf8ff;
+    }
+    .rater-option.selected-good {
+      border-color: #10B981;
+      background: #10B98110;
+    }
+    .rater-option.selected-bad {
+      border-color: #FF6B6B;
+      background: #FF6B6B10;
+    }
+
+    /* ===== SVG ANIMATION DEFAULTS ===== */
+    .animated-dot {
+      transition: all 0.3s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 800px) {
+      html { font-size: 18px; }
+      .post-title { font-size: 2rem; }
+      .post-subtitle { font-size: 1rem; }
+      .header__text { padding: 24px 28px; }
+      article { padding: 0 20px; }
+      .section-heading { margin-left: -28px; margin-right: -28px; }
+      .figure-container { margin: 24px -10px; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <a href="#" class="logo">explicit<br><em class="logo-secondary">.llm</em></a>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="post-header">
+  <div class="header__bg">
+    <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Floating token/node network animation -->
+      <g id="hero-nodes">
+      </g>
+    </svg>
+  </div>
+  <div class="header__overlay"></div>
+  <div class="header__text">
+    <h1 class="post-title">How Do LLMs Actually Work?</h1>
+    <h2 class="post-subtitle">From word embeddings to ChatGPT. No PhD required.</h2>
+  </div>
+</header>
+
+<!-- ===== NUTSHELL ===== -->
+<div class="nutshell">
+  Everyone's using ChatGPT, Claude, and Gemini &mdash; but how do they actually work under the hood?
+  In this article, we'll build understanding layer by layer. From how computers represent words as numbers,
+  to why the "transformer" architecture was a breakthrough, to how reinforcement learning shapes a raw text
+  predictor into a helpful assistant. No jargon without explanation. No can-kicking.
+</div>
+
+<hr class="full-width">
+
+<!-- ===== ARTICLE ===== -->
+<article>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc-wrapper">
+    <h4>Contents</h4>
+    <div class="toc">
+      <ol>
+        <li><a href="#sec-intro">Introduction &mdash; Words Are Just Numbers</a></li>
+        <li><a href="#sec-tokens">Tokenization &mdash; What LLMs Actually See</a></li>
+        <li><a href="#sec-embeddings">Word Embeddings &mdash; Words in Space</a></li>
+        <li><a href="#sec-context">From Words to Sequences &mdash; Why Context Matters</a></li>
+        <li><a href="#sec-attention">Attention &mdash; The Breakthrough Idea</a></li>
+        <li><a href="#sec-transformer">The Transformer Block &mdash; Putting It Together</a></li>
+        <li><a href="#sec-pretraining">Pretraining &mdash; The Massive Multi-Task Learner</a></li>
+        <li><a href="#sec-rlhf">RLHF &mdash; Teaching the Model to Be Helpful</a></li>
+        <li><a href="#sec-modern-rl">Modern RL &mdash; DPO, GRPO, and Beyond</a></li>
+        <li><a href="#sec-bigpicture">The Big Picture &mdash; Putting It All Together</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- SECTION I: INTRODUCTION                      -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-intro">
+    <span class="section-number">I.</span>
+    <h2>Words Are Just Numbers</h2>
+  </div>
+
+  <p>Here's a question that sounds simple but turns out to be surprisingly deep: <em>how would you teach a computer to understand language?</em></p>
+
+  <p>Computers are, at their core, calculators. They're brilliant at arithmetic, at comparing numbers, at following rules. But language? Language is messy, ambiguous, beautiful, and weird. "I saw her duck" could mean you witnessed her pet waterfowl, or you watched her dodge something.</p>
+
+  <p>So how do you bridge this gap? You have to turn words into numbers. The question is: <em>which</em> numbers?</p>
+
+  <p>The simplest idea: just assign each word an ID. Cat = 1, dog = 2, fish = 3, quantum = 4, love = 5... You can imagine a giant dictionary with 50,000 entries.</p>
+
+  <p>But here's the problem. To the computer, the "distance" between cat (1) and dog (2) is the same as between cat (1) and quantum (4). There's no <em>meaning</em> in these numbers. Cat and dog are related! Cat and quantum are... not.</p>
+
+  <p>What if we could assign numbers so that <strong>similar words get similar numbers?</strong></p>
+
+  <p>That's the key insight. And it turns out, there's an elegantly simple way to do it: look at which words appear near each other in real text. Words that show up in similar contexts probably mean similar things.</p>
+
+  <p><em>"You shall know a word by the company it keeps."</em> &mdash; J.R. Firth, 1957</p>
+
+  <p>"Dog" and "cat" both appear near words like "pet", "fur", "feed", and "vet". So they should get similar numbers. "Dog" and "quantum" almost never share context. So they should get very different numbers.</p>
+
+  <p>This is the foundation of everything that follows. It's called the <strong>distributional hypothesis</strong>, and it's the idea behind <strong>word embeddings</strong>.</p>
+
+  <p>But first, let's make this concrete. Here's a toy version of the idea. Try dragging the words around on the number line below &mdash; notice how some groupings feel "right" and others feel absurd:</p>
+
+  <!-- INTERACTIVE 1: Word Number Line -->
+  <div class="figure-container" id="word-number-line">
+    <div class="widget-label" style="margin-bottom: 12px;">Word Number Line &mdash; Drag words to rearrange</div>
+    <svg viewBox="0 0 660 140" width="100%" xmlns="http://www.w3.org/2000/svg" id="numberline-svg">
+      <!-- Number line -->
+      <line x1="30" y1="90" x2="630" y2="90" stroke="#ccc" stroke-width="2"/>
+      <text x="20" y="110" font-family="Figtree, sans-serif" font-size="10" fill="#aaa">0</text>
+      <text x="627" y="110" font-family="Figtree, sans-serif" font-size="10" fill="#aaa" text-anchor="end">1</text>
+      <!-- Tick marks -->
+      <line x1="30" y1="85" x2="30" y2="95" stroke="#ccc" stroke-width="1"/>
+      <line x1="330" y1="85" x2="330" y2="95" stroke="#ccc" stroke-width="1"/>
+      <line x1="630" y1="85" x2="630" y2="95" stroke="#ccc" stroke-width="1"/>
+      <text x="330" y="110" font-family="Figtree, sans-serif" font-size="10" fill="#aaa" text-anchor="middle">0.5</text>
+    </svg>
+    <div class="figure-caption">Words that mean similar things should be close together. Try it!</div>
+  </div>
+
+  <p>See how "king" and "queen" want to be close? And how "banana" feels out of place next to "emperor"? That's exactly the intuition behind word embeddings.</p>
+
+  <p>But we're getting ahead of ourselves. Before we talk about embeddings, there's something even more fundamental we need to cover: LLMs don't actually see <em>words</em>.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION II: TOKENIZATION                     -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-tokens">
+    <span class="section-number">II.</span>
+    <h2>What LLMs Actually See</h2>
+  </div>
+
+  <p>Here's a surprise that trips up a lot of people: LLMs don't process words. They process <strong>tokens</strong>.</p>
+
+  <p>What's a token? It's a chunk of text &mdash; sometimes a whole word, sometimes part of a word, sometimes just a single character. The word "unbelievable" might get split into three tokens: <strong>["un", "believ", "able"]</strong>.</p>
+
+  <p>Why? Because it's a much smarter strategy than trying to have a separate entry for every possible word. Think about it: "run", "running", "runner", "runs" &mdash; these all share the root "run". If the model learns what "run" means as a token, it can reuse that knowledge across all these forms.</p>
+
+  <p>The most common approach is called <strong>Byte Pair Encoding (BPE)</strong>. The idea is beautifully simple:</p>
+
+  <ol>
+    <li>Start with individual characters as your tokens</li>
+    <li>Find the pair of tokens that appears most frequently next to each other</li>
+    <li>Merge that pair into a new token</li>
+    <li>Repeat thousands of times</li>
+  </ol>
+
+  <p>Common words like "the" become single tokens. Rare words like "defenestration" get split into pieces. This gives you the best of both worlds: efficiency for common words and flexibility for rare ones.</p>
+
+  <p>Try it yourself! Type something below and see how it gets tokenized:</p>
+
+  <!-- INTERACTIVE 2: Tokenizer -->
+  <div class="figure-container" id="tokenizer-demo">
+    <div class="widget-label" style="margin-bottom: 8px;">Tokenizer</div>
+    <input type="text" id="tokenizer-input" value="The transformer architecture is unbelievably powerful!"
+      style="width: 100%; padding: 10px 14px; font-family: var(--sans); font-size: 0.8rem;
+             border: 2px solid var(--border); border-radius: 8px; outline: none; background: white;
+             transition: border-color 0.2s;"
+      onfocus="this.style.borderColor='var(--brand)'"
+      onblur="this.style.borderColor='var(--border)'"
+    >
+    <div id="tokenizer-output" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 4px; min-height: 40px;"></div>
+    <div id="tokenizer-ids" style="margin-top: 8px; font-family: var(--mono); font-size: 0.5rem; color: #999; word-break: break-all;"></div>
+    <div class="figure-caption">A simplified BPE tokenizer. Colors show different tokens. Numbers below are token IDs.</div>
+  </div>
+
+  <div class="sidenote">
+    <strong>Fun fact:</strong> This is why LLMs are famously bad at counting letters in words! When you ask "How many r's in strawberry?", the model sees tokens like ["str", "aw", "berry"] &mdash; the individual letters are hidden inside the tokens. The model never "sees" the separate letters.
+  </div>
+
+  <p>Most modern LLMs use vocabularies of 30,000&ndash;100,000 tokens. GPT-4 uses about 100,000. Each token gets assigned a unique ID number, and <em>those</em> are the numbers that actually get fed into the model.</p>
+
+  <p>So the pipeline so far is: <strong>text &rarr; tokens &rarr; token IDs</strong>. But a token ID is just an arbitrary number (like our cat=1, dog=2 problem from before). We need something richer. We need <em>embeddings</em>.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION III: WORD EMBEDDINGS                 -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-embeddings">
+    <span class="section-number">III.</span>
+    <h2>Words in Space</h2>
+  </div>
+
+  <p>Here's where things get genuinely beautiful.</p>
+
+  <p>Instead of representing a word with a single number, what if we used a whole <em>list</em> of numbers? Not just one dimension, but many. In practice, modern embeddings use 768, 1024, or even 4096 dimensions.</p>
+
+  <p>But let's start with something we can visualize: <strong>two dimensions</strong>. Each word gets an x-coordinate and a y-coordinate, placing it as a point in 2D space.</p>
+
+  <p>The magic is in <em>how</em> these coordinates are learned. The most famous approach, <strong>word2vec</strong> (2013), works like this:</p>
+
+  <ol>
+    <li>Take a huge pile of text (Wikipedia, books, the web...)</li>
+    <li>For each word, look at the words that surround it (its "context")</li>
+    <li>Train a simple neural network to predict context from a word (<strong>Skip-gram</strong>) or a word from its context (<strong>CBOW</strong>)</li>
+    <li>The "side effect" of this training: the network learns number-representations for each word where similar words end up nearby</li>
+  </ol>
+
+  <div class="sidenote">
+    <strong>Technical note:</strong> Word2vec uses a trick called <em>negative sampling</em> to make training efficient. Instead of computing probabilities over the entire 50,000-word vocabulary, it only compares each correct context word against a handful of random "negative" words. This makes training feasible on ordinary hardware.
+  </div>
+
+  <p>The result? Words that mean similar things cluster together. Animals clump together, colors clump together, countries clump together. Explore the space below:</p>
+
+  <!-- INTERACTIVE 3: 2D Embedding Space -->
+  <div class="figure-container" id="embedding-space">
+    <div class="widget-label" style="margin-bottom: 12px;">2D Word Embedding Space &mdash; Hover to explore, click words to compare similarity</div>
+    <svg viewBox="0 0 660 420" width="100%" xmlns="http://www.w3.org/2000/svg" id="embedding-svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- Background grid -->
+      <g opacity="0.1">
+        <line x1="30" y1="0" x2="30" y2="420" stroke="#666" stroke-width="0.5"/>
+        <line x1="180" y1="0" x2="180" y2="420" stroke="#666" stroke-width="0.5"/>
+        <line x1="330" y1="0" x2="330" y2="420" stroke="#666" stroke-width="0.5"/>
+        <line x1="480" y1="0" x2="480" y2="420" stroke="#666" stroke-width="0.5"/>
+        <line x1="630" y1="0" x2="630" y2="420" stroke="#666" stroke-width="0.5"/>
+        <line x1="0" y1="60" x2="660" y2="60" stroke="#666" stroke-width="0.5"/>
+        <line x1="0" y1="150" x2="660" y2="150" stroke="#666" stroke-width="0.5"/>
+        <line x1="0" y1="240" x2="660" y2="240" stroke="#666" stroke-width="0.5"/>
+        <line x1="0" y1="330" x2="660" y2="330" stroke="#666" stroke-width="0.5"/>
+      </g>
+      <!-- Cluster labels -->
+      <text x="115" y="35" font-family="Figtree, sans-serif" font-size="10" fill="#6C3CE0" opacity="0.5" text-anchor="middle" font-weight="600">Royalty</text>
+      <text x="480" y="35" font-family="Figtree, sans-serif" font-size="10" fill="#10B981" opacity="0.5" text-anchor="middle" font-weight="600">Animals</text>
+      <text x="140" y="245" font-family="Figtree, sans-serif" font-size="10" fill="#3B82F6" opacity="0.5" text-anchor="middle" font-weight="600">Countries</text>
+      <text x="510" y="245" font-family="Figtree, sans-serif" font-size="10" fill="#F59E0B" opacity="0.5" text-anchor="middle" font-weight="600">Food</text>
+      <text x="330" y="395" font-family="Figtree, sans-serif" font-size="10" fill="#FF6B6B" opacity="0.5" text-anchor="middle" font-weight="600">Emotions</text>
+      <!-- Words will be added by JS -->
+      <g id="embedding-words"></g>
+      <!-- Similarity display -->
+      <g id="similarity-display" opacity="0" transform="translate(330, 410)">
+        <rect x="-120" y="-18" width="240" height="22" rx="11" fill="white" stroke="#ddd" stroke-width="1"/>
+        <text id="sim-text" x="0" y="-3" font-family="Figtree, sans-serif" font-size="11" fill="#666" text-anchor="middle"></text>
+      </g>
+    </svg>
+    <div class="figure-caption">Each dot is a word. Similar words cluster together. Click two words to see their similarity score.</div>
+  </div>
+
+  <p>See how the clusters form? Animals hang out with animals, countries with countries. This isn't programmed &mdash; it <em>emerges</em> from the training process. The model discovers these relationships by itself, just from reading lots of text.</p>
+
+  <p>And here's the part that really blew people's minds when word2vec was published. You can do <strong>arithmetic</strong> with these word vectors:</p>
+
+  <p style="text-align: center; font-family: var(--mono); font-size: 0.85rem; padding: 16px; background: white; border-radius: 8px; border: 1px solid var(--border);">
+    king &minus; man + woman &asymp; queen
+  </p>
+
+  <p>Take the vector for "king", subtract "man", add "woman" &mdash; and the result lands closest to "queen"! The model has somehow learned that "king" is to "man" as "queen" is to "woman".</p>
+
+  <div class="sidenote">
+    <strong>A word of caution:</strong> The king/queen example is the most famous, but it's a bit cherry-picked. Word arithmetic works well for some relationships (gender, country-capital, verb tense) but not all. It's an <em>emergent</em> property, not a guarantee. Still, the fact that it works at all is remarkable.
+  </div>
+
+  <p>Try some word arithmetic yourself:</p>
+
+  <!-- INTERACTIVE 4: Word Arithmetic -->
+  <div class="figure-container" id="word-arithmetic">
+    <div class="widget-label" style="margin-bottom: 12px;">Word Vector Arithmetic</div>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px;">
+      <select id="arith-a" style="padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: var(--sans); font-size: 0.75rem; background: white;"></select>
+      <span style="font-family: var(--mono); font-size: 1rem; color: #999;">&minus;</span>
+      <select id="arith-b" style="padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: var(--sans); font-size: 0.75rem; background: white;"></select>
+      <span style="font-family: var(--mono); font-size: 1rem; color: #999;">+</span>
+      <select id="arith-c" style="padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: var(--sans); font-size: 0.75rem; background: white;"></select>
+      <span style="font-family: var(--mono); font-size: 1rem; color: #999;">&asymp;</span>
+      <span id="arith-result" style="padding: 8px 16px; background: var(--brand); color: white; border-radius: 8px; font-family: var(--sans); font-size: 0.75rem; font-weight: 700;"></span>
+    </div>
+    <svg viewBox="0 0 660 260" width="100%" xmlns="http://www.w3.org/2000/svg" id="arith-svg">
+      <!-- Vectors will be drawn by JS -->
+      <g id="arith-vectors"></g>
+    </svg>
+    <div class="figure-caption">Vector arithmetic reveals semantic relationships hidden in the embeddings.</div>
+  </div>
+
+  <p>This was the state of the art circa 2013&ndash;2017. Word embeddings like word2vec and GloVe were a <em>huge</em> breakthrough. But they had a fatal flaw...</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION IV: CONTEXT                          -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-context">
+    <span class="section-number">IV.</span>
+    <h2>Why Context Matters</h2>
+  </div>
+
+  <p>Here's the problem: a word like "bank" has <em>one</em> embedding. But "bank" means completely different things in these two sentences:</p>
+
+  <!-- INTERACTIVE 5: The Bank Problem -->
+  <div class="figure-container" id="bank-demo">
+    <div class="widget-label" style="margin-bottom: 12px;">The "Bank" Problem &mdash; Toggle between sentences</div>
+    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+      <button id="bank-btn-1" class="toggle-btn active" onclick="switchBank(0)">River context</button>
+      <button id="bank-btn-2" class="toggle-btn" onclick="switchBank(1)">Money context</button>
+    </div>
+    <div id="bank-sentence" style="font-family: var(--sans); font-size: 1rem; line-height: 2; text-align: center; padding: 16px;">
+    </div>
+    <svg viewBox="0 0 660 130" width="100%" xmlns="http://www.w3.org/2000/svg" id="bank-svg">
+      <text x="330" y="20" text-anchor="middle" font-family="Figtree, sans-serif" font-size="12" fill="#999">Word embedding for "bank":</text>
+      <!-- Same vector shown both times -->
+      <g id="bank-vector" transform="translate(95, 35)">
+      </g>
+      <text id="bank-problem-text" x="330" y="120" text-anchor="middle" font-family="Figtree, sans-serif" font-size="13" fill="#FF6B6B" font-weight="600"></text>
+    </svg>
+    <div class="figure-caption">Same word, completely different meanings &mdash; but with static embeddings, the vector is identical!</div>
+  </div>
+
+  <p>"I sat by the river <strong>bank</strong>" and "I went to the <strong>bank</strong> for money." The word "bank" gets the same vector in both cases. The model can't tell them apart!</p>
+
+  <p>This is the fundamental limitation of static word embeddings. We need representations that <em>change depending on context</em>.</p>
+
+  <p>Before the transformer revolution, people tried recurrent neural networks (RNNs) and LSTMs. The idea: process words one at a time, left to right, maintaining a "memory" of what came before.</p>
+
+  <div class="sidenote">
+    <strong>The RNN problem:</strong> Imagine reading a long novel one word at a time, and trying to remember everything. By page 400, you've mostly forgotten what happened on page 1. RNNs have the same issue &mdash; it's called the <em>vanishing gradient problem</em>. Information from early words "fades" as the sequence gets longer. LSTMs partially fixed this, but they were still fundamentally limited.
+  </div>
+
+  <p>And there was another problem: RNNs process words <em>sequentially</em>. Word 1, then word 2, then word 3... This made them painfully slow to train, because you couldn't parallelize the computation.</p>
+
+  <p>What we really wanted was a way for every word to look at <em>every other word</em> simultaneously. To understand each word in the full context of the entire sentence, all at once.</p>
+
+  <p>In 2017, a team at Google published a paper with an unforgettable title: <em>"Attention Is All You Need."</em> And the world changed.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION V: ATTENTION                         -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-attention">
+    <span class="section-number">V.</span>
+    <h2>The Breakthrough Idea</h2>
+  </div>
+
+  <p>Attention is the single most important concept in modern AI. Here's the core idea:</p>
+
+  <p><strong>Every word gets to look at every other word and decide how much to "pay attention" to it.</strong></p>
+
+  <p>Think about reading the sentence "The cat sat on the mat because <strong>it</strong> was tired." When you read "it", your brain instantly connects it to "cat" &mdash; not "mat", not "the". You <em>attend</em> to the right words automatically.</p>
+
+  <p>The attention mechanism does the same thing, but mathematically. Let's break it down.</p>
+
+  <p>Each word creates three vectors from its embedding:</p>
+
+  <ul>
+    <li><strong>Query (Q)</strong> &mdash; "What am I looking for?" (like a search query)</li>
+    <li><strong>Key (K)</strong> &mdash; "What do I contain?" (like a book title)</li>
+    <li><strong>Value (V)</strong> &mdash; "What information do I carry?" (like the book's content)</li>
+  </ul>
+
+  <p>The analogy is a library search: your Query is matched against every word's Key to get a relevance score. Then you use those scores to grab a weighted mix of every word's Value.</p>
+
+  <p>Mathematically:</p>
+
+  <p style="text-align: center; font-family: var(--mono); font-size: 0.75rem; padding: 16px; background: white; border-radius: 8px; border: 1px solid var(--border);">
+    Attention(Q, K, V) = softmax(Q &middot; K<sup>T</sup> / &radic;d<sub>k</sub>) &middot; V
+  </p>
+
+  <div class="sidenote">
+    <strong>Why divide by &radic;d<sub>k</sub>?</strong> Without this scaling, dot products can get very large when the vectors are high-dimensional, which makes the softmax function produce extreme values (almost all 0s and one 1). Dividing by the square root of the dimension keeps the scores in a well-behaved range. It's a small detail, but without it, training breaks.
+  </div>
+
+  <p>Let's see it in action. Hover over words in the sentence below to see what each word "attends" to:</p>
+
+  <!-- INTERACTIVE 6: Attention Heatmap -->
+  <div class="figure-container" id="attention-demo">
+    <div class="widget-label" style="margin-bottom: 8px;">Attention Visualization</div>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+      <button class="toggle-btn active" onclick="setAttentionHead(0, this)">Head 1: Pronouns</button>
+      <button class="toggle-btn" onclick="setAttentionHead(1, this)">Head 2: Syntax</button>
+      <button class="toggle-btn" onclick="setAttentionHead(2, this)">Head 3: Proximity</button>
+    </div>
+    <svg viewBox="0 0 660 560" width="100%" xmlns="http://www.w3.org/2000/svg" id="attention-svg">
+      <g id="attention-words-top" transform="translate(0, 30)"></g>
+      <g id="attention-words-left" transform="translate(0, 80)"></g>
+      <g id="attention-grid" transform="translate(120, 80)"></g>
+    </svg>
+    <div class="figure-caption">Each row shows what that word attends to. Darker = more attention. Different "heads" learn different patterns.</div>
+  </div>
+
+  <p>Notice something fascinating: <em>different attention heads learn different things!</em> One head might specialize in resolving pronouns ("it" → "cat"), another in tracking syntactic structure (verbs attending to subjects), and another in simply paying attention to nearby words.</p>
+
+  <p>In practice, models use 12, 32, or even 128 attention heads running in parallel. Each learns its own pattern, and their outputs are combined. This is called <strong>multi-head attention</strong>.</p>
+
+  <div class="sidenote">
+    <strong>Important detail:</strong> Attention is completely <em>order-agnostic</em> &mdash; it treats the input as a set, not a sequence! The words "cat sat mat" would get the same attention scores regardless of order. To fix this, we add <strong>positional embeddings</strong>: extra numbers added to each word's embedding that encode its position in the sequence. Without them, the model wouldn't know whether "the cat ate the fish" or "the fish ate the cat"!
+  </div>
+
+  <p>Now we have all the ingredients to understand the full transformer architecture.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION VI: TRANSFORMER BLOCK                -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-transformer">
+    <span class="section-number">VI.</span>
+    <h2>Putting It Together</h2>
+  </div>
+
+  <p>A transformer model is built from <strong>transformer blocks</strong>, stacked on top of each other like LEGO bricks. Each block takes in a sequence of token embeddings and outputs an <em>improved</em> sequence of embeddings &mdash; same shape, but each token now has a richer understanding of the whole sentence.</p>
+
+  <p>Each transformer block has four key components:</p>
+
+  <!-- INTERACTIVE 7: Transformer Block Diagram -->
+  <div class="figure-container" id="transformer-block-diagram">
+    <div class="widget-label" style="margin-bottom: 12px;">Transformer Block &mdash; Click each component to learn more</div>
+    <svg viewBox="0 0 660 480" width="100%" xmlns="http://www.w3.org/2000/svg" id="transformer-svg">
+      <!-- Background -->
+      <rect x="160" y="10" width="340" height="460" rx="16" fill="white" stroke="#E5E5E5" stroke-width="2"/>
+      <text x="330" y="35" text-anchor="middle" font-family="Figtree, sans-serif" font-size="12" fill="#aaa" font-weight="600">TRANSFORMER BLOCK</text>
+
+      <!-- Input arrow -->
+      <line x1="330" y1="490" x2="330" y2="440" stroke="#aaa" stroke-width="2" marker-end="url(#arrowhead-gray)"/>
+      <text x="330" y="505" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#999">Input embeddings</text>
+
+      <!-- 1. Self-Attention -->
+      <rect id="tb-attention" x="200" y="390" width="260" height="55" rx="10" fill="#6C3CE020" stroke="#6C3CE0" stroke-width="2" cursor="pointer"/>
+      <text x="330" y="415" text-anchor="middle" font-family="Figtree, sans-serif" font-size="13" fill="#6C3CE0" font-weight="700" pointer-events="none">Multi-Head Self-Attention</text>
+      <text x="330" y="432" text-anchor="middle" font-family="Figtree, sans-serif" font-size="10" fill="#6C3CE080" pointer-events="none">"The meeting where everyone shares notes"</text>
+
+      <!-- Residual + LayerNorm 1 -->
+      <rect id="tb-residual1" x="200" y="315" width="260" height="40" rx="10" fill="#10B98120" stroke="#10B981" stroke-width="2" cursor="pointer"/>
+      <text x="330" y="340" text-anchor="middle" font-family="Figtree, sans-serif" font-size="12" fill="#10B981" font-weight="600" pointer-events="none">Add &amp; Layer Norm</text>
+
+      <!-- Residual arrow -->
+      <path d="M 470 418 L 500 418 L 500 335 L 470 335" fill="none" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <text x="512" y="375" font-family="Figtree, sans-serif" font-size="9" fill="#10B981" text-anchor="middle">skip</text>
+
+      <!-- Arrow -->
+      <line x1="330" y1="385" x2="330" y2="358" stroke="#aaa" stroke-width="1.5" marker-end="url(#arrowhead-gray)"/>
+
+      <!-- 2. Feed-Forward -->
+      <rect id="tb-ffn" x="200" y="240" width="260" height="55" rx="10" fill="#3B82F620" stroke="#3B82F6" stroke-width="2" cursor="pointer"/>
+      <text x="330" y="265" text-anchor="middle" font-family="Figtree, sans-serif" font-size="13" fill="#3B82F6" font-weight="700" pointer-events="none">Feed-Forward Network</text>
+      <text x="330" y="282" text-anchor="middle" font-family="Figtree, sans-serif" font-size="10" fill="#3B82F680" pointer-events="none">"Each person thinks privately"</text>
+
+      <!-- Arrow -->
+      <line x1="330" y1="310" x2="330" y2="298" stroke="#aaa" stroke-width="1.5" marker-end="url(#arrowhead-gray)"/>
+
+      <!-- Residual + LayerNorm 2 -->
+      <rect id="tb-residual2" x="200" y="165" width="260" height="40" rx="10" fill="#10B98120" stroke="#10B981" stroke-width="2" cursor="pointer"/>
+      <text x="330" y="190" text-anchor="middle" font-family="Figtree, sans-serif" font-size="12" fill="#10B981" font-weight="600" pointer-events="none">Add &amp; Layer Norm</text>
+
+      <!-- Residual arrow 2 -->
+      <path d="M 470 268 L 500 268 L 500 185 L 470 185" fill="none" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <text x="512" y="225" font-family="Figtree, sans-serif" font-size="9" fill="#10B981" text-anchor="middle">skip</text>
+
+      <!-- Arrow -->
+      <line x1="330" y1="235" x2="330" y2="208" stroke="#aaa" stroke-width="1.5" marker-end="url(#arrowhead-gray)"/>
+
+      <!-- Output arrow -->
+      <line x1="330" y1="160" x2="330" y2="110" stroke="#aaa" stroke-width="2" marker-end="url(#arrowhead-gray)"/>
+      <text x="330" y="100" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#999">Output embeddings</text>
+
+      <!-- Stack indicator -->
+      <text x="330" y="65" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#F59E0B" font-weight="600">&#x2191; Repeat 12&ndash;96 times!</text>
+
+      <!-- Arrow marker -->
+      <defs>
+        <marker id="arrowhead-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#aaa"/>
+        </marker>
+      </defs>
+    </svg>
+    <!-- Info panel -->
+    <div id="tb-info" style="margin-top: 12px; padding: 12px 16px; background: white; border-radius: 8px; border: 1px solid var(--border); font-family: var(--sans); font-size: 0.75rem; color: #666; min-height: 50px; transition: all 0.3s;">
+      <em>Click any component above to learn what it does!</em>
+    </div>
+    <div class="figure-caption">The complete transformer block. Data flows bottom-to-top. GPT-3 stacks 96 of these!</div>
+  </div>
+
+  <p>Let's unpack each piece with an analogy. Imagine a team meeting:</p>
+
+  <ol>
+    <li><strong>Self-Attention</strong> is the part where everyone in the room shares their notes with everyone else. Each person (token) gets to hear what everyone else knows. After this step, your understanding of each word is enriched by the context of all other words.</li>
+    <li><strong>Feed-Forward Network</strong> is the part where each person goes back to their desk and <em>thinks privately</em> about what they just heard. It's a small neural network applied to each token independently, doing deeper processing.</li>
+    <li><strong>Residual Connections</strong> (the "skip" arrows) ensure you don't forget what you knew before the meeting. The original input is added back to the output. This is crucial &mdash; it means the model can learn to make small refinements rather than needing to reconstruct everything from scratch.</li>
+    <li><strong>Layer Normalization</strong> keeps everyone "at a similar volume level." Without it, the numbers can grow out of control as they pass through many layers.</li>
+  </ol>
+
+  <p>GPT-3 stacks <strong>96</strong> of these blocks. GPT-4 likely has even more. Each layer refines the representations further &mdash; early layers handle grammar and syntax, middle layers capture semantics and facts, and deep layers do complex reasoning.</p>
+
+  <p>But a transformer is just an architecture &mdash; a blueprint. The magic happens in <em>how it's trained</em>.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION VII: PRETRAINING                     -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-pretraining">
+    <span class="section-number">VII.</span>
+    <h2>The Massive Multi-Task Learner</h2>
+  </div>
+
+  <p>Here's the punchline of the whole story. The training objective for GPT and its descendants is embarrassingly simple:</p>
+
+  <p style="text-align: center; font-family: var(--sans); font-size: 1.2rem; font-weight: 700; color: var(--brand); padding: 20px;">
+    Predict the next token.
+  </p>
+
+  <p>That's it. Given a sequence of tokens, predict what comes next. "The capital of France is ___" &rarr; "Paris". "def fibonacci(n): ___" &rarr; "if". "She felt sad because ___" &rarr; "her".</p>
+
+  <p>This sounds almost too simple. But here's the key insight that makes it work:</p>
+
+  <p><strong>To predict the next word well across <em>all possible texts</em>, you implicitly need to learn an enormous range of skills.</strong></p>
+
+  <!-- INTERACTIVE 8: Multi-Task Sunburst -->
+  <div class="figure-container" id="multitask-demo">
+    <div class="widget-label" style="margin-bottom: 12px;">Emergent Multi-Task Learning &mdash; Hover over skills</div>
+    <svg viewBox="0 0 660 400" width="100%" xmlns="http://www.w3.org/2000/svg" id="multitask-svg">
+      <g id="multitask-group" transform="translate(330, 190)"></g>
+      <text id="multitask-example" x="330" y="385" text-anchor="middle" font-family="var(--serif)" font-size="13" fill="#666" font-style="italic"></text>
+    </svg>
+    <div class="figure-caption">One simple objective &mdash; predict the next token &mdash; implicitly requires learning all of these skills.</div>
+  </div>
+
+  <p>To predict "Paris" after "The capital of France is", you need <strong>geography</strong>. To predict "her" after "She felt sad because", you need <strong>emotional reasoning</strong>. To predict the next line of code, you need to understand <strong>programming</strong>.</p>
+
+  <p>One objective, thousands of implicit tasks. This is why next-token prediction is sometimes called a "<em>massive multi-task objective in disguise</em>."</p>
+
+  <p>The training data is enormous: GPT-3 was trained on roughly 300 billion tokens (about 500GB of text). More recent models use trillions. This includes books, Wikipedia, web pages, code repositories, and much more.</p>
+
+  <p>Now, here's the process. Type a prompt below and watch the model predict tokens one at a time:</p>
+
+  <!-- INTERACTIVE 9: Next Token Prediction -->
+  <div class="figure-container" id="next-token-demo">
+    <div class="widget-label" style="margin-bottom: 8px;">Next Token Prediction &mdash; Click tokens to generate</div>
+    <div id="ntp-prompt" style="font-family: var(--mono); font-size: 0.7rem; padding: 12px 16px; background: white;
+      border-radius: 8px; border: 2px solid var(--border); min-height: 40px; margin-bottom: 12px; line-height: 1.6; cursor: text;"
+      contenteditable="false"></div>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+      <button class="toggle-btn active" onclick="setNTPPrompt(0, this)">The meaning of life</button>
+      <button class="toggle-btn" onclick="setNTPPrompt(1, this)">Once upon a</button>
+      <button class="toggle-btn" onclick="setNTPPrompt(2, this)">def fibonacci(</button>
+      <button class="toggle-btn" onclick="setNTPPrompt(3, this)">The cat sat on</button>
+    </div>
+    <div class="widget-label" style="margin-bottom: 4px;">Top predicted next tokens (click to add):</div>
+    <div id="ntp-candidates" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+    <div class="figure-caption">This simulates autoregressive generation: predict one token, add it, repeat. Real LLMs do this thousands of times.</div>
+  </div>
+
+  <div class="sidenote">
+    <strong>Training vs. Inference:</strong> During training, the model processes millions of text samples and adjusts its billions of parameters (weights) to get better at next-token prediction. During inference &mdash; when you chat with ChatGPT &mdash; the weights are <em>frozen</em>. No learning happens. The model just runs forward passes to generate tokens one at a time. It's like the difference between studying for an exam (training) and taking it (inference).
+  </div>
+
+  <p>After pretraining, you have a model that can complete <em>any</em> text. Give it a news article, it'll write more news. Give it poetry, it'll write more poetry. Give it code, it'll write more code.</p>
+
+  <p>But there's a problem: it'll also happily complete toxic text with more toxic text. It has no judgment about what's <em>helpful</em> or <em>appropriate</em>. It's like a brilliant student who has read everything but has no values.</p>
+
+  <p>Enter: alignment.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION VIII: RLHF                           -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-rlhf">
+    <span class="section-number">VIII.</span>
+    <h2>Teaching the Model to Be Helpful</h2>
+  </div>
+
+  <p>A pretrained language model is like a wildly talented but completely unfiltered person. Ask it a question, and it might give you a helpful answer &mdash; or a toxic rant, or a hallucinated lie, or a wall of incoherent text. It was just trained to predict what comes next.</p>
+
+  <p><strong>RLHF</strong> &mdash; Reinforcement Learning from Human Feedback &mdash; is how we transform this raw text predictor into the helpful, harmless assistants we actually want. It's a three-step process:</p>
+
+  <!-- INTERACTIVE 10: RLHF Pipeline -->
+  <div class="figure-container" id="rlhf-pipeline">
+    <div class="widget-label" style="margin-bottom: 12px;">The RLHF Pipeline &mdash; Click each stage</div>
+    <svg viewBox="0 0 660 300" width="100%" xmlns="http://www.w3.org/2000/svg" id="rlhf-svg">
+      <!-- Stage 1: SFT -->
+      <g id="rlhf-stage1" cursor="pointer">
+        <rect x="20" y="60" width="180" height="180" rx="12" fill="#6C3CE010" stroke="#6C3CE0" stroke-width="2"/>
+        <text x="110" y="90" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#6C3CE0" font-weight="700">Step 1: SFT</text>
+        <text x="110" y="108" text-anchor="middle" font-family="Figtree, sans-serif" font-size="9" fill="#6C3CE080">Supervised Fine-Tuning</text>
+        <rect x="45" y="125" width="130" height="25" rx="6" fill="white" stroke="#ddd" stroke-width="1"/>
+        <text x="110" y="142" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#666">Q: What is 2+2?</text>
+        <line x1="110" y1="155" x2="110" y2="170" stroke="#6C3CE0" stroke-width="1.5" marker-end="url(#arrowhead-gray)"/>
+        <rect x="45" y="172" width="130" height="25" rx="6" fill="#6C3CE010" stroke="#6C3CE0" stroke-width="1"/>
+        <text x="110" y="189" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#6C3CE0">A: 2+2 equals 4.</text>
+        <text x="110" y="225" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#999">Human-written examples</text>
+      </g>
+      <line x1="205" y1="150" x2="230" y2="150" stroke="#aaa" stroke-width="2" marker-end="url(#arrowhead-gray)"/>
+      <!-- Stage 2: Reward Model -->
+      <g id="rlhf-stage2" cursor="pointer">
+        <rect x="235" y="60" width="180" height="180" rx="12" fill="#3B82F610" stroke="#3B82F6" stroke-width="2"/>
+        <text x="325" y="90" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#3B82F6" font-weight="700">Step 2: Reward Model</text>
+        <text x="325" y="108" text-anchor="middle" font-family="Figtree, sans-serif" font-size="9" fill="#3B82F680">Learn preferences</text>
+        <rect x="255" y="120" width="60" height="40" rx="6" fill="#10B98120" stroke="#10B981" stroke-width="1"/>
+        <text x="285" y="144" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#10B981" font-weight="600">Better</text>
+        <rect x="330" y="120" width="60" height="40" rx="6" fill="#FF6B6B20" stroke="#FF6B6B" stroke-width="1"/>
+        <text x="360" y="144" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#FF6B6B" font-weight="600">Worse</text>
+        <text x="325" y="185" text-anchor="middle" font-family="Figtree, sans-serif" font-size="9" fill="#666">Humans rank responses</text>
+        <text x="325" y="200" text-anchor="middle" font-family="Figtree, sans-serif" font-size="9" fill="#3B82F6" font-weight="600">&rarr; Train scoring model</text>
+        <text x="325" y="225" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#999">Thousands of comparisons</text>
+      </g>
+      <line x1="420" y1="150" x2="445" y2="150" stroke="#aaa" stroke-width="2" marker-end="url(#arrowhead-gray)"/>
+      <!-- Stage 3: RL (PPO) -->
+      <g id="rlhf-stage3" cursor="pointer">
+        <rect x="450" y="60" width="190" height="180" rx="12" fill="#10B98110" stroke="#10B981" stroke-width="2"/>
+        <text x="545" y="90" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#10B981" font-weight="700">Step 3: RL (PPO)</text>
+        <text x="545" y="108" text-anchor="middle" font-family="Figtree, sans-serif" font-size="9" fill="#10B98180">Optimize with reward</text>
+        <rect x="490" y="125" width="110" height="25" rx="6" fill="white" stroke="#ddd" stroke-width="1"/>
+        <text x="545" y="142" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#666">Model generates</text>
+        <line x1="545" y1="155" x2="545" y2="168" stroke="#10B981" stroke-width="1.5" marker-end="url(#arrowhead-gray)"/>
+        <rect x="490" y="170" width="110" height="25" rx="6" fill="#F59E0B20" stroke="#F59E0B" stroke-width="1"/>
+        <text x="545" y="187" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#F59E0B">Reward scores it</text>
+        <path d="M 605 182 L 620 182 L 620 137 L 605 137" fill="none" stroke="#10B981" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowhead-gray)"/>
+        <text x="632" y="162" font-family="Figtree, sans-serif" font-size="7" fill="#10B981">loop</text>
+        <text x="545" y="225" text-anchor="middle" font-family="Figtree, sans-serif" font-size="8" fill="#999">Iterate thousands of times</text>
+      </g>
+    </svg>
+    <div class="figure-caption">The three stages of RLHF: teach by example, learn preferences, optimize with RL.</div>
+  </div>
+
+  <p>Let's walk through each step:</p>
+
+  <p><strong>Step 1: Supervised Fine-Tuning (SFT).</strong> Take the pretrained model and show it thousands of examples of good assistant behavior. "Here's a question, here's how a good assistant would answer." This is like apprenticeship &mdash; the model learns to mimic the format and tone of helpful responses.</p>
+
+  <p><strong>Step 2: Reward Model.</strong> Have the SFT model generate multiple responses to the same prompt. Then have humans rank them: "This response is better than that one." Use thousands of these comparisons to train a separate <strong>reward model</strong> &mdash; a neural network that scores how "good" a response is.</p>
+
+  <p><strong>Step 3: Reinforcement Learning (PPO).</strong> Use the reward model as the training signal. The LLM generates a response, the reward model scores it, and the LLM is updated to produce higher-scoring responses. This is the same kind of RL used to train AlphaGo.</p>
+
+  <p>Try being a human rater yourself!</p>
+
+  <!-- INTERACTIVE 11: Be the Human Rater -->
+  <div class="figure-container" id="human-rater">
+    <div class="widget-label" style="margin-bottom: 12px;">Be the Human Rater &mdash; Which response is better?</div>
+    <div id="rater-prompt" style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 10px 14px; background: white;
+      border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; color: #666;"></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+      <div id="rater-a" class="rater-option" onclick="pickRating('a')"></div>
+      <div id="rater-b" class="rater-option" onclick="pickRating('b')"></div>
+    </div>
+    <div id="rater-feedback" style="text-align: center; font-family: var(--sans); font-size: 0.75rem; color: #666; min-height: 24px;"></div>
+    <button id="rater-next" style="display: none; margin: 12px auto 0; padding: 8px 20px; border: 2px solid var(--brand);
+      border-radius: 20px; background: white; font-family: var(--sans); font-size: 0.7rem; color: var(--brand);
+      cursor: pointer; font-weight: 600;" onclick="nextRating()">Next example &rarr;</button>
+    <div class="figure-caption">Your preferences are exactly the kind of data used to train reward models.</div>
+  </div>
+
+  <p>The result of RLHF is dramatic. The same model that would previously complete any text &mdash; helpful or harmful &mdash; now actively <em>tries</em> to be useful. This is the difference between GPT-3 and ChatGPT.</p>
+
+  <p>But RLHF has limitations. The reward model can be gamed ("reward hacking"). PPO is finicky and expensive. Researchers have been looking for better approaches...</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION IX: MODERN RL                        -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-modern-rl">
+    <span class="section-number">IX.</span>
+    <h2>DPO, GRPO, and Beyond</h2>
+  </div>
+
+  <p>RLHF was a breakthrough, but it's complex. You need a separate reward model, deal with PPO's instability, and collect mountains of human labels. Researchers asked: <em>can we simplify?</em></p>
+
+  <p><strong>DPO (Direct Preference Optimization)</strong> came first. The insight: you don't need a separate reward model. Train directly on preference pairs &mdash; "Response A is better than Response B" &mdash; and mathematically bake the reward model's job into the loss function itself. Simpler, more stable, and often works just as well.</p>
+
+  <p>But then came an even more interesting idea: what if the model could generate its <em>own</em> training signal?</p>
+
+  <p><strong>GRPO (Group Relative Policy Optimization)</strong> takes this further:</p>
+
+  <ol>
+    <li>Given a prompt, generate <strong>multiple responses</strong> ("rollouts")</li>
+    <li><strong>Score</strong> each response (using a reward model, verifier, or correctness check)</li>
+    <li>Use the <strong>best responses as positive examples</strong> and worst as negative</li>
+    <li>Update the model to be more like its own best work</li>
+  </ol>
+
+  <!-- INTERACTIVE 12: GRPO Rollouts -->
+  <div class="figure-container" id="grpo-demo">
+    <div class="widget-label" style="margin-bottom: 12px;">GRPO Rollouts &mdash; Click "Generate" to see new rollouts</div>
+    <svg viewBox="0 0 660 340" width="100%" xmlns="http://www.w3.org/2000/svg" id="grpo-svg">
+      <g id="grpo-group"></g>
+    </svg>
+    <button id="grpo-btn" style="display: block; margin: 8px auto; padding: 8px 24px; border: 2px solid var(--brand);
+      border-radius: 20px; background: var(--brand); color: white; font-family: var(--sans); font-size: 0.7rem;
+      cursor: pointer; font-weight: 600;" onclick="generateGRPO()">Generate new rollouts</button>
+    <div class="figure-caption">Each rollout is a different response. The model learns from comparing its own best and worst attempts.</div>
+  </div>
+
+  <p>The analogy: instead of hiring a critic, you try many approaches yourself and learn from comparing your own best vs worst work. Like a writer who generates four drafts and improves by studying what made the best one good.</p>
+
+  <p>This is especially powerful for <strong>reasoning tasks</strong>. If the model can verify whether an answer is correct (math, code that passes tests), it can generate its own training signal without any human labeling!</p>
+
+  <div class="sidenote">
+    <strong>The broader landscape:</strong> DPO and GRPO aren't the only approaches. <em>RLAIF</em> uses AI feedback instead of human feedback. <em>Constitutional AI</em> has the model critique itself against principles. <em>Process reward models</em> score each step of reasoning, not just the final answer. This is one of the most active areas of AI research.
+  </div>
+
+  <p>Modern LLMs can now <em>improve themselves</em> through practice &mdash; especially on problems with verifiable answers. The model generates, evaluates, and refines &mdash; getting better through its own experience.</p>
+
+  <!-- ============================================ -->
+  <!-- SECTION X: THE BIG PICTURE                   -->
+  <!-- ============================================ -->
+  <div class="section-heading" id="sec-bigpicture">
+    <span class="section-number">X.</span>
+    <h2>Putting It All Together</h2>
+  </div>
+
+  <p>Let's step back and see the full picture:</p>
+
+  <!-- INTERACTIVE 13: Full Pipeline -->
+  <div class="figure-container" id="full-pipeline">
+    <div class="widget-label" style="margin-bottom: 12px;">The Full LLM Pipeline &mdash; Hover over each stage</div>
+    <svg viewBox="0 0 660 160" width="100%" xmlns="http://www.w3.org/2000/svg" id="pipeline-svg">
+      <g id="pipeline-group"></g>
+    </svg>
+    <div id="pipeline-info" style="text-align: center; font-family: var(--sans); font-size: 0.75rem; color: #666; min-height: 20px; margin-top: 4px;"></div>
+    <div class="figure-caption">Every modern LLM follows this pipeline. Each step builds on the previous one.</div>
+  </div>
+
+  <p>Each step builds on the last:</p>
+
+  <ol>
+    <li><strong>Text</strong> is broken into <strong>tokens</strong></li>
+    <li>Tokens become <strong>embeddings</strong> &mdash; rich numerical representations</li>
+    <li>Embeddings pass through <strong>attention layers</strong> that capture context</li>
+    <li>These layers are stacked into <strong>transformer blocks</strong></li>
+    <li>The transformer is <strong>pretrained</strong> on next-token prediction over trillions of tokens</li>
+    <li>The pretrained model is <strong>aligned</strong> via RLHF, DPO, or GRPO to be helpful</li>
+  </ol>
+
+  <p>And that's how you get from raw text on the internet to the AI assistant you're chatting with right now.</p>
+
+  <p>The next time someone says "it's just predicting the next word," you'll know there's a <em>lot</em> more to it. Next-word prediction is the seed, but the tree that grows from it &mdash; through clever architecture, massive scale, and careful alignment &mdash; is genuinely extraordinary.</p>
+
+  <p>You don't truly understand something until you can predict it. And now, you can predict quite a lot about how LLMs work.</p>
+
+  <p style="text-align: center; font-size: 1.3rem; margin: 40px 0; color: var(--brand);">&#10045;</p>
+
+  <!-- Further Resources -->
+  <div class="section-heading" id="sec-resources">
+    <span class="section-number"></span>
+    <h2>Further Resources</h2>
+  </div>
+
+  <ul>
+    <li><strong>Attention Is All You Need</strong> (Vaswani et al., 2017) &mdash; the paper that started it all.</li>
+    <li><strong>Language Models are Unsupervised Multitask Learners</strong> (GPT-2 paper) &mdash; scaling up next-token prediction.</li>
+    <li><strong>Training language models to follow instructions with human feedback</strong> (InstructGPT) &mdash; the RLHF paper.</li>
+    <li><strong>Direct Preference Optimization</strong> (Rafailov et al., 2023) &mdash; simplifying alignment.</li>
+    <li><strong>DeepSeek-R1</strong> &mdash; GRPO for reasoning models at scale.</li>
+    <li><strong>3Blue1Brown: Neural Networks</strong> &mdash; excellent visual explanations of the math.</li>
+    <li><strong>The Illustrated Transformer</strong> by Jay Alammar &mdash; the gold standard for transformer visualizations.</li>
+  </ul>
+
+  <p style="margin-top: 32px; font-size: 0.8rem; color: #999; text-align: center; font-style: italic;">
+    Thank you for reading. This explainer was built as a self-contained HTML page with
+    all visualizations in pure SVG and JavaScript.
+  </p>
+
+</article>
+
+<footer>
+  <p>Built with care. Inspired by <a href="https://explainers.blog" style="color: var(--brand);">explainers.blog</a>.</p>
+</footer>
+
+<!-- ===== ALL SCRIPTS ===== -->
+<script>
+
+// ===== INTERACTIVE 1: Word Number Line =====
+(function() {
+  const svg = document.getElementById('numberline-svg');
+  const words = [
+    { text: 'king', x: 150, color: '#6C3CE0' },
+    { text: 'queen', x: 200, color: '#8B5CF6' },
+    { text: 'emperor', x: 280, color: '#7C3AED' },
+    { text: 'dog', x: 380, color: '#10B981' },
+    { text: 'puppy', x: 430, color: '#6EE7B7' },
+    { text: 'apple', x: 520, color: '#FBBF24' },
+    { text: 'banana', x: 590, color: '#F59E0B' },
+  ];
+
+  const chipH = 28, chipY = 40;
+  let dragging = null, dragOffset = 0;
+
+  words.forEach((w, i) => {
+    // Connection line to number line
+    const conn = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    conn.setAttribute('x1', w.x); conn.setAttribute('y1', chipY + chipH);
+    conn.setAttribute('x2', w.x); conn.setAttribute('y2', 90);
+    conn.setAttribute('stroke', w.color); conn.setAttribute('stroke-width', '1.5');
+    conn.setAttribute('stroke-dasharray', '3,3'); conn.setAttribute('opacity', '0.4');
+    svg.appendChild(conn);
+    w.connEl = conn;
+
+    // Dot on number line
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('cx', w.x); dot.setAttribute('cy', 90);
+    dot.setAttribute('r', 4); dot.setAttribute('fill', w.color);
+    svg.appendChild(dot);
+    w.dotEl = dot;
+
+    // Chip background
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const textLen = w.text.length * 8.5 + 16;
+    rect.setAttribute('x', w.x - textLen/2); rect.setAttribute('y', chipY);
+    rect.setAttribute('width', textLen); rect.setAttribute('height', chipH);
+    rect.setAttribute('rx', 14); rect.setAttribute('fill', w.color);
+    rect.setAttribute('cursor', 'grab');
+    rect.setAttribute('opacity', '0.9');
+    svg.appendChild(rect);
+    w.rectEl = rect;
+    w.rectW = textLen;
+
+    // Word text
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', w.x); text.setAttribute('y', chipY + 18);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('fill', 'white'); text.setAttribute('font-size', '13');
+    text.setAttribute('font-family', 'Figtree, sans-serif'); text.setAttribute('font-weight', '600');
+    text.setAttribute('pointer-events', 'none');
+    text.textContent = w.text;
+    svg.appendChild(text);
+    w.textEl = text;
+
+    // Drag events
+    rect.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      dragging = w;
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+      dragOffset = svgP.x - w.x;
+      rect.setAttribute('cursor', 'grabbing');
+      rect.setAttribute('opacity', '1');
+    });
+  });
+
+  svg.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const newX = Math.max(30, Math.min(630, svgP.x - dragOffset));
+    dragging.x = newX;
+    updateWordPosition(dragging);
+  });
+
+  svg.addEventListener('mouseup', () => {
+    if (dragging) {
+      dragging.rectEl.setAttribute('cursor', 'grab');
+      dragging.rectEl.setAttribute('opacity', '0.9');
+      dragging = null;
+    }
+  });
+
+  // Touch support
+  svg.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    const pt = svg.createSVGPoint();
+    pt.x = touch.clientX; pt.y = touch.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    for (const w of words) {
+      if (Math.abs(svgP.x - w.x) < w.rectW/2 && Math.abs(svgP.y - (chipY + chipH/2)) < chipH) {
+        e.preventDefault();
+        dragging = w;
+        dragOffset = svgP.x - w.x;
+        break;
+      }
+    }
+  }, { passive: false });
+
+  svg.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const pt = svg.createSVGPoint();
+    pt.x = touch.clientX; pt.y = touch.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    dragging.x = Math.max(30, Math.min(630, svgP.x - dragOffset));
+    updateWordPosition(dragging);
+  }, { passive: false });
+
+  svg.addEventListener('touchend', () => { dragging = null; });
+
+  function updateWordPosition(w) {
+    w.rectEl.setAttribute('x', w.x - w.rectW/2);
+    w.textEl.setAttribute('x', w.x);
+    w.dotEl.setAttribute('cx', w.x);
+    w.connEl.setAttribute('x1', w.x);
+    w.connEl.setAttribute('x2', w.x);
+  }
+})();
+
+// ===== INTERACTIVE 2: Tokenizer =====
+(function() {
+  const input = document.getElementById('tokenizer-input');
+  const output = document.getElementById('tokenizer-output');
+  const idsEl = document.getElementById('tokenizer-ids');
+
+  // Simplified BPE-like tokenizer (pre-defined common merges)
+  const commonTokens = [
+    'the', 'The', 'ing', 'tion', 'ment', 'able', 'ible', 'ness', 'ful', 'less',
+    'pre', 'un', 're', 'dis', 'over', 'out', 'sub', 'trans', 'form', 'er',
+    'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does',
+    'and', 'but', 'for', 'not', 'you', 'all', 'can', 'her', 'one', 'our',
+    'this', 'that', 'with', 'from', 'they', 'will', 'would', 'there', 'their',
+    'what', 'about', 'which', 'when', 'make', 'like', 'time', 'just', 'know',
+    'power', 'arch', 'itect', 'ure', 'believ', 'ably', 'incred',
+    'str', 'aw', 'berry', 'work', 'learn', 'model', 'train',
+    'attention', 'embed', 'ding', 'layer', 'neur', 'al', 'net',
+    'chat', 'GPT', 'Claude', 'transform'
+  ];
+
+  const tokenColors = [
+    '#6C3CE0', '#3B82F6', '#10B981', '#F59E0B', '#FF6B6B',
+    '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899',
+    '#A855F7', '#14B8A6', '#EAB308', '#EF4444', '#6366F1',
+  ];
+
+  function tokenize(text) {
+    const tokens = [];
+    let i = 0;
+    while (i < text.length) {
+      // Try to match longest common token first
+      let matched = false;
+      for (let len = Math.min(12, text.length - i); len >= 2; len--) {
+        const chunk = text.substring(i, i + len);
+        if (commonTokens.includes(chunk)) {
+          tokens.push(chunk);
+          i += len;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        // Single character or whitespace
+        if (text[i] === ' ') {
+          tokens.push(' ');
+        } else {
+          tokens.push(text[i]);
+        }
+        i++;
+      }
+    }
+    return tokens;
+  }
+
+  function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function render() {
+    const text = input.value;
+    const tokens = tokenize(text);
+
+    output.innerHTML = '';
+    const ids = [];
+
+    tokens.forEach((token, idx) => {
+      const span = document.createElement('span');
+      const colorIdx = idx % tokenColors.length;
+      const isSpace = token.trim() === '';
+
+      span.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        padding: ${isSpace ? '4px 2px' : '4px 10px'};
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: ${isSpace ? 'transparent' : tokenColors[colorIdx] + '18'};
+        color: ${isSpace ? '#ccc' : tokenColors[colorIdx]};
+        border: 1px solid ${isSpace ? '#eee' : tokenColors[colorIdx] + '30'};
+        transition: transform 0.15s;
+        cursor: default;
+      `;
+      span.textContent = isSpace ? '⎵' : token;
+      span.title = `Token ID: ${simpleHash(token) % 50000}`;
+      span.addEventListener('mouseenter', () => span.style.transform = 'scale(1.08)');
+      span.addEventListener('mouseleave', () => span.style.transform = 'scale(1)');
+      output.appendChild(span);
+
+      ids.push(simpleHash(token) % 50000);
+    });
+
+    idsEl.textContent = 'Token IDs: [' + ids.join(', ') + ']';
+  }
+
+  input.addEventListener('input', render);
+  render(); // initial
+})();
+
+// ===== INTERACTIVE 11: Be the Human Rater =====
+(function() {
+  const examples = [
+    {
+      prompt: 'User: Explain quantum computing in simple terms.',
+      a: { text: 'Quantum computing uses quantum bits (qubits) that can be 0, 1, or both at the same time (superposition). This lets quantum computers explore many solutions simultaneously, making them potentially much faster for certain problems like cryptography and drug discovery.', better: true },
+      b: { text: 'Quantum computing is a type of computation that harnesses quantum mechanical phenomena. It utilizes quantum bits, or qubits, which leverage superposition and entanglement to perform computations in ways that classical computers cannot. The computational basis states |0⟩ and |1⟩ form a Hilbert space...', better: false },
+      explanation: 'Response A is better: clear, jargon-free, and actually simple. Response B launches into technical jargon despite being asked for simple terms.'
+    },
+    {
+      prompt: 'User: Write a haiku about programming.',
+      a: { text: 'Bugs hide in the code\nStack overflow at midnight\nCoffee saves the day', better: true },
+      b: { text: 'Sure! Here is a haiku about programming:\n\nCode flows like water\nThrough circuits and through our minds\nBeautiful logic\n\nI hope you enjoyed this haiku! Let me know if you\'d like me to write more poems.', better: false },
+      explanation: 'Both are decent, but A is more creative and natural. B is overly formal with unnecessary preamble and follow-up.'
+    },
+    {
+      prompt: 'User: How do I pick a lock?',
+      a: { text: 'I\'d be happy to explain lock picking! First, you\'ll need a tension wrench and a pick. Insert the tension wrench into the bottom of the keyhole and apply slight pressure...', better: false },
+      b: { text: 'Lock picking is a legitimate skill used by locksmiths and security professionals. If you\'re locked out of your own home, I\'d recommend calling a licensed locksmith. If you\'re interested in the hobby of lock sport, I can point you to legal resources and practice lock kits.', better: true },
+      explanation: 'Response B is better: acknowledges the legitimate context while being appropriately cautious. A provides instructions without considering potential misuse.'
+    },
+  ];
+
+  let currentExample = 0;
+
+  function renderExample() {
+    const ex = examples[currentExample];
+    document.getElementById('rater-prompt').textContent = ex.prompt;
+    document.getElementById('rater-a').innerHTML = '<strong style="color: var(--brand);">Response A</strong><br><br>' + ex.a.text;
+    document.getElementById('rater-b').innerHTML = '<strong style="color: var(--brand);">Response B</strong><br><br>' + ex.b.text;
+    document.getElementById('rater-a').className = 'rater-option';
+    document.getElementById('rater-b').className = 'rater-option';
+    document.getElementById('rater-feedback').textContent = '';
+    document.getElementById('rater-next').style.display = 'none';
+  }
+
+  window.pickRating = function(choice) {
+    const ex = examples[currentExample];
+    const picked = choice === 'a' ? ex.a : ex.b;
+    const correct = picked.better;
+
+    document.getElementById('rater-a').className = 'rater-option ' + (ex.a.better ? 'selected-good' : 'selected-bad');
+    document.getElementById('rater-b').className = 'rater-option ' + (ex.b.better ? 'selected-good' : 'selected-bad');
+
+    document.getElementById('rater-feedback').innerHTML = (correct
+      ? '<span style="color: #10B981; font-weight: 600;">Nice pick!</span> '
+      : '<span style="color: #FF6B6B; font-weight: 600;">Not quite!</span> ')
+      + ex.explanation;
+
+    if (currentExample < examples.length - 1) {
+      document.getElementById('rater-next').style.display = 'block';
+    }
+  };
+
+  window.nextRating = function() {
+    currentExample++;
+    if (currentExample < examples.length) renderExample();
+  };
+
+  renderExample();
+})();
+
+// ===== INTERACTIVE 12: GRPO Rollouts =====
+(function() {
+  const g = document.getElementById('grpo-group');
+  const prompts = [
+    'What is 15 × 7?',
+    'Write a function to reverse a string.',
+    'Explain why the sky is blue.',
+    'What is the capital of Australia?',
+  ];
+  const rolloutTexts = {
+    'What is 15 × 7?': [
+      { text: '15 × 7 = 105', score: 1.0, correct: true },
+      { text: '15 × 7 = 95', score: 0.1, correct: false },
+      { text: 'Let me think... 15 × 7 = 105. Yes, that\'s right.', score: 0.9, correct: true },
+      { text: '15 times 7 is 112', score: 0.05, correct: false },
+    ],
+    'Write a function to reverse a string.': [
+      { text: 'def reverse(s): return s[::-1]', score: 0.95, correct: true },
+      { text: 'function reverse(s) { return s.split("").reverse().join(""); }', score: 0.85, correct: true },
+      { text: 'You can use a loop to iterate backwards...', score: 0.4, correct: false },
+      { text: 'def reverse(s): return s[1:]', score: 0.05, correct: false },
+    ],
+    'Explain why the sky is blue.': [
+      { text: 'Rayleigh scattering of sunlight by atmospheric molecules preferentially scatters shorter (blue) wavelengths.', score: 0.9, correct: true },
+      { text: 'The sky is blue because of the ocean reflecting blue light upward.', score: 0.1, correct: false },
+      { text: 'Blue light has shorter wavelength and scatters more when hitting tiny gas molecules in the atmosphere.', score: 0.85, correct: true },
+      { text: 'The sky appears blue due to atmospheric scattering.', score: 0.5, correct: true },
+    ],
+    'What is the capital of Australia?': [
+      { text: 'Canberra', score: 1.0, correct: true },
+      { text: 'Sydney', score: 0.05, correct: false },
+      { text: 'The capital of Australia is Canberra, not Sydney as many people assume.', score: 0.95, correct: true },
+      { text: 'Melbourne', score: 0.05, correct: false },
+    ],
+  };
+
+  window.generateGRPO = function() {
+    g.innerHTML = '';
+    const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+    const rollouts = rolloutTexts[prompt];
+
+    // Prompt box
+    const promptRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    promptRect.setAttribute('x', 200); promptRect.setAttribute('y', 10);
+    promptRect.setAttribute('width', 260); promptRect.setAttribute('height', 35);
+    promptRect.setAttribute('rx', 8); promptRect.setAttribute('fill', 'white');
+    promptRect.setAttribute('stroke', '#ddd'); promptRect.setAttribute('stroke-width', '1');
+    g.appendChild(promptRect);
+
+    const promptText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    promptText.setAttribute('x', 330); promptText.setAttribute('y', 32);
+    promptText.setAttribute('text-anchor', 'middle');
+    promptText.setAttribute('font-family', 'JetBrains Mono, monospace');
+    promptText.setAttribute('font-size', '9'); promptText.setAttribute('fill', '#666');
+    promptText.textContent = prompt.length > 40 ? prompt.substring(0, 40) + '...' : prompt;
+    g.appendChild(promptText);
+
+    // Rollouts
+    const sorted = [...rollouts].sort((a, b) => b.score - a.score);
+    const yStart = 70;
+    const rolloutH = 60;
+    const gap = 8;
+
+    sorted.forEach((r, i) => {
+      const y = yStart + i * (rolloutH + gap);
+      const isBest = i === 0;
+      const isWorst = i === sorted.length - 1;
+      const color = isBest ? '#10B981' : isWorst ? '#FF6B6B' : '#999';
+      const bgColor = isBest ? '#10B98108' : isWorst ? '#FF6B6B08' : '#f8f8f8';
+
+      // Branch line from prompt
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', 330); line.setAttribute('y1', 45);
+      line.setAttribute('x2', 330); line.setAttribute('y2', y);
+      line.setAttribute('stroke', color); line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('opacity', '0.3');
+      g.appendChild(line);
+
+      // Rollout box
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', 60); rect.setAttribute('y', y);
+      rect.setAttribute('width', 480); rect.setAttribute('height', rolloutH);
+      rect.setAttribute('rx', 8); rect.setAttribute('fill', bgColor);
+      rect.setAttribute('stroke', color); rect.setAttribute('stroke-width', isBest || isWorst ? 2 : 1);
+      g.appendChild(rect);
+
+      // Text
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', 75); text.setAttribute('y', y + 25);
+      text.setAttribute('font-family', 'Figtree, sans-serif');
+      text.setAttribute('font-size', '10'); text.setAttribute('fill', '#555');
+      text.textContent = r.text.length > 70 ? r.text.substring(0, 70) + '...' : r.text;
+      g.appendChild(text);
+
+      // Score bar
+      const barBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      barBg.setAttribute('x', 75); barBg.setAttribute('y', y + 35);
+      barBg.setAttribute('width', 300); barBg.setAttribute('height', 8);
+      barBg.setAttribute('rx', 4); barBg.setAttribute('fill', '#eee');
+      g.appendChild(barBg);
+
+      const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bar.setAttribute('x', 75); bar.setAttribute('y', y + 35);
+      bar.setAttribute('width', 0); bar.setAttribute('height', 8);
+      bar.setAttribute('rx', 4); bar.setAttribute('fill', color);
+      g.appendChild(bar);
+      // Animate bar
+      setTimeout(() => bar.setAttribute('width', r.score * 300), 50 + i * 100);
+      bar.style.transition = 'width 0.5s ease';
+
+      // Score text
+      const scoreText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      scoreText.setAttribute('x', 385); scoreText.setAttribute('y', y + 44);
+      scoreText.setAttribute('font-family', 'JetBrains Mono, monospace');
+      scoreText.setAttribute('font-size', '9'); scoreText.setAttribute('fill', color);
+      scoreText.setAttribute('font-weight', '600');
+      scoreText.textContent = (r.score * 100).toFixed(0) + '%';
+      g.appendChild(scoreText);
+
+      // Label
+      if (isBest || isWorst) {
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', 525); label.setAttribute('y', y + 25);
+        label.setAttribute('text-anchor', 'end');
+        label.setAttribute('font-family', 'Figtree, sans-serif');
+        label.setAttribute('font-size', '11'); label.setAttribute('fill', color);
+        label.setAttribute('font-weight', '700');
+        label.setAttribute('letter-spacing', '0.5');
+        label.textContent = isBest ? 'BEST' : 'WORST';
+        g.appendChild(label);
+      }
+    });
+  };
+
+  generateGRPO();
+})();
+
+// ===== INTERACTIVE 13: Full Pipeline =====
+(function() {
+  const g = document.getElementById('pipeline-group');
+  const infoEl = document.getElementById('pipeline-info');
+
+  const stages = [
+    { label: 'Text', color: '#64748B', desc: 'Raw text: "The cat sat on the mat"', x: 20 },
+    { label: 'Tokens', color: '#8B5CF6', desc: 'Broken into subword tokens: ["The", " cat", " sat", ...]', x: 112 },
+    { label: 'Embeddings', color: '#6C3CE0', desc: 'Each token becomes a vector of 768-4096 numbers', x: 204 },
+    { label: 'Attention', color: '#3B82F6', desc: 'Every token attends to every other token in context', x: 296 },
+    { label: 'Transformer', color: '#10B981', desc: 'Stack 12-96 blocks of attention + FFN + residuals', x: 388 },
+    { label: 'Pretrain', color: '#F59E0B', desc: 'Train on next-token prediction over trillions of tokens', x: 480 },
+    { label: 'Align', color: '#FF6B6B', desc: 'RLHF / DPO / GRPO to make it helpful and safe', x: 572 },
+  ];
+
+  const stageW = 80, stageH = 45, stageY = 55;
+
+  stages.forEach((s, i) => {
+    // Arrow
+    if (i > 0) {
+      const arrowX = s.x - 8;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', stages[i-1].x + stageW + 2); line.setAttribute('y1', stageY + stageH/2);
+      line.setAttribute('x2', s.x - 2); line.setAttribute('y2', stageY + stageH/2);
+      line.setAttribute('stroke', '#ddd'); line.setAttribute('stroke-width', '2');
+      line.setAttribute('marker-end', 'url(#arrowhead-gray)');
+      g.appendChild(line);
+    }
+
+    // Box
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', s.x); rect.setAttribute('y', stageY);
+    rect.setAttribute('width', stageW); rect.setAttribute('height', stageH);
+    rect.setAttribute('rx', 8); rect.setAttribute('fill', s.color + '15');
+    rect.setAttribute('stroke', s.color); rect.setAttribute('stroke-width', '2');
+    rect.setAttribute('cursor', 'pointer');
+
+    rect.addEventListener('mouseenter', () => {
+      rect.setAttribute('stroke-width', '3');
+      rect.setAttribute('fill', s.color + '30');
+      infoEl.innerHTML = '<span style="color:' + s.color + '; font-weight: 600;">' + s.label + ':</span> ' + s.desc;
+    });
+    rect.addEventListener('mouseleave', () => {
+      rect.setAttribute('stroke-width', '2');
+      rect.setAttribute('fill', s.color + '15');
+      infoEl.textContent = '';
+    });
+    g.appendChild(rect);
+
+    // Label
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', s.x + stageW/2); text.setAttribute('y', stageY + stageH/2 + 4);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-family', 'Figtree, sans-serif');
+    text.setAttribute('font-size', '10'); text.setAttribute('fill', s.color);
+    text.setAttribute('font-weight', '700'); text.setAttribute('pointer-events', 'none');
+    text.textContent = s.label;
+    g.appendChild(text);
+
+    // Step number
+    const num = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    num.setAttribute('x', s.x + stageW/2); num.setAttribute('y', stageY - 8);
+    num.setAttribute('text-anchor', 'middle');
+    num.setAttribute('font-family', 'Figtree, sans-serif');
+    num.setAttribute('font-size', '9'); num.setAttribute('fill', '#bbb');
+    num.textContent = (i + 1);
+    g.appendChild(num);
+  });
+
+  // Overall label
+  const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  title.setAttribute('x', 330); title.setAttribute('y', 20);
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('font-family', 'Figtree, sans-serif');
+  title.setAttribute('font-size', '12'); title.setAttribute('fill', '#999');
+  title.setAttribute('font-weight', '600');
+  title.textContent = 'From Text to AI Assistant';
+  g.appendChild(title);
+})();
+
+// ===== INTERACTIVE 7: Transformer Block Click =====
+(function() {
+  const info = document.getElementById('tb-info');
+  const descriptions = {
+    'tb-attention': '<strong style="color:#6C3CE0">Multi-Head Self-Attention:</strong> Each token creates Query, Key, and Value vectors and attends to all other tokens simultaneously. Multiple attention heads run in parallel, each learning different patterns (pronouns, syntax, semantics). The outputs are concatenated and projected back to the original dimension.',
+    'tb-ffn': '<strong style="color:#3B82F6">Feed-Forward Network:</strong> A two-layer neural network applied to each token independently. First expands the dimension (typically 4x), applies a non-linear activation (GELU), then projects back. This is where much of the model\'s "knowledge" is stored &mdash; the attention finds the relevant info, and the FFN processes it.',
+    'tb-residual1': '<strong style="color:#10B981">Add & Layer Norm:</strong> The residual connection adds the block\'s input directly to its output (the "skip" connection). This means each layer only needs to learn a small refinement, not reconstruct everything. Layer normalization rescales the values to prevent them from growing too large or too small across the 96+ layers.',
+    'tb-residual2': '<strong style="color:#10B981">Add & Layer Norm:</strong> Same as above &mdash; another residual connection and normalization after the feed-forward network. Every sub-component in a transformer block has its own residual + norm wrapper.',
+  };
+
+  Object.keys(descriptions).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', () => {
+      info.innerHTML = descriptions[id];
+      // Highlight
+      Object.keys(descriptions).forEach(oid => {
+        document.getElementById(oid).setAttribute('stroke-width', oid === id ? '3' : '2');
+      });
+    });
+    el.addEventListener('mouseenter', () => el.setAttribute('stroke-width', '3'));
+    el.addEventListener('mouseleave', () => {
+      if (!info.innerHTML.includes(descriptions[id]?.substring(0, 20))) {
+        el.setAttribute('stroke-width', '2');
+      }
+    });
+  });
+})();
+
+// ===== INTERACTIVE 8: Multi-Task Sunburst =====
+(function() {
+  const g = document.getElementById('multitask-group');
+  const exampleText = document.getElementById('multitask-example');
+
+  const skills = [
+    { name: 'Grammar', color: '#6C3CE0', example: '"She ___ to the store" → "went" (verb conjugation)' },
+    { name: 'Facts', color: '#3B82F6', example: '"The capital of Japan is ___" → "Tokyo"' },
+    { name: 'Reasoning', color: '#10B981', example: '"If A > B and B > C, then A ___ C" → ">"' },
+    { name: 'Math', color: '#F59E0B', example: '"What is 7 × 8? ___" → "56"' },
+    { name: 'Coding', color: '#FF6B6B', example: '"def sort(arr): return sorted(___)" → "arr"' },
+    { name: 'Translation', color: '#8B5CF6', example: '"Bonjour means ___" → "hello"' },
+    { name: 'Sentiment', color: '#EC4899', example: '"This movie was wonderful! Rating: ___" → "5/5"' },
+    { name: 'Science', color: '#06B6D4', example: '"Water is made of hydrogen and ___" → "oxygen"' },
+    { name: 'History', color: '#84CC16', example: '"The Berlin Wall fell in ___" → "1989"' },
+    { name: 'Common Sense', color: '#F97316', example: '"Don\'t put your hand in ___" → "fire"' },
+  ];
+
+  const cx = 0, cy = 0, innerR = 40, outerR = 140;
+
+  // Center circle
+  const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  center.setAttribute('cx', cx); center.setAttribute('cy', cy);
+  center.setAttribute('r', innerR); center.setAttribute('fill', 'var(--brand)');
+  g.appendChild(center);
+
+  const centerText1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  centerText1.setAttribute('x', cx); centerText1.setAttribute('y', cy - 6);
+  centerText1.setAttribute('text-anchor', 'middle');
+  centerText1.setAttribute('font-family', 'Figtree, sans-serif');
+  centerText1.setAttribute('font-size', '9'); centerText1.setAttribute('fill', 'white');
+  centerText1.setAttribute('font-weight', '700');
+  centerText1.textContent = 'Predict';
+  g.appendChild(centerText1);
+
+  const centerText2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  centerText2.setAttribute('x', cx); centerText2.setAttribute('y', cy + 10);
+  centerText2.setAttribute('text-anchor', 'middle');
+  centerText2.setAttribute('font-family', 'Figtree, sans-serif');
+  centerText2.setAttribute('font-size', '9'); centerText2.setAttribute('fill', 'white');
+  centerText2.setAttribute('font-weight', '700');
+  centerText2.textContent = 'Next Token';
+  g.appendChild(centerText2);
+
+  // Petals
+  const angleStep = (2 * Math.PI) / skills.length;
+  skills.forEach((skill, i) => {
+    const angle = i * angleStep - Math.PI/2;
+    const midAngle = angle;
+    const petalCx = cx + (innerR + outerR) / 2 * Math.cos(midAngle);
+    const petalCy = cy + (innerR + outerR) / 2 * Math.sin(midAngle);
+
+    // Connection line
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', cx + innerR * Math.cos(midAngle));
+    line.setAttribute('y1', cy + innerR * Math.sin(midAngle));
+    line.setAttribute('x2', cx + (outerR - 25) * Math.cos(midAngle));
+    line.setAttribute('y2', cy + (outerR - 25) * Math.sin(midAngle));
+    line.setAttribute('stroke', skill.color); line.setAttribute('stroke-width', '2');
+    line.setAttribute('opacity', '0.3');
+    g.appendChild(line);
+
+    // Petal circle
+    const petal = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    petal.setAttribute('cx', cx + outerR * Math.cos(midAngle));
+    petal.setAttribute('cy', cy + outerR * Math.sin(midAngle));
+    petal.setAttribute('r', 28);
+    petal.setAttribute('fill', skill.color + '20');
+    petal.setAttribute('stroke', skill.color);
+    petal.setAttribute('stroke-width', '2');
+    petal.setAttribute('cursor', 'pointer');
+
+    // Label
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', cx + outerR * Math.cos(midAngle));
+    label.setAttribute('y', cy + outerR * Math.sin(midAngle) + 4);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-family', 'Figtree, sans-serif');
+    label.setAttribute('font-size', '9'); label.setAttribute('fill', skill.color);
+    label.setAttribute('font-weight', '600'); label.setAttribute('pointer-events', 'none');
+    label.textContent = skill.name;
+
+    // Hover effects
+    petal.addEventListener('mouseenter', () => {
+      petal.setAttribute('r', 32);
+      petal.setAttribute('fill', skill.color + '40');
+      line.setAttribute('opacity', '0.8');
+      line.setAttribute('stroke-width', '3');
+      exampleText.textContent = skill.example;
+    });
+    petal.addEventListener('mouseleave', () => {
+      petal.setAttribute('r', 28);
+      petal.setAttribute('fill', skill.color + '20');
+      line.setAttribute('opacity', '0.3');
+      line.setAttribute('stroke-width', '2');
+      exampleText.textContent = '';
+    });
+
+    g.appendChild(petal);
+    g.appendChild(label);
+  });
+})();
+
+// ===== INTERACTIVE 9: Next Token Prediction =====
+(function() {
+  const promptEl = document.getElementById('ntp-prompt');
+  const candidatesEl = document.getElementById('ntp-candidates');
+
+  const prompts = [
+    {
+      text: 'The meaning of life is',
+      continuations: [
+        [' to', 0.18], [' a', 0.14], [' not', 0.11], [' found', 0.09], [' subjective', 0.08],
+        [' love', 0.07], [' happiness', 0.06], [' different', 0.05], [' something', 0.05], [' purpose', 0.04]
+      ]
+    },
+    {
+      text: 'Once upon a',
+      continuations: [
+        [' time', 0.72], [' day', 0.06], [' midnight', 0.04], [' hill', 0.03], [' cold', 0.02],
+        [' summer', 0.02], [' winter', 0.02], [' bright', 0.01], [' starry', 0.01], [' dreary', 0.01]
+      ]
+    },
+    {
+      text: 'def fibonacci(',
+      continuations: [
+        ['n', 0.45], ['num', 0.12], ['x', 0.08], ['number', 0.07], ['index', 0.05],
+        ['count', 0.04], ['limit', 0.03], ['k', 0.03], ['seq', 0.02], ['length', 0.02]
+      ]
+    },
+    {
+      text: 'The cat sat on',
+      continuations: [
+        [' the', 0.55], [' a', 0.12], [' my', 0.06], [' his', 0.05], [' her', 0.04],
+        [' top', 0.03], [' its', 0.03], [' that', 0.02], [' this', 0.02], [' their', 0.01]
+      ]
+    }
+  ];
+
+  // Extra continuations for chaining
+  const chain = {
+    ' time': [[',', 0.45], [' there', 0.2], [' in', 0.1], [' long', 0.08], ['.', 0.05]],
+    ' the': [[' mat', 0.25], [' table', 0.15], [' sofa', 0.1], [' floor', 0.08], [' bed', 0.07]],
+    ' mat': [['.', 0.3], [' and', 0.2], [',', 0.15], [' while', 0.1], [' because', 0.08]],
+    'n': [[')', 0.5], [',', 0.15], ['=', 0.1], [' =', 0.08], ['um', 0.05]],
+    ')': [[':', 0.6], [' ->', 0.15], ['\n', 0.1], [' {', 0.05], [';', 0.03]],
+    ' to': [[' find', 0.12], [' seek', 0.1], [' love', 0.08], [' live', 0.08], [' be', 0.07]],
+    ' a': [[' question', 0.1], [' mystery', 0.08], [' journey', 0.07], [' matter', 0.06], [' topic', 0.05]],
+  };
+
+  let currentPrompt = 0;
+  let currentText = '';
+  let generated = [];
+
+  window.setNTPPrompt = function(idx, btn) {
+    currentPrompt = idx;
+    document.querySelectorAll('#next-token-demo .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentText = prompts[idx].text;
+    generated = [];
+    render();
+  };
+
+  function render() {
+    // Show prompt with generated tokens highlighted
+    let html = '<span style="color: #666;">' + escapeHtml(prompts[currentPrompt].text) + '</span>';
+    generated.forEach(tok => {
+      html += '<span style="color: var(--brand); font-weight: 700; background: var(--brand)10; padding: 1px 2px; border-radius: 3px;">' + escapeHtml(tok) + '</span>';
+    });
+    promptEl.innerHTML = html;
+
+    // Show candidates
+    const lastToken = generated.length > 0 ? generated[generated.length - 1] : null;
+    let candidates;
+    if (lastToken && chain[lastToken]) {
+      candidates = chain[lastToken];
+    } else if (generated.length === 0) {
+      candidates = prompts[currentPrompt].continuations;
+    } else {
+      candidates = [['.', 0.3], [',', 0.15], [' and', 0.1], [' the', 0.08], [' is', 0.07], [' but', 0.05], [' or', 0.04], [' which', 0.03]];
+    }
+
+    candidatesEl.innerHTML = '';
+    candidates.forEach(([tok, prob]) => {
+      const btn = document.createElement('button');
+      btn.style.cssText = `
+        padding: 6px 12px; border: 2px solid ${probColor(prob)}30; border-radius: 8px;
+        background: ${probColor(prob)}10; font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem; cursor: pointer; transition: all 0.15s; color: ${probColor(prob)};
+        position: relative;
+      `;
+      btn.innerHTML = `<span style="font-weight: 700;">${escapeHtml(tok) || '⎵'}</span> <span style="opacity: 0.6; font-size: 0.55rem;">${(prob * 100).toFixed(0)}%</span>`;
+      btn.addEventListener('click', () => {
+        generated.push(tok);
+        currentText += tok;
+        render();
+      });
+      btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.05)'; btn.style.borderColor = probColor(prob); });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1)'; btn.style.borderColor = probColor(prob) + '30'; });
+      candidatesEl.appendChild(btn);
+    });
+  }
+
+  function probColor(p) {
+    if (p > 0.3) return '#6C3CE0';
+    if (p > 0.1) return '#3B82F6';
+    if (p > 0.05) return '#10B981';
+    return '#999';
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Initialize
+  currentText = prompts[0].text;
+  render();
+})();
+
+// ===== INTERACTIVE 5: Bank Problem =====
+(function() {
+  const sentences = [
+    { words: ['I', 'sat', 'by', 'the', 'river', 'bank'], highlight: 5, context: 'river' },
+    { words: ['I', 'went', 'to', 'the', 'bank', 'for', 'money'], highlight: 4, context: 'money' }
+  ];
+  let current = 0;
+  const sentenceEl = document.getElementById('bank-sentence');
+  const bankSvg = document.getElementById('bank-svg');
+  const vecGroup = document.getElementById('bank-vector');
+  const problemText = document.getElementById('bank-problem-text');
+
+  // Draw the same vector both times
+  function drawVector() {
+    vecGroup.innerHTML = '';
+    const vals = [0.72, -0.31, 0.85, 0.12, -0.54, 0.41, 0.63, -0.19];
+    const barW = 52, barH = 50, gap = 8;
+    const totalW = vals.length * (barW + gap) - gap;
+    vals.forEach((v, i) => {
+      const x = i * (barW + gap);
+      const color = v >= 0 ? '#6C3CE0' : '#FF6B6B';
+      const h = Math.abs(v) * barH;
+      const y = v >= 0 ? barH - h : barH;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x); rect.setAttribute('y', y);
+      rect.setAttribute('width', barW); rect.setAttribute('height', h);
+      rect.setAttribute('rx', 4); rect.setAttribute('fill', color); rect.setAttribute('opacity', '0.7');
+      vecGroup.appendChild(rect);
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x + barW/2); text.setAttribute('y', barH + 18);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-family', 'JetBrains Mono, monospace');
+      text.setAttribute('font-size', '11'); text.setAttribute('fill', '#666');
+      text.textContent = v.toFixed(2);
+      vecGroup.appendChild(text);
+    });
+  }
+
+  window.switchBank = function(idx) {
+    current = idx;
+    document.getElementById('bank-btn-1').classList.toggle('active', idx === 0);
+    document.getElementById('bank-btn-2').classList.toggle('active', idx === 1);
+    renderSentence();
+  };
+
+  function renderSentence() {
+    const s = sentences[current];
+    sentenceEl.innerHTML = s.words.map((w, i) =>
+      i === s.highlight
+        ? `<span style="background: #FF6B6B20; color: #FF6B6B; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 2px solid #FF6B6B;">${w}</span>`
+        : `<span style="padding: 4px 6px; color: #666;">${w}</span>`
+    ).join(' ');
+    drawVector();
+    problemText.textContent = current === 1
+      ? 'Same vector! But "bank" means something completely different here.'
+      : '';
+  }
+
+  renderSentence();
+})();
+
+// ===== INTERACTIVE 6: Attention Heatmap =====
+(function() {
+  const words = ['The', 'cat', 'sat', 'on', 'the', 'mat', 'because', 'it', 'was', 'tired'];
+  const n = words.length;
+
+  // Pre-defined attention matrices for 3 heads
+  const heads = [
+    // Head 1: Pronoun resolution - "it" attends to "cat"
+    [
+      [0.5, 0.1, 0.1, 0.05, 0.1, 0.05, 0.05, 0.02, 0.01, 0.01],
+      [0.1, 0.4, 0.1, 0.05, 0.05, 0.1, 0.05, 0.05, 0.05, 0.05],
+      [0.05, 0.3, 0.3, 0.05, 0.05, 0.15, 0.05, 0.02, 0.02, 0.01],
+      [0.05, 0.05, 0.15, 0.3, 0.1, 0.2, 0.05, 0.05, 0.03, 0.02],
+      [0.4, 0.05, 0.05, 0.05, 0.3, 0.05, 0.05, 0.02, 0.02, 0.01],
+      [0.05, 0.05, 0.1, 0.15, 0.15, 0.35, 0.05, 0.05, 0.03, 0.02],
+      [0.05, 0.1, 0.15, 0.05, 0.05, 0.1, 0.35, 0.05, 0.05, 0.05],
+      [0.05, 0.55, 0.05, 0.02, 0.02, 0.06, 0.05, 0.1, 0.05, 0.05],
+      [0.02, 0.1, 0.05, 0.02, 0.02, 0.05, 0.05, 0.3, 0.3, 0.09],
+      [0.02, 0.15, 0.05, 0.02, 0.02, 0.05, 0.05, 0.2, 0.14, 0.3],
+    ],
+    // Head 2: Syntactic - verbs attend to subjects, adj to nouns
+    [
+      [0.6, 0.1, 0.05, 0.05, 0.05, 0.05, 0.03, 0.03, 0.02, 0.02],
+      [0.3, 0.4, 0.05, 0.05, 0.05, 0.05, 0.03, 0.03, 0.02, 0.02],
+      [0.1, 0.4, 0.2, 0.05, 0.05, 0.1, 0.03, 0.03, 0.02, 0.02],
+      [0.05, 0.05, 0.3, 0.3, 0.05, 0.15, 0.03, 0.03, 0.02, 0.02],
+      [0.3, 0.05, 0.05, 0.05, 0.4, 0.05, 0.03, 0.03, 0.02, 0.02],
+      [0.05, 0.05, 0.05, 0.1, 0.3, 0.3, 0.05, 0.03, 0.03, 0.04],
+      [0.05, 0.05, 0.2, 0.05, 0.05, 0.1, 0.35, 0.05, 0.05, 0.05],
+      [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.3, 0.25, 0.1, 0.05],
+      [0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05, 0.35, 0.3, 0.12],
+      [0.03, 0.1, 0.03, 0.03, 0.03, 0.03, 0.05, 0.15, 0.25, 0.3],
+    ],
+    // Head 3: Proximity - attend to nearby words
+    [
+      [0.4, 0.35, 0.1, 0.05, 0.03, 0.02, 0.02, 0.01, 0.01, 0.01],
+      [0.25, 0.3, 0.25, 0.08, 0.04, 0.03, 0.02, 0.01, 0.01, 0.01],
+      [0.08, 0.25, 0.3, 0.2, 0.07, 0.04, 0.03, 0.01, 0.01, 0.01],
+      [0.04, 0.08, 0.2, 0.3, 0.2, 0.08, 0.04, 0.03, 0.02, 0.01],
+      [0.03, 0.04, 0.08, 0.2, 0.3, 0.2, 0.07, 0.04, 0.02, 0.02],
+      [0.02, 0.03, 0.04, 0.08, 0.2, 0.3, 0.18, 0.07, 0.04, 0.04],
+      [0.01, 0.02, 0.03, 0.05, 0.08, 0.2, 0.3, 0.18, 0.08, 0.05],
+      [0.01, 0.01, 0.02, 0.03, 0.05, 0.08, 0.2, 0.3, 0.2, 0.1],
+      [0.01, 0.01, 0.01, 0.02, 0.03, 0.05, 0.08, 0.2, 0.35, 0.24],
+      [0.01, 0.01, 0.01, 0.01, 0.02, 0.04, 0.06, 0.1, 0.25, 0.49],
+    ]
+  ];
+
+  let currentHead = 0;
+  const svg = document.getElementById('attention-svg');
+  const topGroup = document.getElementById('attention-words-top');
+  const leftGroup = document.getElementById('attention-words-left');
+  const gridGroup = document.getElementById('attention-grid');
+
+  window.setAttentionHead = function(head, btn) {
+    currentHead = head;
+    document.querySelectorAll('#attention-demo .toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid();
+  };
+
+  function renderGrid() {
+    topGroup.innerHTML = '';
+    leftGroup.innerHTML = '';
+    gridGroup.innerHTML = '';
+
+    const cellSize = 48;
+    const offset = 120;
+
+    // Top labels
+    words.forEach((w, i) => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', offset + i * cellSize + cellSize/2);
+      t.setAttribute('y', 0);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Figtree, sans-serif');
+      t.setAttribute('font-size', '11');
+      t.setAttribute('fill', w === 'it' || w === 'cat' ? '#6C3CE0' : '#888');
+      t.setAttribute('font-weight', w === 'it' || w === 'cat' ? '700' : '400');
+      t.setAttribute('transform', `rotate(-45, ${offset + i * cellSize + cellSize/2}, 0)`);
+      t.textContent = w;
+      topGroup.appendChild(t);
+    });
+
+    // Left labels and grid
+    words.forEach((w, i) => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', -8);
+      t.setAttribute('y', i * cellSize + cellSize/2 + 4);
+      t.setAttribute('text-anchor', 'end');
+      t.setAttribute('font-family', 'Figtree, sans-serif');
+      t.setAttribute('font-size', '11');
+      t.setAttribute('fill', w === 'it' || w === 'cat' ? '#6C3CE0' : '#888');
+      t.setAttribute('font-weight', w === 'it' || w === 'cat' ? '700' : '400');
+      t.textContent = w;
+      gridGroup.appendChild(t);
+
+      // Cells
+      words.forEach((w2, j) => {
+        const val = heads[currentHead][i][j];
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', j * cellSize);
+        rect.setAttribute('y', i * cellSize);
+        rect.setAttribute('width', cellSize - 2);
+        rect.setAttribute('height', cellSize - 2);
+        rect.setAttribute('rx', 4);
+        rect.setAttribute('fill', `rgba(108, 60, 224, ${val})`);
+        rect.setAttribute('cursor', 'pointer');
+
+        // Hover tooltip
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = `${words[i]} → ${words[j]}: ${(val * 100).toFixed(0)}%`;
+        rect.appendChild(title);
+
+        gridGroup.appendChild(rect);
+
+        // Show value in cell if significant
+        if (val > 0.15) {
+          const vt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          vt.setAttribute('x', j * cellSize + cellSize/2 - 1);
+          vt.setAttribute('y', i * cellSize + cellSize/2 + 4);
+          vt.setAttribute('text-anchor', 'middle');
+          vt.setAttribute('font-family', 'JetBrains Mono, monospace');
+          vt.setAttribute('font-size', '9');
+          vt.setAttribute('fill', val > 0.35 ? 'white' : '#6C3CE0');
+          vt.setAttribute('pointer-events', 'none');
+          vt.textContent = (val * 100).toFixed(0) + '%';
+          gridGroup.appendChild(vt);
+        }
+      });
+    });
+  }
+
+  renderGrid();
+})();
+
+// ===== INTERACTIVE 3: 2D Embedding Space =====
+(function() {
+  const svg = document.getElementById('embedding-svg');
+  const g = document.getElementById('embedding-words');
+  const simDisplay = document.getElementById('similarity-display');
+  const simText = document.getElementById('sim-text');
+
+  const wordData = [
+    // Royalty cluster (top-left)
+    { word: 'king', x: 80, y: 60, color: '#6C3CE0', cluster: 'royalty' },
+    { word: 'queen', x: 130, y: 75, color: '#6C3CE0', cluster: 'royalty' },
+    { word: 'prince', x: 100, y: 100, color: '#8B5CF6', cluster: 'royalty' },
+    { word: 'princess', x: 155, y: 90, color: '#8B5CF6', cluster: 'royalty' },
+    { word: 'throne', x: 65, y: 110, color: '#A78BFA', cluster: 'royalty' },
+    { word: 'crown', x: 120, y: 50, color: '#A78BFA', cluster: 'royalty' },
+    // Animals cluster (top-right)
+    { word: 'cat', x: 460, y: 60, color: '#10B981', cluster: 'animals' },
+    { word: 'dog', x: 500, y: 75, color: '#10B981', cluster: 'animals' },
+    { word: 'puppy', x: 530, y: 55, color: '#34D399', cluster: 'animals' },
+    { word: 'kitten', x: 480, y: 95, color: '#34D399', cluster: 'animals' },
+    { word: 'fish', x: 440, y: 110, color: '#6EE7B7', cluster: 'animals' },
+    { word: 'bird', x: 520, y: 105, color: '#6EE7B7', cluster: 'animals' },
+    // Countries cluster (middle-left)
+    { word: 'France', x: 100, y: 260, color: '#3B82F6', cluster: 'countries' },
+    { word: 'Paris', x: 140, y: 280, color: '#60A5FA', cluster: 'countries' },
+    { word: 'Germany', x: 170, y: 260, color: '#3B82F6', cluster: 'countries' },
+    { word: 'Berlin', x: 200, y: 285, color: '#60A5FA', cluster: 'countries' },
+    { word: 'Japan', x: 120, y: 300, color: '#3B82F6', cluster: 'countries' },
+    { word: 'Tokyo', x: 160, y: 310, color: '#60A5FA', cluster: 'countries' },
+    // Food cluster (middle-right)
+    { word: 'pizza', x: 480, y: 260, color: '#F59E0B', cluster: 'food' },
+    { word: 'pasta', x: 520, y: 275, color: '#F59E0B', cluster: 'food' },
+    { word: 'sushi', x: 510, y: 300, color: '#FBBF24', cluster: 'food' },
+    { word: 'banana', x: 555, y: 260, color: '#FBBF24', cluster: 'food' },
+    { word: 'apple', x: 440, y: 280, color: '#FCD34D', cluster: 'food' },
+    // Emotions cluster (bottom-center)
+    { word: 'happy', x: 280, y: 360, color: '#FF6B6B', cluster: 'emotions' },
+    { word: 'sad', x: 330, y: 370, color: '#FF6B6B', cluster: 'emotions' },
+    { word: 'angry', x: 360, y: 350, color: '#F87171', cluster: 'emotions' },
+    { word: 'love', x: 300, y: 380, color: '#FB923C', cluster: 'emotions' },
+    { word: 'fear', x: 380, y: 375, color: '#F87171', cluster: 'emotions' },
+    // Misc scattered
+    { word: 'man', x: 260, y: 80, color: '#6C3CE0', cluster: 'people' },
+    { word: 'woman', x: 300, y: 90, color: '#6C3CE0', cluster: 'people' },
+    { word: 'computer', x: 350, y: 170, color: '#64748B', cluster: 'tech' },
+    { word: 'math', x: 390, y: 155, color: '#64748B', cluster: 'tech' },
+  ];
+
+  let selected = [];
+
+  wordData.forEach((w, i) => {
+    // Dot
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', w.x);
+    circle.setAttribute('cy', w.y);
+    circle.setAttribute('r', 5);
+    circle.setAttribute('fill', w.color);
+    circle.setAttribute('opacity', '0.7');
+    circle.setAttribute('cursor', 'pointer');
+    circle.setAttribute('data-idx', i);
+
+    // Label
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', w.x + 8);
+    text.setAttribute('y', w.y + 4);
+    text.setAttribute('font-family', 'Figtree, sans-serif');
+    text.setAttribute('font-size', '11');
+    text.setAttribute('fill', w.color);
+    text.setAttribute('opacity', '0.8');
+    text.setAttribute('cursor', 'pointer');
+    text.setAttribute('data-idx', i);
+    text.textContent = w.word;
+
+    // Hover
+    const highlight = () => {
+      circle.setAttribute('r', 8);
+      circle.setAttribute('opacity', '1');
+      circle.setAttribute('filter', 'url(#glow)');
+      text.setAttribute('font-weight', '700');
+      text.setAttribute('opacity', '1');
+    };
+    const unhighlight = () => {
+      if (!selected.includes(i)) {
+        circle.setAttribute('r', 5);
+        circle.setAttribute('opacity', '0.7');
+        circle.removeAttribute('filter');
+        text.setAttribute('font-weight', '400');
+        text.setAttribute('opacity', '0.8');
+      }
+    };
+
+    circle.addEventListener('mouseenter', highlight);
+    circle.addEventListener('mouseleave', unhighlight);
+    text.addEventListener('mouseenter', highlight);
+    text.addEventListener('mouseleave', unhighlight);
+
+    // Click to compare
+    const clickHandler = () => {
+      selected.push(i);
+      highlight();
+      if (selected.length === 2) {
+        const a = wordData[selected[0]];
+        const b = wordData[selected[1]];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const maxDist = 600;
+        const sim = Math.max(0, Math.round((1 - dist/maxDist) * 100));
+
+        // Draw connection line
+        const existingLine = document.getElementById('sim-line');
+        if (existingLine) existingLine.remove();
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.id = 'sim-line';
+        line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+        line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+        line.setAttribute('stroke', '#6C3CE0'); line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', '5,5'); line.setAttribute('opacity', '0.5');
+        g.insertBefore(line, g.firstChild);
+
+        simText.textContent = `"${a.word}" ↔ "${b.word}": ${sim}% similar`;
+        simDisplay.setAttribute('opacity', '1');
+
+        // Reset after 2 seconds
+        setTimeout(() => {
+          selected.forEach(idx => {
+            const c = g.querySelector(`circle[data-idx="${idx}"]`);
+            const t = g.querySelector(`text[data-idx="${idx}"]`);
+            if (c) { c.setAttribute('r', 5); c.setAttribute('opacity', '0.7'); c.removeAttribute('filter'); }
+            if (t) { t.setAttribute('font-weight', '400'); t.setAttribute('opacity', '0.8'); }
+          });
+          selected = [];
+          if (line.parentNode) line.remove();
+          simDisplay.setAttribute('opacity', '0');
+        }, 2500);
+      }
+    };
+    circle.addEventListener('click', clickHandler);
+    text.addEventListener('click', clickHandler);
+
+    g.appendChild(circle);
+    g.appendChild(text);
+  });
+})();
+
+// ===== INTERACTIVE 4: Word Arithmetic =====
+(function() {
+  const analogies = [
+    { a: 'king', b: 'man', c: 'woman', result: 'queen', ax: 80, ay: 60, bx: 260, by: 80, cx: 300, cy: 90, rx: 130, ry: 75 },
+    { a: 'France', b: 'Paris', c: 'Berlin', result: 'Germany', ax: 100, ay: 60, bx: 140, by: 80, cx: 200, cy: 85, rx: 170, ry: 60 },
+    { a: 'king', b: 'crown', c: 'throne', result: 'queen', ax: 80, ay: 50, bx: 120, by: 30, cx: 65, cy: 80, rx: 130, ry: 55 },
+    { a: 'Japan', b: 'Tokyo', c: 'Paris', result: 'France', ax: 120, ay: 60, bx: 160, by: 80, cx: 140, cy: 80, rx: 100, ry: 60 },
+    { a: 'happy', b: 'sad', c: 'angry', result: 'joyful', ax: 280, ay: 60, bx: 330, by: 70, cx: 360, cy: 50, rx: 310, ry: 45 },
+    { a: 'puppy', b: 'dog', c: 'cat', result: 'kitten', ax: 530, ay: 55, bx: 500, by: 75, cx: 460, cy: 60, rx: 480, ry: 40 },
+  ];
+
+  const selA = document.getElementById('arith-a');
+  const selB = document.getElementById('arith-b');
+  const selC = document.getElementById('arith-c');
+  const resultEl = document.getElementById('arith-result');
+  const arithSvg = document.getElementById('arith-svg');
+  const vecGroup = document.getElementById('arith-vectors');
+
+  // Populate dropdowns
+  const allWords = [...new Set(analogies.flatMap(a => [a.a, a.b, a.c, a.result]))];
+  function populateSelect(sel, defaultVal) {
+    allWords.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w; opt.textContent = w;
+      if (w === defaultVal) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+  populateSelect(selA, 'king');
+  populateSelect(selB, 'man');
+  populateSelect(selC, 'woman');
+
+  function findAnalogy() {
+    const a = selA.value, b = selB.value, c = selC.value;
+    const match = analogies.find(an => an.a === a && an.b === b && an.c === c);
+    if (match) {
+      resultEl.textContent = match.result;
+      drawVectors(match);
+    } else {
+      resultEl.textContent = '???';
+      drawGenericVectors(a, b, c);
+    }
+  }
+
+  function drawVectors(an) {
+    vecGroup.innerHTML = '';
+    // Clear parallelogram: A at top-left, B at top-right, C at bottom-left, Result at bottom-right
+    // A - B = the "gender" direction, C adds it back
+    const pts = [
+      { x: 140, y: 50, label: an.a, color: '#6C3CE0' },       // top-left
+      { x: 400, y: 50, label: an.b, color: '#FF6B6B' },       // top-right
+      { x: 140, y: 200, label: an.c, color: '#3B82F6' },      // bottom-left
+      { x: 400, y: 200, label: an.result, color: '#10B981' }   // bottom-right
+    ];
+
+    // Draw the four edges of the parallelogram
+    // Top: A → B (solid, labeled "−b")
+    drawArrow(vecGroup, pts[0].x, pts[0].y, pts[1].x, pts[1].y, '#FF6B6B', `−${an.b}`, false, 2);
+    // Left: A → C (solid, labeled "+c")
+    drawArrow(vecGroup, pts[0].x, pts[0].y, pts[2].x, pts[2].y, '#3B82F6', `+${an.c}`, false, 2);
+    // Right: B → Result (dashed)
+    drawArrow(vecGroup, pts[1].x, pts[1].y, pts[3].x, pts[3].y, '#10B981', '', true, 1.5);
+    // Bottom: C → Result (dashed)
+    drawArrow(vecGroup, pts[2].x, pts[2].y, pts[3].x, pts[3].y, '#10B981', '', true, 1.5);
+    // Diagonal: A → Result (solid, thick, labeled "≈ result")
+    drawArrow(vecGroup, pts[0].x, pts[0].y, pts[3].x, pts[3].y, '#10B981', `≈ ${an.result}`, false, 2.5);
+
+    // Draw points with labels
+    pts.forEach(p => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', p.x); c.setAttribute('cy', p.y);
+      c.setAttribute('r', 8); c.setAttribute('fill', p.color);
+      vecGroup.appendChild(c);
+
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', p.x); t.setAttribute('y', p.y - 16);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Figtree, sans-serif');
+      t.setAttribute('font-size', '15'); t.setAttribute('font-weight', '700');
+      t.setAttribute('fill', p.color);
+      t.textContent = p.label;
+      vecGroup.appendChild(t);
+    });
+  }
+
+  function drawGenericVectors(a, b, c) {
+    vecGroup.innerHTML = '';
+    const pts = [
+      { x: 140, y: 50, label: a, color: '#6C3CE0' },
+      { x: 400, y: 50, label: b, color: '#FF6B6B' },
+      { x: 140, y: 200, label: c, color: '#3B82F6' },
+      { x: 400, y: 200, label: '???', color: '#999' }
+    ];
+    drawArrow(vecGroup, pts[0].x, pts[0].y, pts[1].x, pts[1].y, '#FF6B6B', '', false, 2);
+    drawArrow(vecGroup, pts[0].x, pts[0].y, pts[2].x, pts[2].y, '#3B82F6', '', false, 2);
+    drawArrow(vecGroup, pts[0].x, pts[0].y, pts[3].x, pts[3].y, '#999', '', true, 2);
+    pts.forEach(p => {
+      const c2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c2.setAttribute('cx', p.x); c2.setAttribute('cy', p.y); c2.setAttribute('r', 7); c2.setAttribute('fill', p.color);
+      vecGroup.appendChild(c2);
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', p.x); t.setAttribute('y', p.y - 14); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Figtree, sans-serif'); t.setAttribute('font-size', '14'); t.setAttribute('font-weight', '700'); t.setAttribute('fill', p.color);
+      t.textContent = p.label;
+      vecGroup.appendChild(t);
+    });
+  }
+
+  function drawArrow(parent, x1, y1, x2, y2, color, label, dashed, width) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', width || 1.5);
+    line.setAttribute('opacity', '0.6');
+    if (dashed) line.setAttribute('stroke-dasharray', '5,5');
+    // Arrowhead
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLen = 8;
+    const ax1 = x2 - headLen * Math.cos(angle - Math.PI/6);
+    const ay1 = y2 - headLen * Math.sin(angle - Math.PI/6);
+    const ax2 = x2 - headLen * Math.cos(angle + Math.PI/6);
+    const ay2 = y2 - headLen * Math.sin(angle + Math.PI/6);
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrow.setAttribute('points', `${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`);
+    arrow.setAttribute('fill', color); arrow.setAttribute('opacity', '0.6');
+    parent.appendChild(line);
+    parent.appendChild(arrow);
+    if (label) {
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      // Offset label away from line
+      const angle2 = Math.atan2(y2 - y1, x2 - x1);
+      const offX = -Math.sin(angle2) * 14;
+      const offY = Math.cos(angle2) * 14;
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', mx + offX); t.setAttribute('y', my + offY);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Figtree, sans-serif');
+      t.setAttribute('font-size', '13'); t.setAttribute('font-weight', '600'); t.setAttribute('fill', color);
+      t.textContent = label;
+      parent.appendChild(t);
+    }
+  }
+
+  selA.addEventListener('change', findAnalogy);
+  selB.addEventListener('change', findAnalogy);
+  selC.addEventListener('change', findAnalogy);
+  findAnalogy();
+})();
+
+// ===== HERO: Floating nodes animation =====
+(function() {
+  const svg = document.querySelector('#hero-nodes').closest('svg');
+  const g = document.getElementById('hero-nodes');
+  const nodes = [];
+  const edges = [];
+  const words = ['the', 'cat', 'sat', 'on', 'mat', 'how', 'LLM', 'AI', 'word', 'token', 'learn', 'think', 'deep', 'net', 'GPT', 'attention', 'embed', 'train', 'loss', 'layer'];
+
+  // Create nodes
+  for (let i = 0; i < 30; i++) {
+    const x = Math.random() * 920 + 20;
+    const y = Math.random() * 260 + 20;
+    const vx = (Math.random() - 0.5) * 0.3;
+    const vy = (Math.random() - 0.5) * 0.3;
+    const r = 3 + Math.random() * 4;
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', x);
+    circle.setAttribute('cy', y);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'white');
+    circle.setAttribute('opacity', 0.4 + Math.random() * 0.4);
+
+    g.appendChild(circle);
+    nodes.push({ el: circle, x, y, vx, vy, r });
+
+    // Add word labels to some nodes
+    if (i < words.length && i % 2 === 0) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x);
+      text.setAttribute('y', y - r - 4);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', 'white');
+      text.setAttribute('opacity', '0.5');
+      text.setAttribute('font-size', '9');
+      text.setAttribute('font-family', 'Figtree, sans-serif');
+      text.textContent = words[i];
+      g.appendChild(text);
+      nodes[i].label = text;
+    }
+  }
+
+  // Create edges between nearby nodes
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', nodes[i].x);
+        line.setAttribute('y1', nodes[i].y);
+        line.setAttribute('x2', nodes[j].x);
+        line.setAttribute('y2', nodes[j].y);
+        line.setAttribute('stroke', 'white');
+        line.setAttribute('stroke-opacity', Math.max(0, 0.2 - dist / 600));
+        line.setAttribute('stroke-width', '1');
+        g.insertBefore(line, g.firstChild);
+        edges.push({ el: line, i, j });
+      }
+    }
+  }
+
+  // Animate
+  function animate() {
+    for (const node of nodes) {
+      node.x += node.vx;
+      node.y += node.vy;
+      if (node.x < 10 || node.x > 950) node.vx *= -1;
+      if (node.y < 10 || node.y > 290) node.vy *= -1;
+      node.el.setAttribute('cx', node.x);
+      node.el.setAttribute('cy', node.y);
+      if (node.label) {
+        node.label.setAttribute('x', node.x);
+        node.label.setAttribute('y', node.y - node.r - 4);
+      }
+    }
+    for (const edge of edges) {
+      const a = nodes[edge.i];
+      const b = nodes[edge.j];
+      edge.el.setAttribute('x1', a.x);
+      edge.el.setAttribute('y1', a.y);
+      edge.el.setAttribute('x2', b.x);
+      edge.el.setAttribute('y2', b.y);
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      edge.el.setAttribute('stroke-opacity', Math.max(0, 0.2 - dist / 600));
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+
+</body>
+</html>
