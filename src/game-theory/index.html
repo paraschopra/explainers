@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Being Rational Can Make Everyone Worse Off</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Figtree:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #FAF9F7;
+  --demo-bg:      #F5F0E8;
+  --text:         #2D2D2D;
+  --text-secondary:#666;
+  --accent:       #D97706;
+  --accent-light: #FEF3C7;
+  --accent-hover: #B45309;
+  --blue:         #2563EB;
+  --red:          #DC2626;
+  --green:        #16A34A;
+  --amber:        #D97706;
+  --purple:       #7C3AED;
+  --orange:       #EA580C;
+  --border:       #E5E5E0;
+  --radius:       12px;
+  --max-w:        680px;
+  --font-serif:   'Newsreader', Georgia, serif;
+  --font-sans:    'Figtree', system-ui, sans-serif;
+  --font-mono:    'Source Code Pro', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+article { max-width: var(--max-w); margin: 0 auto; padding: 0 24px 120px; }
+
+.hero {
+  background: linear-gradient(135deg, #78350F 0%, #B45309 30%, #D97706 60%, #FCD34D 100%);
+  padding: 80px 24px 60px; margin-bottom: 48px;
+  border-radius: 0 0 16px 16px; text-align: left;
+  max-width: 900px; margin-left: auto; margin-right: auto;
+}
+.hero-inner { max-width: var(--max-w); margin: 0 auto; }
+.hero h1 { font-family: var(--font-serif); font-size: clamp(36px, 6vw, 70px); font-weight: 700; line-height: 0.94; margin-bottom: 12px; color: white; }
+.hero .subtitle { font-family: var(--font-sans); font-size: clamp(16px, 2.5vw, 22px); font-weight: 500; color: rgba(255,255,255,0.85); max-width: 540px; line-height: 1.35; }
+
+section { margin-bottom: 72px; }
+.section-heading { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; padding-top: 32px; border-top: 1px solid var(--border); }
+.section-number { font-family: var(--font-serif); font-size: 30px; font-weight: 400; color: var(--text); white-space: nowrap; line-height: 1; }
+.section-heading h2 { font-family: var(--font-sans); font-size: clamp(24px, 4vw, 34px); font-weight: 700; line-height: 1.15; color: var(--text); letter-spacing: -0.01em; }
+section h3 { font-family: var(--font-sans); font-size: 22px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+
+p { margin-bottom: 12px; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+.callout { background: var(--accent-light); border-left: 4px solid var(--accent); padding: 18px 22px; margin: 28px 0; border-radius: 0 var(--radius) var(--radius) 0; font-size: 19px; line-height: 1.5; }
+.callout.fun { background: #FEF3C7; border-left-color: var(--amber); }
+.callout.math-box { background: #FFFBEB; border-left-color: var(--accent); font-family: var(--font-sans); font-size: 17px; line-height: 1.55; }
+
+.figure-caption { text-align: center; font-style: italic; font-size: 17px; color: var(--text-secondary); margin-top: 12px; margin-bottom: 20px; line-height: 1.45; }
+
+.demo { background: var(--demo-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin: 32px 0; position: relative; }
+.demo-title { font-family: var(--font-sans); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 18px; }
+.demo canvas { display: block; width: 100%; border-radius: 8px; background: white; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 18px; }
+.control-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+.control-group label { font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+.control-group .value-display { font-family: var(--font-mono); font-size: 13px; color: var(--accent); min-width: 50px; text-align: right; }
+.label-row { display: flex; justify-content: space-between; align-items: center; }
+
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: #D4D4D0; outline: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+.btn { font-family: var(--font-sans); font-size: 14px; font-weight: 600; padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #F5F5F0; }
+.btn-secondary.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.btn-group { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.btn-group .btn-secondary { border: none; border-radius: 0; border-right: 1px solid var(--border); font-size: 13px; padding: 7px 14px; }
+.btn-group .btn-secondary:last-child { border-right: none; }
+
+.predict-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
+.predict-card .question { font-family: var(--font-sans); font-weight: 600; font-size: 17px; margin-bottom: 14px; }
+.predict-card .options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.predict-card .reveal-area { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.predict-card.revealed .reveal-area { display: block; }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+.toc { max-width: var(--max-w); margin: 0 auto 48px; padding: 0 24px; }
+.toc h3 { font-family: var(--font-sans); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 12px; }
+.toc ol { list-style: none; counter-reset: toc; padding: 0; }
+.toc li { font-family: var(--font-sans); font-size: 17px; padding: 6px 0; color: var(--text); }
+.toc li::before { counter-increment: toc; content: counter(toc, upper-roman) ". "; color: var(--text-secondary); font-size: 15px; margin-right: 8px; }
+.toc a { text-decoration: none; color: var(--text); }
+.toc a:hover { color: var(--accent); }
+
+.footnote { font-size: 17px; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 28px; margin-top: 56px; line-height: 1.5; }
+.katex-display { margin: 24px 0; overflow-x: auto; }
+
+/* ---- Game Theory specific ---- */
+
+/* Payoff matrix table */
+.payoff-matrix { border-collapse: collapse; width: 100%; margin: 16px 0; font-family: var(--font-sans); font-size: 15px; }
+.payoff-matrix th { font-weight: 700; padding: 10px 14px; text-align: center; color: var(--text-secondary); font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+.payoff-matrix td { padding: 14px; text-align: center; border: 1px solid var(--border); background: white; font-family: var(--font-mono); font-size: 14px; transition: all 0.2s; }
+.payoff-matrix td.active-cell { background: var(--accent-light); border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.payoff-matrix .row-label { font-family: var(--font-sans); font-weight: 600; background: transparent; border: none; text-align: right; color: var(--text); font-size: 14px; text-transform: none; letter-spacing: 0; }
+
+/* Score display */
+.score-panel { display: flex; gap: 24px; margin: 16px 0; }
+.score-box { flex: 1; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+.score-label { font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.score-value { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--accent); }
+
+/* Round log */
+.round-log { max-height: 200px; overflow-y: auto; margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: white; }
+.round-log table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 13px; }
+.round-log th { position: sticky; top: 0; background: #F9FAFB; padding: 8px 10px; text-align: center; font-weight: 700; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+.round-log td { padding: 6px 10px; text-align: center; border-bottom: 1px solid #F3F4F6; }
+.round-log .move-c { color: var(--green); font-weight: 600; }
+.round-log .move-d { color: var(--red); font-weight: 600; }
+
+/* Nash matrix inputs */
+.nash-matrix { border-collapse: collapse; margin: 16px 0; }
+.nash-matrix td { padding: 6px; position: relative; }
+.nash-matrix input { width: 48px; height: 36px; text-align: center; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono); font-size: 14px; outline: none; }
+.nash-matrix input:focus { border-color: var(--accent); }
+.nash-matrix .cell-pair { display: flex; gap: 4px; align-items: center; background: white; border: 2px solid var(--border); border-radius: 8px; padding: 8px; transition: all 0.2s; }
+.nash-matrix .cell-pair.is-nash { border-color: var(--accent); background: var(--accent-light); }
+.nash-matrix .ne-badge { position: absolute; top: 2px; right: 2px; background: var(--accent); color: white; font-family: var(--font-sans); font-size: 10px; font-weight: 700; padding: 2px 5px; border-radius: 4px; display: none; }
+.nash-matrix .cell-pair.is-nash .ne-badge { display: block; }
+.nash-matrix .comma { font-family: var(--font-sans); color: var(--text-secondary); }
+.nash-matrix .header-cell { font-family: var(--font-sans); font-size: 13px; font-weight: 700; color: var(--text-secondary); text-align: center; padding: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+.nash-result { font-family: var(--font-sans); font-size: 15px; color: var(--text); margin-top: 14px; padding: 14px; background: white; border-radius: 8px; border: 1px solid var(--border); line-height: 1.5; }
+
+/* Tournament results */
+.strat-toggles { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.strat-toggle { font-family: var(--font-sans); font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; transition: all 0.15s; user-select: none; }
+.strat-toggle.on { background: var(--accent); color: white; border-color: var(--accent); }
+.tournament-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-family: var(--font-sans); font-size: 14px; }
+.tournament-table th { padding: 10px 12px; text-align: left; font-weight: 700; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--border); }
+.tournament-table td { padding: 10px 12px; border-bottom: 1px solid #F3F4F6; }
+.tournament-table tr.rank-1 { background: var(--accent-light); }
+.tournament-table .strat-name { font-weight: 600; }
+.tournament-table .score-col { font-family: var(--font-mono); font-weight: 600; }
+
+/* Commons */
+.resource-bar { width: 100%; height: 28px; background: #E5E7EB; border-radius: 14px; overflow: hidden; margin: 12px 0; }
+.resource-fill { height: 100%; border-radius: 14px; transition: width 0.15s, background 0.3s; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: white; }
+.commons-stats { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-sans); font-size: 14px; }
+.commons-stat { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; flex: 1; min-width: 120px; text-align: center; }
+.commons-stat .stat-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+.commons-stat .stat-value { font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--accent); margin-top: 2px; }
+
+/* Evo dynamics */
+.evo-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; font-family: var(--font-sans); font-size: 13px; }
+.evo-legend-item { display: flex; align-items: center; gap: 6px; }
+.evo-legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+select { font-family: var(--font-sans); font-size: 14px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: white; cursor: pointer; outline: none; }
+select:focus { border-color: var(--accent); }
+
+@media (max-width: 768px) {
+  body { font-size: 19px; }
+  article { padding: 0 16px 80px; }
+  .hero { padding: 60px 20px 44px; }
+  .hero h1 { font-size: 36px; }
+  .demo { padding: 18px; }
+  .controls { gap: 10px; }
+  .control-group { min-width: 120px; }
+  .section-heading { gap: 10px; }
+  .section-number { font-size: 24px; }
+  .score-panel { gap: 12px; }
+  .score-value { font-size: 22px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 30px; line-height: 1; }
+  .btn-group { flex-wrap: wrap; }
+  .btn-group .btn-secondary { flex: 1; min-width: 70px; text-align: center; justify-content: center; }
+  .score-panel { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero reveal">
+  <div class="hero-inner">
+    <h1>Why Being Rational Can Make Everyone Worse Off</h1>
+    <p class="subtitle">Game theory &mdash; the science of strategic interaction, and the paradox at the heart of cooperation.</p>
+  </div>
+</div>
+
+<nav class="toc reveal">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#sec-pd">The Trap</a></li>
+    <li><a href="#sec-nash">The Stable Trap</a></li>
+    <li><a href="#sec-iterated">When the Game Never Ends</a></li>
+    <li><a href="#sec-axelrod">The Tournament That Changed Everything</a></li>
+    <li><a href="#sec-mixed">Playing Unpredictably</a></li>
+    <li><a href="#sec-commons">The Tragedy We Keep Repeating</a></li>
+    <li><a href="#sec-evo">Evolution Plays Too</a></li>
+    <li><a href="#sec-design">Designing the Rules of the Game</a></li>
+    <li><a href="#sec-quiz">Test Your Intuition</a></li>
+  </ol>
+</nav>
+
+<article>
+
+<!-- ======== INTRO ======== -->
+<section id="intro" class="reveal">
+  <p>Two suspects are arrested. The police separate them into different rooms. Each is offered a deal: betray your partner and go free &mdash; but if <em>both</em> betray, you both serve two years. Stay silent, and you'll each serve only one year. But if you stay silent and your partner betrays you, <em>you</em> serve three years while they walk.</p>
+
+  <p>What should you do?</p>
+
+  <p>The logic seems clear: no matter what your partner does, betraying gives you a better outcome. So you betray. And so does your partner, following the exact same logic. You both serve two years &mdash; even though you'd both have been better off staying silent.</p>
+
+  <p>This is the <strong>Prisoner's Dilemma</strong>, and it is not a puzzle with a clever solution. It is a <em>theorem</em>. Rational self-interest, rigorously applied, produces collective irrationality. The best move for each individual is the worst move for the group.</p>
+
+  <div class="callout">
+    <strong>Game theory</strong> is the mathematical study of strategic interaction &mdash; situations where your best choice depends on what others choose, and theirs depends on yours. It was born at RAND Corporation during the Cold War, where the stakes were nuclear annihilation. Today it governs everything from pricing wars to climate negotiations to evolutionary biology.
+  </div>
+</section>
+
+<!-- ======== I. THE TRAP ======== -->
+<section id="sec-pd" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">I.</span>
+    <h2>The Trap</h2>
+  </div>
+
+  <p>Let's make the Prisoner's Dilemma precise. Two players simultaneously choose to <strong>Cooperate</strong> (stay silent) or <strong>Defect</strong> (betray). The payoffs, measured in years of prison avoided:</p>
+
+  <p>If both cooperate, each gets <strong>3 points</strong> (the <em>Reward</em>). If one defects while the other cooperates, the defector gets <strong>5 points</strong> (the <em>Temptation</em>) and the cooperator gets <strong>0 points</strong> (the <em>Sucker's payoff</em>). If both defect, each gets <strong>1 point</strong> (the <em>Punishment</em>).</p>
+
+  <p>Walk through the reasoning step by step. Suppose your opponent cooperates. You can cooperate and earn 3, or defect and earn 5. Defecting is better. Now suppose your opponent defects. You can cooperate and earn 0, or defect and earn 1. Defecting is <em>still</em> better.</p>
+
+  <p>Defection is a <strong>dominant strategy</strong> &mdash; it is strictly better regardless of what the other player does. Both players reason this way. Both defect. Both earn 1. But if they had both cooperated, both would have earned 3.</p>
+
+  <p>Try it yourself. Play against different opponents and watch how the logic unfolds.</p>
+
+  <!-- DEMO 1: PD Playground -->
+  <div class="demo" id="demo-pd">
+    <div class="demo-title">Demo 1 &middot; The Prisoner's Dilemma</div>
+
+    <table class="payoff-matrix" id="pd-matrix">
+      <tr>
+        <th></th>
+        <th>Opp: Cooperate</th>
+        <th>Opp: Defect</th>
+      </tr>
+      <tr>
+        <td class="row-label">You: Cooperate</td>
+        <td id="cell-cc">3 , 3</td>
+        <td id="cell-cd">0 , 5</td>
+      </tr>
+      <tr>
+        <td class="row-label">You: Defect</td>
+        <td id="cell-dc">5 , 0</td>
+        <td id="cell-dd">1 , 1</td>
+      </tr>
+    </table>
+
+    <div class="score-panel">
+      <div class="score-box">
+        <div class="score-label">Your Score</div>
+        <div class="score-value" id="pd-your-score">0</div>
+      </div>
+      <div class="score-box">
+        <div class="score-label">Opponent Score</div>
+        <div class="score-value" id="pd-opp-score">0</div>
+      </div>
+      <div class="score-box">
+        <div class="score-label">Rounds</div>
+        <div class="score-value" id="pd-rounds">0</div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin: 16px 0; flex-wrap: wrap;">
+      <button class="btn btn-primary" id="pd-cooperate" style="flex:1; min-width: 120px; justify-content: center; background: var(--green);">Cooperate</button>
+      <button class="btn btn-primary" id="pd-defect" style="flex:1; min-width: 120px; justify-content: center; background: var(--red);">Defect</button>
+    </div>
+
+    <div class="controls">
+      <div class="control-group" style="min-width: 180px;">
+        <label>Opponent Strategy</label>
+        <select id="pd-strategy">
+          <option value="titForTat">Tit-for-Tat</option>
+          <option value="alwaysCooperate">Always Cooperate</option>
+          <option value="alwaysDefect">Always Defect</option>
+          <option value="random">Random (50/50)</option>
+          <option value="grudger">Grudger</option>
+          <option value="pavlov">Pavlov</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" id="pd-play10">Play 10 Rounds (you defect)</button>
+      <button class="btn btn-secondary" id="pd-reset">Reset</button>
+    </div>
+
+    <div class="round-log" id="pd-log" style="margin-top: 14px;">
+      <table>
+        <thead><tr><th>#</th><th>You</th><th>Opponent</th><th>You +</th><th>Opp +</th></tr></thead>
+        <tbody id="pd-log-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <p>Notice what happens when you play against <strong>Tit-for-Tat</strong>: if you cooperate, your opponent cooperates back, and you both earn 3 per round. If you defect, your opponent retaliates immediately &mdash; and you're both stuck at 1 per round. The shadow of reciprocity changes everything.</p>
+
+  <p>But against <strong>Always Cooperate</strong>, defection is pure profit. You exploit the cooperator round after round. This is why cooperation is fragile &mdash; it can be exploited by anyone willing to defect.</p>
+</section>
+
+<!-- ======== II. THE STABLE TRAP ======== -->
+<section id="sec-nash" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">II.</span>
+    <h2>The Stable Trap</h2>
+  </div>
+
+  <p>In 1950, a 21-year-old mathematician named <strong>John Nash</strong> proved something extraordinary: every finite game has at least one <em>equilibrium</em> &mdash; a state where no player can improve their outcome by unilaterally changing their strategy.</p>
+
+  <p>In the Prisoner's Dilemma, the Nash equilibrium is (Defect, Defect). If your opponent defects, switching from Defect to Cooperate drops your payoff from 1 to 0. Neither player can improve alone. The trap is <em>stable</em>.</p>
+
+  <p>But here's the critical insight: <strong>Nash equilibria are stable, but they are not always good.</strong> The equilibrium (Defect, Defect) gives both players 1 point, while the non-equilibrium (Cooperate, Cooperate) gives both players 3 points. The rational outcome is collectively irrational.</p>
+
+  <div class="callout math-box">
+    <strong>Nash Equilibrium</strong><br>
+    A strategy profile $(s_1^*, s_2^*)$ is a Nash equilibrium if and only if no player can gain by unilateral deviation:<br>
+    $$u_1(s_1^*, s_2^*) \geq u_1(s_1, s_2^*) \;\;\text{for all } s_1$$
+    $$u_2(s_1^*, s_2^*) \geq u_2(s_1^*, s_2) \;\;\text{for all } s_2$$
+  </div>
+
+  <p>Not every game has the same structure as the Prisoner's Dilemma. In the <strong>Stag Hunt</strong>, both (Cooperate, Cooperate) and (Defect, Defect) are Nash equilibria &mdash; cooperation <em>is</em> stable, but so is mutual distrust. In <strong>Chicken</strong>, the equilibria are asymmetric: one player swerves while the other drives straight. The game's structure determines whether rationality is a trap or a path to coordination.</p>
+
+  <p>Edit the payoff matrix below and discover which outcomes are stable.</p>
+
+  <!-- DEMO 2: Nash Equilibrium Finder -->
+  <div class="demo" id="demo-nash">
+    <div class="demo-title">Demo 2 &middot; Nash Equilibrium Finder</div>
+
+    <div class="controls" style="margin-top: 0; margin-bottom: 14px;">
+      <button class="btn btn-secondary" data-preset="pd">Prisoner's Dilemma</button>
+      <button class="btn btn-secondary" data-preset="stag">Stag Hunt</button>
+      <button class="btn btn-secondary" data-preset="chicken">Chicken</button>
+      <button class="btn btn-secondary" data-preset="bos">Battle of the Sexes</button>
+    </div>
+
+    <table class="nash-matrix" id="nash-grid" style="margin: 0 auto;">
+      <tr>
+        <td></td>
+        <td class="header-cell">Col: Left</td>
+        <td class="header-cell">Col: Right</td>
+      </tr>
+      <tr>
+        <td class="header-cell" style="text-align: right; padding-right: 12px;">Row: Up</td>
+        <td>
+          <div class="cell-pair" id="nash-00">
+            <input type="number" id="n-00-p1" value="3">,
+            <input type="number" id="n-00-p2" value="3">
+            <span class="ne-badge">NE</span>
+          </div>
+        </td>
+        <td>
+          <div class="cell-pair" id="nash-01">
+            <input type="number" id="n-01-p1" value="0">,
+            <input type="number" id="n-01-p2" value="5">
+            <span class="ne-badge">NE</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="header-cell" style="text-align: right; padding-right: 12px;">Row: Down</td>
+        <td>
+          <div class="cell-pair" id="nash-10">
+            <input type="number" id="n-10-p1" value="5">,
+            <input type="number" id="n-10-p2" value="0">
+            <span class="ne-badge">NE</span>
+          </div>
+        </td>
+        <td>
+          <div class="cell-pair" id="nash-11">
+            <input type="number" id="n-11-p1" value="1">,
+            <input type="number" id="n-11-p2" value="1">
+            <span class="ne-badge">NE</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="nash-result" id="nash-result">Click "Find Nash Equilibria" or edit the matrix.</div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="nash-find">Find Nash Equilibria</button>
+    </div>
+  </div>
+
+  <p>Load the <strong>Stag Hunt</strong> preset: both (Up, Left) and (Down, Right) are Nash equilibria. The cooperative outcome is stable &mdash; but so is the cautious, individually safe outcome. Which equilibrium players converge to depends on <em>trust</em>.</p>
+</section>
+
+<!-- ======== III. WHEN THE GAME NEVER ENDS ======== -->
+<section id="sec-iterated" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">III.</span>
+    <h2>When the Game Never Ends</h2>
+  </div>
+
+  <p>The Prisoner's Dilemma seems hopeless &mdash; but that's only true when you play it <em>once</em>. In the real world, we interact with the same people repeatedly. Your neighbor, your colleague, your trading partner &mdash; you'll see them again tomorrow.</p>
+
+  <p>When the game is repeated, a remarkable thing happens: <strong>cooperation becomes rational.</strong></p>
+
+  <p>The logic is simple. If I cooperate today and you defect, you gain a short-term advantage. But tomorrow I will defect in retaliation. And the day after that. The one-time gain from defection is swallowed by the ongoing cost of mutual punishment.</p>
+
+  <p>This is called the <strong>shadow of the future</strong> &mdash; the prospect of future interaction transforms the incentive structure. When players value future payoffs sufficiently (when the <em>discount factor</em> $\delta$ is high enough), cooperation sustained by reciprocity becomes a Nash equilibrium of the repeated game.</p>
+
+  <div class="callout math-box">
+    <strong>The Folk Theorem (informal)</strong><br>
+    If the game is repeated indefinitely and players are patient enough ($\delta$ close to 1), then <em>any</em> feasible payoff above the one-shot Nash equilibrium payoff can be sustained as a Nash equilibrium of the repeated game. Cooperation isn't just possible &mdash; it's one of many equilibria.
+  </div>
+
+  <p>Consider the Tit-for-Tat strategy: cooperate on the first move, then copy whatever your opponent did last round. For Tit-for-Tat to sustain cooperation, the discount factor must satisfy:</p>
+
+  <p style="text-align: center;">$\delta \geq \frac{T - R}{T - P}$</p>
+
+  <p>Where $T = 5$ (temptation), $R = 3$ (reward), $P = 1$ (punishment). That gives $\delta \geq \frac{5 - 3}{5 - 1} = 0.5$. As long as you value the future at least half as much as the present, cooperation is self-sustaining.</p>
+
+  <!-- Inline SVG: Shadow of the Future -->
+  <div style="margin: 32px 0; text-align: center;">
+    <svg viewBox="0 0 600 140" style="max-width: 100%; height: auto;">
+      <!-- Temptation bar -->
+      <rect x="40" y="20" width="40" height="80" rx="4" fill="#DC2626" opacity="0.85"/>
+      <text x="60" y="116" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#DC2626" font-weight="600">Tempt</text>
+      <text x="60" y="16" text-anchor="middle" font-family="Source Code Pro, monospace" font-size="12" fill="#DC2626">+5</text>
+
+      <!-- Divider -->
+      <text x="105" y="68" font-family="Figtree, sans-serif" font-size="22" fill="#999" text-anchor="middle">vs</text>
+
+      <!-- Cooperation stream -->
+      <circle cx="160" cy="55" r="22" fill="#D97706" opacity="0.9"/>
+      <text x="160" y="59" text-anchor="middle" font-family="Source Code Pro, monospace" font-size="11" fill="white" font-weight="600">+3</text>
+
+      <circle cx="220" cy="55" r="18" fill="#D97706" opacity="0.7"/>
+      <text x="220" y="59" text-anchor="middle" font-family="Source Code Pro, monospace" font-size="10" fill="white" font-weight="600">+3</text>
+
+      <circle cx="272" cy="55" r="15" fill="#D97706" opacity="0.55"/>
+      <text x="272" y="59" text-anchor="middle" font-family="Source Code Pro, monospace" font-size="9" fill="white" font-weight="600">+3</text>
+
+      <circle cx="316" cy="55" r="12" fill="#D97706" opacity="0.4"/>
+      <text x="316" y="59" text-anchor="middle" font-family="Source Code Pro, monospace" font-size="8" fill="white" font-weight="600">+3</text>
+
+      <circle cx="352" cy="55" r="9" fill="#D97706" opacity="0.3"/>
+      <circle cx="380" cy="55" r="7" fill="#D97706" opacity="0.2"/>
+      <circle cx="402" cy="55" r="5" fill="#D97706" opacity="0.15"/>
+
+      <text x="420" y="59" font-family="Figtree, sans-serif" font-size="16" fill="#999">...</text>
+
+      <text x="280" y="116" text-anchor="middle" font-family="Figtree, sans-serif" font-size="11" fill="#B45309" font-weight="600">Stream of cooperation payoffs (discounted)</text>
+
+      <!-- Sum label -->
+      <text x="480" y="59" text-anchor="middle" font-family="Source Code Pro, monospace" font-size="13" fill="#D97706" font-weight="700">= 3/(1-&delta;)</text>
+    </svg>
+  </div>
+  <p class="figure-caption">The one-time temptation to defect (red) versus the infinite stream of discounted cooperation payoffs (amber). When the stream outweighs the temptation, cooperation is rational.</p>
+
+  <p>But there's a catch. If both players <em>know</em> the game ends after exactly $N$ rounds, backward induction unravels cooperation: in the last round, there's no future to threaten, so both defect. But then the second-to-last round is effectively the last meaningful round &mdash; so both defect there too. The logic cascades backward to round one.</p>
+
+  <p>This is why indefinite repetition (or at least uncertainty about the end date) is essential. The <em>possibility</em> of future interaction is what sustains cooperation. Go back to Demo 1 and try playing against Tit-for-Tat &mdash; you'll feel the shadow of the future in your decisions.</p>
+</section>
+
+<!-- ======== IV. AXELROD'S TOURNAMENT ======== -->
+<section id="sec-axelrod" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IV.</span>
+    <h2>The Tournament That Changed Everything</h2>
+  </div>
+
+  <p>In 1980, political scientist <strong>Robert Axelrod</strong> did something audacious. He invited the world's leading game theorists to submit computer programs for an iterated Prisoner's Dilemma tournament. Each program would play against every other program for 200 rounds. The winner: highest total score.</p>
+
+  <p>Fourteen strategies were submitted. Some were fiendishly complex, analyzing patterns and setting traps. The winner was the simplest entry of all: <strong>Tit-for-Tat</strong>, submitted by mathematician <strong>Anatol Rapoport</strong>. Four lines of code. Cooperate first. Then copy whatever your opponent did last round.</p>
+
+  <p>Axelrod announced the results and held a second tournament. This time, 62 entries. Everyone knew Tit-for-Tat had won. Sophisticated strategies were designed specifically to beat it. <em>Tit-for-Tat won again.</em></p>
+
+  <p>Why? Axelrod identified four properties that made TfT successful:</p>
+
+  <p><strong>Nice:</strong> It never defects first. <strong>Retaliatory:</strong> It punishes defection immediately. <strong>Forgiving:</strong> It returns to cooperation after a single retaliation. <strong>Clear:</strong> Its behavior is easy to predict, which helps opponents learn to cooperate with it.</p>
+
+  <p>Run the tournament yourself. Toggle strategies on and off and see how the rankings shift.</p>
+
+  <!-- DEMO 3: Tournament -->
+  <div class="demo" id="demo-tournament">
+    <div class="demo-title">Demo 3 &middot; Round-Robin Tournament</div>
+
+    <div class="strat-toggles" id="strat-toggles"></div>
+
+    <div class="controls" style="margin-top: 14px;">
+      <div class="control-group" style="min-width: 160px;">
+        <label>Rounds per match</label>
+        <select id="tourn-rounds">
+          <option value="10">10 rounds</option>
+          <option value="50">50 rounds</option>
+          <option value="200" selected>200 rounds</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="tourn-run">Run Tournament</button>
+    </div>
+
+    <div id="tourn-results" style="margin-top: 14px;"></div>
+  </div>
+
+  <p>Notice: <strong>Always Defect</strong> can never be beaten in a single match &mdash; but it scores terribly in a tournament. It squeezes a few extra points from cooperators, then earns the minimum against everyone else. Meanwhile, Tit-for-Tat cooperates with cooperators (earning R every round) and limits its losses against defectors (earning P after one round of S).</p>
+
+  <div class="callout fun">
+    <strong>The deeper lesson:</strong> Tit-for-Tat never "wins" a match. Against any opponent, it either ties or loses by one round (the first-round cooperation against a defector). It dominates the tournament not by beating opponents, but by eliciting cooperation from cooperative opponents and avoiding catastrophic exploitation.
+  </div>
+</section>
+
+<!-- ======== V. PLAYING UNPREDICTABLY ======== -->
+<section id="sec-mixed" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">V.</span>
+    <h2>Playing Unpredictably</h2>
+  </div>
+
+  <p>Consider Rock-Paper-Scissors. If you always play Rock, your opponent plays Paper and you always lose. If you always play Scissors, they play Rock. Any <em>deterministic</em> strategy can be exploited by an opponent who figures out your pattern.</p>
+
+  <p>The solution: <strong>randomize.</strong> If you play each option with probability 1/3, no opponent can do better than breaking even. This is a <strong>mixed-strategy Nash equilibrium</strong> &mdash; neither player can improve their expected payoff by changing their randomization.</p>
+
+  <p>Mixed strategies aren't just theory. In professional soccer, penalty kick data shows that goalkeepers and shooters approximate the Nash equilibrium frequencies &mdash; shooters mix left and right kicks to make the keeper indifferent, and keepers mix dives to make the shooter indifferent.</p>
+
+  <div class="callout math-box">
+    <strong>Von Neumann's Minimax Theorem (1928)</strong><br>
+    Every finite two-player zero-sum game has a solution in mixed strategies. Both players have strategies guaranteeing them at least their equilibrium payoff, no matter what the opponent does. The game has a determinate "value."
+  </div>
+
+  <p>The key insight: in a mixed-strategy equilibrium, you randomize to make your <em>opponent</em> indifferent. If the goalkeeper dives left 50% and right 50%, you adjust your kick probabilities to make them unable to exploit any pattern. And they do the same to you.</p>
+
+  <p>Explore the strategy space below. Drag the point inside the triangle to change your probability mix and see how your expected payoff changes.</p>
+
+  <!-- DEMO 4: Mixed Strategy Explorer -->
+  <div class="demo" id="demo-mixed">
+    <div class="demo-title">Demo 4 &middot; Mixed Strategy Explorer</div>
+
+    <div class="controls" style="margin-top: 0; margin-bottom: 14px;">
+      <button class="btn btn-secondary active" data-game="rps">Rock-Paper-Scissors</button>
+      <button class="btn btn-secondary" data-game="mp">Matching Pennies</button>
+    </div>
+
+    <canvas id="mixed-canvas" style="cursor: crosshair;"></canvas>
+
+    <div style="margin-top: 14px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+      <div style="font-family: var(--font-sans); font-size: 14px;">
+        <strong>Your mix:</strong> <span id="mixed-probs" style="font-family: var(--font-mono); color: var(--accent);"></span>
+      </div>
+      <div style="font-family: var(--font-sans); font-size: 14px;">
+        <strong>Expected payoff:</strong> <span id="mixed-payoff" style="font-family: var(--font-mono); color: var(--accent); font-weight: 700;"></span>
+      </div>
+    </div>
+
+    <div style="margin-top: 8px; font-family: var(--font-sans); font-size: 13px; color: var(--text-secondary);" id="mixed-nash-label"></div>
+  </div>
+  <p class="figure-caption">Drag the amber dot inside the triangle. Each corner represents a pure strategy; interior points represent probability mixes. The heat map shows your expected payoff when the opponent plays the Nash equilibrium. At the Nash point, no deviation helps you.</p>
+</section>
+
+<!-- ======== VI. THE TRAGEDY WE KEEP REPEATING ======== -->
+<section id="sec-commons" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VI.</span>
+    <h2>The Tragedy We Keep Repeating</h2>
+  </div>
+
+  <p>In 1968, ecologist <strong>Garrett Hardin</strong> published one of the most influential essays of the 20th century: "The Tragedy of the Commons." The argument is simple and devastating.</p>
+
+  <p>Imagine a shared pasture. Each farmer decides how many cows to graze. Adding one more cow benefits the farmer by one unit of milk. But the cost &mdash; the grass consumed &mdash; is shared among all farmers. Each farmer's rational calculation: the private benefit exceeds the private cost, so add another cow. Every farmer reasons this way. The pasture is destroyed.</p>
+
+  <p>This is an <strong>N-player Prisoner's Dilemma</strong>. Each individual's dominant strategy is to overuse the shared resource, even though collective restraint would benefit everyone. The result: overfishing, aquifer depletion, carbon emissions, antibiotic resistance.</p>
+
+  <p>Try managing a shared fishery below. Control your harvest rate while AI agents pursue their own strategies.</p>
+
+  <!-- DEMO 5: Commons Simulation -->
+  <div class="demo" id="demo-commons">
+    <div class="demo-title">Demo 5 &middot; The Tragedy of the Commons</div>
+
+    <div class="resource-bar">
+      <div class="resource-fill" id="resource-fill" style="width: 100%; background: var(--accent);">100%</div>
+    </div>
+
+    <canvas id="commons-canvas"></canvas>
+
+    <div class="commons-stats">
+      <div class="commons-stat">
+        <div class="stat-label">Your Catch</div>
+        <div class="stat-value" id="commons-your-catch">0</div>
+      </div>
+      <div class="commons-stat">
+        <div class="stat-label">Fishery Health</div>
+        <div class="stat-value" id="commons-health">100%</div>
+      </div>
+      <div class="commons-stat">
+        <div class="stat-label">Season</div>
+        <div class="stat-value" id="commons-season">0</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Your Harvest Rate</label>
+          <span class="value-display" id="harvest-val">30%</span>
+        </div>
+        <input type="range" id="harvest-slider" min="0" max="100" value="30">
+      </div>
+      <div class="control-group" style="min-width: 160px;">
+        <label>AI Strategy</label>
+        <select id="commons-ai">
+          <option value="greedy">Greedy (max harvest)</option>
+          <option value="cautious">Cautious (20% harvest)</option>
+          <option value="adaptive">Adaptive (responds to stock)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Number of AI Agents</label>
+          <span class="value-display" id="agents-val">5</span>
+        </div>
+        <input type="range" id="agents-slider" min="3" max="15" value="5" step="1">
+      </div>
+      <button class="btn btn-secondary" id="commons-reset">Reset</button>
+    </div>
+  </div>
+
+  <p>Set the AI to <strong>Greedy</strong> and watch the fishery collapse, no matter how carefully you harvest. Even if you set your rate to zero, the AI agents drain it alone. Now switch to <strong>Cautious</strong> &mdash; the fishery sustains itself. The problem isn't individual greed; it's the <em>structure</em> of the interaction.</p>
+
+  <p>Economist <strong>Elinor Ostrom</strong> won the Nobel Prize in 2009 for showing that the tragedy of the commons is <em>not</em> inevitable. Real communities around the world have successfully managed shared resources for centuries through local norms, monitoring, and graduated sanctions &mdash; without privatization or top-down regulation.</p>
+</section>
+
+<!-- ======== VII. EVOLUTION PLAYS TOO ======== -->
+<section id="sec-evo" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VII.</span>
+    <h2>Evolution Plays Too</h2>
+  </div>
+
+  <p>In 1973, biologist <strong>John Maynard Smith</strong> realized that game theory applies to evolution. Animals don't <em>choose</em> strategies &mdash; their strategies are encoded in genes, and natural selection determines which ones spread.</p>
+
+  <p>Consider the <strong>Hawk-Dove game</strong>. Two animals compete for a resource worth $V$. Hawks always fight; Doves display and retreat. If two Hawks meet, they fight and risk injury &mdash; expected payoff $(V-C)/2$ each. Hawk meets Dove: Hawk gets $V$, Dove gets 0. Two Doves: they share, $V/2$ each.</p>
+
+  <p>If fighting is costly ($C > V$), a pure Hawk population can be invaded by Doves (who avoid costly fights), and a pure Dove population can be invaded by Hawks (who take everything). The result is a mixed population &mdash; an <strong>Evolutionarily Stable Strategy (ESS)</strong> with exactly $V/C$ proportion of Hawks.</p>
+
+  <p>Below, watch three strategies compete for survival in a population. Strategies that earn above-average payoffs reproduce faster. Strategies that underperform shrink.</p>
+
+  <!-- DEMO 6: Evolutionary Dynamics -->
+  <div class="demo" id="demo-evo">
+    <div class="demo-title">Demo 6 &middot; Evolutionary Dynamics</div>
+
+    <div class="evo-legend">
+      <div class="evo-legend-item"><div class="evo-legend-dot" style="background: var(--green);"></div> Cooperators</div>
+      <div class="evo-legend-item"><div class="evo-legend-dot" style="background: var(--red);"></div> Defectors</div>
+      <div class="evo-legend-item"><div class="evo-legend-dot" style="background: var(--accent);"></div> Tit-for-Tat</div>
+    </div>
+
+    <canvas id="evo-canvas"></canvas>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Initial Cooperators</label>
+          <span class="value-display" id="evo-coop-val">10%</span>
+        </div>
+        <input type="range" id="evo-coop" min="0" max="100" value="10">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Initial Defectors</label>
+          <span class="value-display" id="evo-defect-val">80%</span>
+        </div>
+        <input type="range" id="evo-defect" min="0" max="100" value="80">
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Mutation Rate</label>
+          <span class="value-display" id="evo-mut-val">1%</span>
+        </div>
+        <input type="range" id="evo-mut" min="0" max="50" value="10">
+      </div>
+      <button class="btn btn-primary" id="evo-start">Start</button>
+      <button class="btn btn-secondary" id="evo-reset">Reset</button>
+    </div>
+  </div>
+
+  <p>Start with 80% defectors. Defectors dominate immediately &mdash; they exploit the few cooperators and earn more than the cooperators do. But notice what happens to <strong>Tit-for-Tat</strong>: it cooperates with cooperators (earning R) and retaliates against defectors (earning P after one round of S). If TfT reaches critical mass, it outperforms defectors and takes over.</p>
+
+  <p>With <strong>mutation</strong> turned on, even an extinct strategy can spontaneously reappear. This mirrors biological reality &mdash; cooperation can evolve from scratch if a few cooperators happen to find each other.</p>
+</section>
+
+<!-- ======== VIII. DESIGNING THE RULES ======== -->
+<section id="sec-design" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VIII.</span>
+    <h2>Designing the Rules of the Game</h2>
+  </div>
+
+  <p>Everything so far has asked the same question: <em>given the rules, what will rational agents do?</em> Mechanism design asks the inverse: <em>what rules produce the outcomes we want?</em></p>
+
+  <p>This is not wishful thinking. It is rigorous mathematics, and it has generated multiple Nobel Prizes.</p>
+
+  <div class="callout">
+    <strong>The Vickrey Auction</strong><br>
+    Everyone submits a sealed bid. The highest bidder wins &mdash; but pays the <em>second-highest</em> price. In this auction, bidding your true value is a dominant strategy. Bid higher and you risk overpaying. Bid lower and you risk losing an item worth more to you than the price. This elegant mechanism extracts honest valuations without requiring trust.
+  </div>
+
+  <p>Consider why this works. In a standard first-price auction, you face a dilemma: bid your true value and win but overpay, or shade your bid down and risk losing. The optimal strategy depends on guessing what others will bid &mdash; a messy game. The second-price rule eliminates this entirely. Your bid determines whether you win; someone else's bid determines what you pay. There is no tension.</p>
+
+  <div class="callout">
+    <strong>Kidney Exchange</strong><br>
+    Selling kidneys is illegal, so patients who need a transplant can't simply buy one. But suppose Alice wants to donate to Bob, and Bob's body would reject Alice's kidney. Meanwhile, Carol wants to donate to Dave, and Dave would reject Carol's kidney. But Alice's kidney matches Dave, and Carol's matches Bob. The solution: a <em>swap</em>. Alvin Roth's matching algorithms find these cycles among thousands of patient-donor pairs, saving lives by redesigning the rules of exchange. Nobel Prize, 2012.
+  </div>
+
+  <p>The Prisoner's Dilemma, the tragedy of the commons, the arms race &mdash; none of these are inevitable consequences of selfishness. They are consequences of <em>bad rules</em>. The same rational agents who destroy a commons will sustain it if the rules include monitoring and graduated sanctions (Ostrom). The same bidders who shade their bids in a first-price auction will reveal their true values in a Vickrey auction.</p>
+
+  <div class="callout">
+    <strong>Ostrom's Design Principles for Sustainable Commons</strong><br>
+    1. Clear boundaries &mdash; who can use the resource.<br>
+    2. Rules match local conditions.<br>
+    3. Users participate in rule-making.<br>
+    4. Effective monitoring.<br>
+    5. Graduated sanctions for violations.<br>
+    6. Fast, low-cost conflict resolution.<br>
+    7. External authorities respect the community's right to organize.<br>
+    8. Nested governance for large systems.
+  </div>
+
+  <p>This is the deepest lesson of game theory: <strong>the game is not fixed.</strong> We can change the rules. And when we design them well, rational self-interest produces cooperation, honesty, and efficiency &mdash; not as a moral triumph, but as an equilibrium.</p>
+</section>
+
+<!-- ======== IX. QUIZ ======== -->
+<section id="sec-quiz" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IX.</span>
+    <h2>Test Your Intuition</h2>
+  </div>
+
+  <p>Eight sections, six demos. Let's see which ideas stuck.</p>
+
+  <div class="predict-card" id="predict-1">
+    <div class="question">Two gas stations on opposite corners keep lowering prices until both barely profit. This is an example of...</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="a">A Nash equilibrium</button>
+      <button class="btn btn-secondary" data-answer="b">A coordination failure</button>
+      <button class="btn btn-secondary" data-answer="c">Both A and B</button>
+    </div>
+    <div class="reveal-area"><p></p></div>
+  </div>
+
+  <div class="predict-card" id="predict-2">
+    <div class="question">Tit-for-Tat won Axelrod's tournament despite never being the highest scorer in any individual match. How is that possible?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="a">It beat every strategy head-to-head</button>
+      <button class="btn btn-secondary" data-answer="b">It scored consistently well and avoided catastrophic losses</button>
+      <button class="btn btn-secondary" data-answer="c">The tournament scoring was flawed</button>
+    </div>
+    <div class="reveal-area"><p></p></div>
+  </div>
+
+  <div class="predict-card" id="predict-3">
+    <div class="question">A goalkeeper always dives left on penalty kicks. What is the shooter's best response?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="a">Always kick right</button>
+      <button class="btn btn-secondary" data-answer="b">Randomize left and right</button>
+      <button class="btn btn-secondary" data-answer="c">Always kick left (to trick the keeper)</button>
+    </div>
+    <div class="reveal-area"><p></p></div>
+  </div>
+
+</section>
+
+<!-- ======== FOOTNOTE ======== -->
+<div class="footnote reveal">
+  <p><strong>Further reading:</strong></p>
+  <p>Robert Axelrod, <em>The Evolution of Cooperation</em> (1984) &mdash; the book based on the tournament. Essential.</p>
+  <p>Ken Binmore, <em>Playing for Real: A Text on Game Theory</em> (2007) &mdash; accessible and rigorous.</p>
+  <p>Elinor Ostrom, <em>Governing the Commons</em> (1990) &mdash; how real communities solve the tragedy of the commons.</p>
+  <p>William Poundstone, <em>Prisoner's Dilemma</em> (1992) &mdash; the history, the people, the nuclear stakes.</p>
+</div>
+
+</article>
+
+<script>
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function setupCanvas(canvas, fixedHeight) {
+  var rect = canvas.parentElement.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = fixedHeight * dpr;
+  canvas.style.height = fixedHeight + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: rect.width, h: fixedHeight };
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+var revealObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+/* ============================================================
+   STRATEGIES (shared by Demo 1, 3, 6)
+   ============================================================ */
+var STRATEGIES = {
+  alwaysCooperate: {
+    name: 'Always Cooperate', short: 'AllC', nice: true,
+    getMove: function() { return 'C'; }
+  },
+  alwaysDefect: {
+    name: 'Always Defect', short: 'AllD', nice: false,
+    getMove: function() { return 'D'; }
+  },
+  titForTat: {
+    name: 'Tit-for-Tat', short: 'TfT', nice: true,
+    getMove: function(my, opp) { return opp.length === 0 ? 'C' : opp[opp.length - 1]; }
+  },
+  titForTwoTats: {
+    name: 'Tit-for-Two-Tats', short: 'Tf2T', nice: true,
+    getMove: function(my, opp) {
+      var n = opp.length;
+      if (n < 2) return 'C';
+      return (opp[n-1] === 'D' && opp[n-2] === 'D') ? 'D' : 'C';
+    }
+  },
+  grudger: {
+    name: 'Grudger', short: 'Grim', nice: true,
+    getMove: function(my, opp) { return opp.indexOf('D') >= 0 ? 'D' : 'C'; }
+  },
+  random: {
+    name: 'Random', short: 'Rand', nice: false,
+    getMove: function() { return Math.random() < 0.5 ? 'C' : 'D'; }
+  },
+  pavlov: {
+    name: 'Pavlov', short: 'Pav', nice: true,
+    getMove: function(my, opp) {
+      if (my.length === 0) return 'C';
+      return (my[my.length-1] === opp[opp.length-1]) ? 'C' : 'D';
+    }
+  },
+  generousTfT: {
+    name: 'Generous TfT', short: 'GTfT', nice: true,
+    getMove: function(my, opp) {
+      if (opp.length === 0) return 'C';
+      if (opp[opp.length-1] === 'C') return 'C';
+      return Math.random() < 0.1 ? 'C' : 'D';
+    }
+  }
+};
+
+var PD = { T: 5, R: 3, P: 1, S: 0 };
+
+function getPayoff(a, b) {
+  if (a === 'C' && b === 'C') return [PD.R, PD.R];
+  if (a === 'C' && b === 'D') return [PD.S, PD.T];
+  if (a === 'D' && b === 'C') return [PD.T, PD.S];
+  return [PD.P, PD.P];
+}
+
+function runMatch(stratA, stratB, rounds) {
+  var hA = [], hB = [], sA = 0, sB = 0;
+  for (var r = 0; r < rounds; r++) {
+    var mA = stratA.getMove(hA.slice(), hB.slice());
+    var mB = stratB.getMove(hB.slice(), hA.slice());
+    var p = getPayoff(mA, mB);
+    sA += p[0]; sB += p[1];
+    hA.push(mA); hB.push(mB);
+  }
+  return { scoreA: sA, scoreB: sB };
+}
+
+/* ============================================================
+   DEMO 1: PRISONER'S DILEMMA PLAYGROUND
+   ============================================================ */
+(function() {
+  var yourScore = 0, oppScore = 0, roundNum = 0;
+  var myHist = [], oppHist = [];
+
+  var scoreEl = document.getElementById('pd-your-score');
+  var oppScoreEl = document.getElementById('pd-opp-score');
+  var roundsEl = document.getElementById('pd-rounds');
+  var logBody = document.getElementById('pd-log-body');
+  var stratSelect = document.getElementById('pd-strategy');
+  var cells = {
+    cc: document.getElementById('cell-cc'),
+    cd: document.getElementById('cell-cd'),
+    dc: document.getElementById('cell-dc'),
+    dd: document.getElementById('cell-dd')
+  };
+
+  function highlightCell(you, opp) {
+    Object.values(cells).forEach(function(c) { c.classList.remove('active-cell'); });
+    var key = (you === 'C' ? 'c' : 'd') + (opp === 'C' ? 'c' : 'd');
+    cells[key].classList.add('active-cell');
+  }
+
+  function getOppMove() {
+    var strat = STRATEGIES[stratSelect.value];
+    return strat.getMove(oppHist.slice(), myHist.slice());
+  }
+
+  function playRound(myMove) {
+    var oppMove = getOppMove();
+    var p = getPayoff(myMove, oppMove);
+    yourScore += p[0]; oppScore += p[1]; roundNum++;
+    myHist.push(myMove); oppHist.push(oppMove);
+
+    scoreEl.textContent = yourScore;
+    oppScoreEl.textContent = oppScore;
+    roundsEl.textContent = roundNum;
+    highlightCell(myMove, oppMove);
+
+    var row = document.createElement('tr');
+    row.innerHTML = '<td>' + roundNum + '</td>' +
+      '<td class="move-' + myMove.toLowerCase() + '">' + (myMove === 'C' ? 'Cooperate' : 'Defect') + '</td>' +
+      '<td class="move-' + oppMove.toLowerCase() + '">' + (oppMove === 'C' ? 'Cooperate' : 'Defect') + '</td>' +
+      '<td>+' + p[0] + '</td><td>+' + p[1] + '</td>';
+    logBody.insertBefore(row, logBody.firstChild);
+
+    // Keep only last 20 rows
+    while (logBody.children.length > 20) logBody.removeChild(logBody.lastChild);
+  }
+
+  document.getElementById('pd-cooperate').addEventListener('click', function() { playRound('C'); });
+  document.getElementById('pd-defect').addEventListener('click', function() { playRound('D'); });
+
+  document.getElementById('pd-play10').addEventListener('click', function() {
+    for (var i = 0; i < 10; i++) playRound('D');
+  });
+
+  document.getElementById('pd-reset').addEventListener('click', function() {
+    yourScore = 0; oppScore = 0; roundNum = 0;
+    myHist = []; oppHist = [];
+    scoreEl.textContent = '0'; oppScoreEl.textContent = '0'; roundsEl.textContent = '0';
+    logBody.innerHTML = '';
+    Object.values(cells).forEach(function(c) { c.classList.remove('active-cell'); });
+  });
+})();
+
+/* ============================================================
+   DEMO 2: NASH EQUILIBRIUM FINDER
+   ============================================================ */
+(function() {
+  var presets = {
+    pd: [[3, 3], [0, 5], [5, 0], [1, 1]],
+    stag: [[4, 4], [0, 3], [3, 0], [2, 2]],
+    chicken: [[3, 3], [1, 5], [5, 1], [0, 0]],
+    bos: [[3, 2], [0, 0], [0, 0], [2, 3]]
+  };
+
+  var ids = ['00', '01', '10', '11'];
+  var inputEls = {};
+  ids.forEach(function(id) {
+    inputEls[id] = {
+      p1: document.getElementById('n-' + id + '-p1'),
+      p2: document.getElementById('n-' + id + '-p2'),
+      cell: document.getElementById('nash-' + id)
+    };
+  });
+  var resultEl = document.getElementById('nash-result');
+
+  function loadPreset(name) {
+    var p = presets[name];
+    var flat = [['00',0],['01',1],['10',2],['11',3]];
+    flat.forEach(function(f) {
+      inputEls[f[0]].p1.value = p[f[1]][0];
+      inputEls[f[0]].p2.value = p[f[1]][1];
+    });
+    findNash();
+  }
+
+  function getMatrix() {
+    return [
+      [[ +inputEls['00'].p1.value, +inputEls['00'].p2.value ], [ +inputEls['01'].p1.value, +inputEls['01'].p2.value ]],
+      [[ +inputEls['10'].p1.value, +inputEls['10'].p2.value ], [ +inputEls['11'].p1.value, +inputEls['11'].p2.value ]]
+    ];
+  }
+
+  function findNash() {
+    var m = getMatrix();
+    var nash = [];
+    var rowNames = ['Up', 'Down'];
+    var colNames = ['Left', 'Right'];
+
+    ids.forEach(function(id) { inputEls[id].cell.classList.remove('is-nash'); });
+
+    for (var r = 0; r < 2; r++) {
+      for (var c = 0; c < 2; c++) {
+        var p1here = m[r][c][0];
+        var p1alt = m[1-r][c][0];
+        var p2here = m[r][c][1];
+        var p2alt = m[r][1-c][1];
+        if (p1here >= p1alt && p2here >= p2alt) {
+          nash.push({ r: r, c: c, p1: p1here, p2: p2here });
+          inputEls[r + '' + c].cell.classList.add('is-nash');
+        }
+      }
+    }
+
+    if (nash.length === 0) {
+      resultEl.innerHTML = '<strong>No pure-strategy Nash equilibrium exists.</strong> This game may have a mixed-strategy equilibrium (see Section V).';
+    } else {
+      var msgs = nash.map(function(n) {
+        return '<strong>(' + rowNames[n.r] + ', ' + colNames[n.c] + ')</strong> is a Nash equilibrium. ' +
+          'Player 1 gets ' + n.p1 + ', Player 2 gets ' + n.p2 + '. ' +
+          'Neither player can improve by deviating alone.';
+      });
+      resultEl.innerHTML = msgs.join('<br><br>');
+    }
+  }
+
+  document.querySelectorAll('#demo-nash .btn-secondary[data-preset]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#demo-nash .btn-secondary[data-preset]').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      loadPreset(btn.dataset.preset);
+    });
+  });
+
+  document.getElementById('nash-find').addEventListener('click', findNash);
+
+  // Also find on input change
+  ids.forEach(function(id) {
+    inputEls[id].p1.addEventListener('input', findNash);
+    inputEls[id].p2.addEventListener('input', findNash);
+  });
+
+  // Initial
+  findNash();
+})();
+
+/* ============================================================
+   DEMO 3: ROUND-ROBIN TOURNAMENT
+   ============================================================ */
+(function() {
+  var stratKeys = ['alwaysCooperate', 'alwaysDefect', 'titForTat', 'titForTwoTats', 'grudger', 'random', 'pavlov', 'generousTfT'];
+  var active = {};
+  stratKeys.forEach(function(k) { active[k] = true; });
+
+  var togglesEl = document.getElementById('strat-toggles');
+  var resultsEl = document.getElementById('tourn-results');
+
+  // Build toggle buttons
+  stratKeys.forEach(function(k) {
+    var btn = document.createElement('button');
+    btn.className = 'strat-toggle on';
+    btn.textContent = STRATEGIES[k].name;
+    btn.dataset.key = k;
+    btn.addEventListener('click', function() {
+      active[k] = !active[k];
+      btn.classList.toggle('on', active[k]);
+    });
+    togglesEl.appendChild(btn);
+  });
+
+  function runTournament() {
+    var keys = stratKeys.filter(function(k) { return active[k]; });
+    if (keys.length < 2) {
+      resultsEl.innerHTML = '<p style="font-family:var(--font-sans);font-size:14px;color:var(--text-secondary);">Select at least 2 strategies.</p>';
+      return;
+    }
+
+    var rounds = parseInt(document.getElementById('tourn-rounds').value);
+    var scores = {};
+    keys.forEach(function(k) { scores[k] = 0; });
+
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = i; j < keys.length; j++) {
+        var result = runMatch(STRATEGIES[keys[i]], STRATEGIES[keys[j]], rounds);
+        scores[keys[i]] += result.scoreA;
+        scores[keys[j]] += result.scoreB;
+      }
+    }
+
+    var ranked = keys.slice().sort(function(a, b) { return scores[b] - scores[a]; });
+    var matches = keys.length; // each plays keys.length matches (including self)
+
+    var html = '<table class="tournament-table"><thead><tr><th>#</th><th>Strategy</th><th>Total Score</th><th>Avg/Round</th></tr></thead><tbody>';
+    ranked.forEach(function(k, idx) {
+      var avg = (scores[k] / (matches * rounds)).toFixed(2);
+      html += '<tr class="' + (idx === 0 ? 'rank-1' : '') + '">';
+      html += '<td>' + (idx + 1) + '</td>';
+      html += '<td class="strat-name">' + STRATEGIES[k].name + '</td>';
+      html += '<td class="score-col">' + scores[k] + '</td>';
+      html += '<td class="score-col">' + avg + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    resultsEl.innerHTML = html;
+  }
+
+  document.getElementById('tourn-run').addEventListener('click', runTournament);
+  runTournament();
+})();
+
+/* ============================================================
+   DEMO 4: MIXED STRATEGY EXPLORER
+   ============================================================ */
+(function() {
+  var canvas = document.getElementById('mixed-canvas');
+  var container = document.getElementById('demo-mixed');
+  var probsEl = document.getElementById('mixed-probs');
+  var payoffEl = document.getElementById('mixed-payoff');
+  var nashLabel = document.getElementById('mixed-nash-label');
+
+  var games = {
+    rps: {
+      names: ['Rock', 'Paper', 'Scissors'],
+      // Row player payoffs (zero-sum): RvR=0, RvP=-1, RvS=1, PvR=1, PvP=0, PvS=-1, SvR=-1, SvP=1, SvS=0
+      matrix: [[0,-1,1],[1,0,-1],[-1,1,0]],
+      nash: [1/3, 1/3, 1/3]
+    },
+    mp: {
+      names: ['Heads', 'Tails', ''],
+      // Matching Pennies: 2 strategies only, but we embed in 3-simplex by fixing third to 0
+      matrix: [[1,-1,-100],[-1,1,-100],[-100,-100,-100]],
+      nash: [0.5, 0.5, 0],
+      twoPlayer: true
+    }
+  };
+
+  var currentGame = 'rps';
+  var ctx, w, h;
+  var triVerts = []; // [top, bottom-left, bottom-right]
+  var pad = 50;
+  var userPoint = null;
+  var dragging = false;
+  var heatMapImage = null;
+
+  function initCanvas() {
+    var info = setupCanvas(canvas, 320);
+    ctx = info.ctx; w = info.w; h = info.h;
+    triVerts = [
+      { x: w / 2, y: pad },
+      { x: pad, y: h - pad },
+      { x: w - pad, y: h - pad }
+    ];
+    heatMapImage = null;
+  }
+
+  function baryToCart(a, b, c) {
+    return {
+      x: a * triVerts[0].x + b * triVerts[1].x + c * triVerts[2].x,
+      y: a * triVerts[0].y + b * triVerts[1].y + c * triVerts[2].y
+    };
+  }
+
+  function cartToBary(px, py) {
+    var v0 = triVerts[0], v1 = triVerts[1], v2 = triVerts[2];
+    var d = (v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y);
+    var a = ((v1.y - v2.y) * (px - v2.x) + (v2.x - v1.x) * (py - v2.y)) / d;
+    var b = ((v2.y - v0.y) * (px - v2.x) + (v0.x - v2.x) * (py - v2.y)) / d;
+    var c = 1 - a - b;
+    return { a: a, b: b, c: c };
+  }
+
+  function expectedPayoff(p, game) {
+    var g = games[game];
+    var q = g.nash;
+    var ep = 0;
+    for (var i = 0; i < 3; i++) {
+      for (var j = 0; j < 3; j++) {
+        if (g.twoPlayer && (i === 2 || j === 2)) continue;
+        ep += p[i] * q[j] * g.matrix[i][j];
+      }
+    }
+    return ep;
+  }
+
+  function buildHeatMap() {
+    var g = games[currentGame];
+    var imgData = ctx.createImageData(Math.ceil(w), Math.ceil(h));
+    for (var py = 0; py < h; py++) {
+      for (var px = 0; px < w; px++) {
+        var b = cartToBary(px, py);
+        var idx = (py * Math.ceil(w) + px) * 4;
+        if (b.a < -0.01 || b.b < -0.01 || b.c < -0.01) {
+          imgData.data[idx] = 245; imgData.data[idx+1] = 240; imgData.data[idx+2] = 232; imgData.data[idx+3] = 255;
+          continue;
+        }
+        var a = Math.max(0, b.a), bb = Math.max(0, b.b), cc = Math.max(0, b.c);
+        var s = a + bb + cc; a /= s; bb /= s; cc /= s;
+
+        if (g.twoPlayer && cc > 0.01) {
+          imgData.data[idx] = 245; imgData.data[idx+1] = 240; imgData.data[idx+2] = 232; imgData.data[idx+3] = 255;
+          continue;
+        }
+
+        var ep = expectedPayoff([a, bb, cc], currentGame);
+        // Map ep to color: -1 = red, 0 = white, +1 = green
+        var t = Math.max(-1, Math.min(1, ep));
+        if (t >= 0) {
+          imgData.data[idx] = Math.round(255 - t * 100);
+          imgData.data[idx+1] = Math.round(255 - t * 20);
+          imgData.data[idx+2] = Math.round(255 - t * 100);
+        } else {
+          imgData.data[idx] = 255;
+          imgData.data[idx+1] = Math.round(255 + t * 100);
+          imgData.data[idx+2] = Math.round(255 + t * 100);
+        }
+        imgData.data[idx+3] = 255;
+      }
+    }
+    heatMapImage = imgData;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    var g = games[currentGame];
+
+    // Heat map
+    if (heatMapImage) ctx.putImageData(heatMapImage, 0, 0);
+
+    // Triangle outline
+    ctx.beginPath();
+    ctx.moveTo(triVerts[0].x, triVerts[0].y);
+    ctx.lineTo(triVerts[1].x, triVerts[1].y);
+    ctx.lineTo(triVerts[2].x, triVerts[2].y);
+    ctx.closePath();
+    ctx.strokeStyle = '#999';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Labels
+    ctx.font = '600 13px Figtree, sans-serif';
+    ctx.fillStyle = '#2D2D2D';
+    ctx.textAlign = 'center';
+    ctx.fillText(g.names[0], triVerts[0].x, triVerts[0].y - 12);
+    ctx.fillText(g.names[1], triVerts[1].x - 10, triVerts[1].y + 20);
+    if (g.names[2]) ctx.fillText(g.names[2], triVerts[2].x + 10, triVerts[2].y + 20);
+
+    // Nash equilibrium point
+    var nashPt = baryToCart(g.nash[0], g.nash[1], g.nash[2]);
+    ctx.beginPath();
+    ctx.arc(nashPt.x, nashPt.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(217, 119, 6, 0.3)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(nashPt.x, nashPt.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#D97706';
+    ctx.fill();
+
+    // User point
+    if (userPoint) {
+      var up = baryToCart(userPoint[0], userPoint[1], userPoint[2]);
+      ctx.beginPath();
+      ctx.arc(up.x, up.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(217, 119, 6, 0.15)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(up.x, up.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#B45309';
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  function updateDisplay() {
+    var g = games[currentGame];
+    var p = userPoint || g.nash;
+    if (g.twoPlayer) {
+      probsEl.textContent = g.names[0] + ': ' + (p[0]*100).toFixed(0) + '%, ' + g.names[1] + ': ' + (p[1]*100).toFixed(0) + '%';
+    } else {
+      probsEl.textContent = g.names.map(function(n, i) { return n + ': ' + (p[i]*100).toFixed(0) + '%'; }).join(', ');
+    }
+    var ep = expectedPayoff(p, currentGame);
+    payoffEl.textContent = ep.toFixed(3);
+
+    var nashProbs = g.twoPlayer
+      ? g.names[0] + ' ' + (g.nash[0]*100).toFixed(0) + '%, ' + g.names[1] + ' ' + (g.nash[1]*100).toFixed(0) + '%'
+      : g.names.map(function(n, i) { return n + ' ' + (g.nash[i]*100).toFixed(0) + '%'; }).join(', ');
+    nashLabel.textContent = 'Nash equilibrium: ' + nashProbs + '. Expected payoff at Nash: 0.';
+  }
+
+  function handlePointer(e) {
+    var rect = canvas.getBoundingClientRect();
+    var px = e.clientX - rect.left;
+    var py = e.clientY - rect.top;
+    var b = cartToBary(px, py);
+    var g = games[currentGame];
+
+    if (g.twoPlayer) {
+      // Clamp to the line between vertex 0 and vertex 1
+      var a = Math.max(0, Math.min(1, b.a));
+      var bb = 1 - a;
+      userPoint = [a, bb, 0];
+    } else {
+      if (b.a < 0 || b.b < 0 || b.c < 0) return;
+      var s = b.a + b.b + b.c;
+      userPoint = [b.a / s, b.b / s, b.c / s];
+    }
+    draw();
+    updateDisplay();
+  }
+
+  canvas.addEventListener('mousedown', function(e) { dragging = true; handlePointer(e); });
+  canvas.addEventListener('mousemove', function(e) { if (dragging) handlePointer(e); });
+  window.addEventListener('mouseup', function() { dragging = false; });
+  canvas.addEventListener('touchstart', function(e) { e.preventDefault(); dragging = true; handlePointer(e.touches[0]); }, { passive: false });
+  canvas.addEventListener('touchmove', function(e) { e.preventDefault(); if (dragging) handlePointer(e.touches[0]); }, { passive: false });
+  canvas.addEventListener('touchend', function() { dragging = false; });
+
+  document.querySelectorAll('#demo-mixed .btn-secondary[data-game]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#demo-mixed .btn-secondary[data-game]').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentGame = btn.dataset.game;
+      userPoint = null;
+      initCanvas();
+      buildHeatMap();
+      draw();
+      updateDisplay();
+    });
+  });
+
+  window.addEventListener('resize', function() {
+    initCanvas();
+    buildHeatMap();
+    draw();
+  });
+
+  initCanvas();
+  userPoint = games[currentGame].nash.slice();
+  buildHeatMap();
+  draw();
+  updateDisplay();
+})();
+
+/* ============================================================
+   DEMO 5: COMMONS SIMULATION
+   ============================================================ */
+(function() {
+  var canvas = document.getElementById('commons-canvas');
+  var container = document.getElementById('demo-commons');
+  var resourceFill = document.getElementById('resource-fill');
+  var yourCatchEl = document.getElementById('commons-your-catch');
+  var healthEl = document.getElementById('commons-health');
+  var seasonEl = document.getElementById('commons-season');
+  var harvestSlider = document.getElementById('harvest-slider');
+  var harvestVal = document.getElementById('harvest-val');
+  var agentsSlider = document.getElementById('agents-slider');
+  var agentsVal = document.getElementById('agents-val');
+  var aiSelect = document.getElementById('commons-ai');
+
+  var ctx, w, h;
+  var resource = 1.0;
+  var yourCatch = 0;
+  var season = 0;
+  var collapsed = false;
+  var boats = [];
+  var isVisible = false;
+  var rafId = null;
+  var tickCount = 0;
+
+  var GROWTH_RATE = 0.03;
+
+  function initBoats() {
+    var info = setupCanvas(canvas, 200);
+    ctx = info.ctx; w = info.w; h = info.h;
+    boats = [];
+    var n = parseInt(agentsSlider.value) + 1; // +1 for user
+    for (var i = 0; i < n; i++) {
+      boats.push({
+        x: 30 + Math.random() * (w - 60),
+        y: 20 + Math.random() * (h - 40),
+        dx: (Math.random() - 0.5) * 0.4,
+        dy: (Math.random() - 0.5) * 0.4,
+        isUser: i === 0
+      });
+    }
+  }
+
+  function reset() {
+    resource = 1.0;
+    yourCatch = 0;
+    season = 0;
+    collapsed = false;
+    tickCount = 0;
+    initBoats();
+    updateDisplay();
+    draw();
+  }
+
+  function getAIHarvest() {
+    var strat = aiSelect.value;
+    if (strat === 'greedy') return 0.8;
+    if (strat === 'cautious') return 0.2;
+    // adaptive
+    return Math.max(0.05, resource * 0.5);
+  }
+
+  function step() {
+    if (collapsed) return;
+    tickCount++;
+    if (tickCount % 3 !== 0) return; // slow down
+
+    season++;
+    var nAI = parseInt(agentsSlider.value);
+    var userHarvest = parseInt(harvestSlider.value) / 100;
+    var aiHarvest = getAIHarvest();
+
+    var totalHarvest = userHarvest * 0.02 + aiHarvest * nAI * 0.02;
+
+    // Logistic growth
+    resource += GROWTH_RATE * resource * (1 - resource);
+    resource -= totalHarvest;
+
+    if (resource > 0) {
+      yourCatch += userHarvest * 0.02 * 100;
+    }
+
+    if (resource <= 0.01) {
+      resource = 0;
+      collapsed = true;
+    }
+    resource = Math.min(1, Math.max(0, resource));
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    var pct = Math.round(resource * 100);
+    resourceFill.style.width = pct + '%';
+    resourceFill.textContent = pct + '%';
+
+    if (resource > 0.5) resourceFill.style.background = '#D97706';
+    else if (resource > 0.2) resourceFill.style.background = '#EA580C';
+    else if (resource > 0) resourceFill.style.background = '#DC2626';
+    else resourceFill.style.background = '#6B7280';
+
+    yourCatchEl.textContent = Math.round(yourCatch);
+    healthEl.textContent = pct + '%';
+    seasonEl.textContent = season;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+
+    // Water background
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    if (resource > 0.5) {
+      grad.addColorStop(0, '#DBEAFE');
+      grad.addColorStop(1, '#93C5FD');
+    } else if (resource > 0.2) {
+      grad.addColorStop(0, '#FEF3C7');
+      grad.addColorStop(1, '#FCD34D');
+    } else {
+      grad.addColorStop(0, '#F3F4F6');
+      grad.addColorStop(1, '#D1D5DB');
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Boats
+    boats.forEach(function(b) {
+      b.x += b.dx + (Math.random() - 0.5) * 0.3;
+      b.y += b.dy + (Math.random() - 0.5) * 0.3;
+      if (b.x < 20) b.dx = Math.abs(b.dx);
+      if (b.x > w - 20) b.dx = -Math.abs(b.dx);
+      if (b.y < 15) b.dy = Math.abs(b.dy);
+      if (b.y > h - 15) b.dy = -Math.abs(b.dy);
+
+      ctx.save();
+      ctx.translate(b.x, b.y);
+
+      // Draw boat (triangle)
+      ctx.beginPath();
+      ctx.moveTo(0, -8);
+      ctx.lineTo(-6, 6);
+      ctx.lineTo(6, 6);
+      ctx.closePath();
+      ctx.fillStyle = b.isUser ? '#D97706' : '#6B7280';
+      ctx.fill();
+      ctx.strokeStyle = b.isUser ? '#78350F' : '#4B5563';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      if (b.isUser) {
+        ctx.font = '600 9px Figtree, sans-serif';
+        ctx.fillStyle = '#78350F';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOU', 0, -14);
+      }
+
+      ctx.restore();
+    });
+
+    if (collapsed) {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.font = '700 24px Figtree, sans-serif';
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.fillText('FISHERY COLLAPSED', w/2, h/2);
+      ctx.font = '500 14px Figtree, sans-serif';
+      ctx.fillText('Total catch: ' + Math.round(yourCatch), w/2, h/2 + 28);
+    }
+  }
+
+  function loop() {
+    if (!isVisible) { rafId = null; return; }
+    step();
+    draw();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  var visObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !isVisible) {
+        isVisible = true;
+        if (!rafId) rafId = requestAnimationFrame(loop);
+      } else if (!e.isIntersecting) {
+        isVisible = false;
+      }
+    });
+  }, { threshold: 0.1 });
+  visObs.observe(container);
+
+  harvestSlider.addEventListener('input', function() { harvestVal.textContent = this.value + '%'; });
+  agentsSlider.addEventListener('input', function() {
+    agentsVal.textContent = this.value;
+    reset();
+  });
+  aiSelect.addEventListener('change', function() { reset(); });
+  document.getElementById('commons-reset').addEventListener('click', reset);
+
+  window.addEventListener('resize', function() { initBoats(); });
+
+  reset();
+})();
+
+/* ============================================================
+   DEMO 6: EVOLUTIONARY DYNAMICS
+   ============================================================ */
+(function() {
+  var canvas = document.getElementById('evo-canvas');
+  var container = document.getElementById('demo-evo');
+
+  var coopSlider = document.getElementById('evo-coop');
+  var defectSlider = document.getElementById('evo-defect');
+  var mutSlider = document.getElementById('evo-mut');
+  var coopValEl = document.getElementById('evo-coop-val');
+  var defectValEl = document.getElementById('evo-defect-val');
+  var mutValEl = document.getElementById('evo-mut-val');
+
+  var ctx, w, h;
+  var N = 200;
+  var counts = { C: 20, D: 160, T: 20 };
+  var history = [];
+  var generation = 0;
+  var maxGen = 300;
+  var running = false;
+  var isVisible = false;
+  var rafId = null;
+  var dots = [];
+
+  // Payoff matrix between strategy types (expected per-round payoff over many rounds)
+  // C vs C: R=3, C vs D: S=0, C vs T: R=3 (TfT cooperates with C)
+  // D vs C: T=5, D vs D: P=1, D vs T: ~1.025 (TfT cooperates round 1 then defects)
+  // T vs C: R=3, T vs D: ~1.025, T vs T: R=3
+  var ROUNDS = 50;
+  function computePayoffMatrix() {
+    // Run actual matches for accuracy
+    var types = {
+      C: STRATEGIES.alwaysCooperate,
+      D: STRATEGIES.alwaysDefect,
+      T: STRATEGIES.titForTat
+    };
+    var pm = {};
+    ['C','D','T'].forEach(function(a) {
+      pm[a] = {};
+      ['C','D','T'].forEach(function(b) {
+        var result = runMatch(types[a], types[b], ROUNDS);
+        pm[a][b] = result.scoreA / ROUNDS;
+      });
+    });
+    return pm;
+  }
+  var payoffMatrix = computePayoffMatrix();
+
+  function initDots() {
+    dots = [];
+    for (var i = 0; i < N; i++) {
+      dots.push({
+        x: Math.random() * w * 0.45 + 10,
+        y: Math.random() * h + 0
+      });
+    }
+  }
+
+  function init() {
+    var info = setupCanvas(canvas, 300);
+    ctx = info.ctx; w = info.w; h = info.h;
+    initDots();
+  }
+
+  function reset() {
+    var cp = parseInt(coopSlider.value);
+    var dp = parseInt(defectSlider.value);
+    var tp = Math.max(0, 100 - cp - dp);
+
+    counts = {
+      C: Math.round(cp / 100 * N),
+      D: Math.round(dp / 100 * N),
+      T: 0
+    };
+    counts.T = N - counts.C - counts.D;
+    if (counts.T < 0) { counts.D += counts.T; counts.T = 0; }
+
+    history = [{ C: counts.C / N, D: counts.D / N, T: counts.T / N }];
+    generation = 0;
+    running = false;
+    document.getElementById('evo-start').textContent = 'Start';
+    init();
+    draw();
+  }
+
+  function step() {
+    if (generation >= maxGen) { running = false; document.getElementById('evo-start').textContent = 'Start'; return; }
+
+    var fC = counts.C / N, fD = counts.D / N, fT = counts.T / N;
+    var mu = parseInt(mutSlider.value) / 1000; // 0-5% range
+
+    // Expected payoffs
+    var wC = fC * payoffMatrix.C.C + fD * payoffMatrix.C.D + fT * payoffMatrix.C.T;
+    var wD = fC * payoffMatrix.D.C + fD * payoffMatrix.D.D + fT * payoffMatrix.D.T;
+    var wT = fC * payoffMatrix.T.C + fD * payoffMatrix.T.D + fT * payoffMatrix.T.T;
+
+    var wBar = fC * wC + fD * wD + fT * wT;
+    if (wBar <= 0) wBar = 0.001;
+
+    // Replicator dynamics
+    var newC = counts.C * (wC / wBar);
+    var newD = counts.D * (wD / wBar);
+    var newT = counts.T * (wT / wBar);
+
+    // Mutation
+    var totalMut = (newC + newD + newT) * mu;
+    newC = newC * (1 - mu) + totalMut / 3;
+    newD = newD * (1 - mu) + totalMut / 3;
+    newT = newT * (1 - mu) + totalMut / 3;
+
+    // Renormalize
+    var s = newC + newD + newT;
+    counts.C = Math.round(newC / s * N);
+    counts.D = Math.round(newD / s * N);
+    counts.T = N - counts.C - counts.D;
+    if (counts.T < 0) { counts.T = 0; }
+    if (counts.C < 0) counts.C = 0;
+    if (counts.D < 0) counts.D = 0;
+
+    generation++;
+    history.push({ C: counts.C / N, D: counts.D / N, T: counts.T / N });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, w, h);
+
+    var splitX = w * 0.45;
+
+    // Left panel: dots
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, splitX, h);
+    ctx.clip();
+
+    var idx = 0;
+    var colors = { C: '#16A34A', D: '#DC2626', T: '#D97706' };
+    ['C', 'D', 'T'].forEach(function(type) {
+      for (var i = 0; i < counts[type] && idx < dots.length; i++, idx++) {
+        var d = dots[idx];
+        d.x += (Math.random() - 0.5) * 1.5;
+        d.y += (Math.random() - 0.5) * 1.5;
+        d.x = Math.max(4, Math.min(splitX - 4, d.x));
+        d.y = Math.max(4, Math.min(h - 4, d.y));
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = colors[type];
+        ctx.fill();
+      }
+    });
+    ctx.restore();
+
+    // Divider
+    ctx.beginPath();
+    ctx.moveTo(splitX, 0);
+    ctx.lineTo(splitX, h);
+    ctx.strokeStyle = '#E5E5E0';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Right panel: line chart
+    var chartX = splitX + 20;
+    var chartW = w - splitX - 40;
+    var chartY = 30;
+    var chartH = h - 60;
+
+    // Axes
+    ctx.strokeStyle = '#D4D4D0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(chartX, chartY);
+    ctx.lineTo(chartX, chartY + chartH);
+    ctx.lineTo(chartX + chartW, chartY + chartH);
+    ctx.stroke();
+
+    // Y-axis labels
+    ctx.font = '500 10px Source Code Pro, monospace';
+    ctx.fillStyle = '#999';
+    ctx.textAlign = 'right';
+    ctx.fillText('100%', chartX - 4, chartY + 4);
+    ctx.fillText('50%', chartX - 4, chartY + chartH / 2 + 3);
+    ctx.fillText('0%', chartX - 4, chartY + chartH + 4);
+
+    // X-axis label
+    ctx.textAlign = 'center';
+    ctx.fillText('Gen ' + generation, chartX + chartW / 2, chartY + chartH + 18);
+
+    // Lines
+    if (history.length > 1) {
+      ['C', 'D', 'T'].forEach(function(type) {
+        ctx.beginPath();
+        ctx.strokeStyle = colors[type];
+        ctx.lineWidth = 2;
+        history.forEach(function(h, i) {
+          var x = chartX + (i / maxGen) * chartW;
+          var y = chartY + chartH - h[type] * chartH;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      });
+    }
+
+    // Current percentages
+    ctx.font = '700 12px Figtree, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = colors.C;
+    ctx.fillText('C: ' + Math.round(counts.C / N * 100) + '%', chartX + 4, chartY - 6);
+    ctx.fillStyle = colors.D;
+    ctx.fillText('D: ' + Math.round(counts.D / N * 100) + '%', chartX + chartW * 0.35, chartY - 6);
+    ctx.fillStyle = colors.T;
+    ctx.fillText('TfT: ' + Math.round(counts.T / N * 100) + '%', chartX + chartW * 0.68, chartY - 6);
+  }
+
+  function loop() {
+    if (!isVisible) { rafId = null; return; }
+    if (running) step();
+    draw();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  var visObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting && !isVisible) {
+        isVisible = true;
+        if (!rafId) rafId = requestAnimationFrame(loop);
+      } else if (!e.isIntersecting) {
+        isVisible = false;
+      }
+    });
+  }, { threshold: 0.1 });
+  visObs.observe(container);
+
+  coopSlider.addEventListener('input', function() {
+    coopValEl.textContent = this.value + '%';
+    var dp = parseInt(defectSlider.value);
+    if (parseInt(this.value) + dp > 100) {
+      defectSlider.value = 100 - parseInt(this.value);
+      defectValEl.textContent = defectSlider.value + '%';
+    }
+  });
+  defectSlider.addEventListener('input', function() {
+    defectValEl.textContent = this.value + '%';
+    var cp = parseInt(coopSlider.value);
+    if (cp + parseInt(this.value) > 100) {
+      coopSlider.value = 100 - parseInt(this.value);
+      coopValEl.textContent = coopSlider.value + '%';
+    }
+  });
+  mutSlider.addEventListener('input', function() {
+    mutValEl.textContent = (parseInt(this.value) / 10).toFixed(1) + '%';
+  });
+
+  document.getElementById('evo-start').addEventListener('click', function() {
+    if (generation >= maxGen) reset();
+    running = !running;
+    this.textContent = running ? 'Pause' : 'Start';
+    if (running && isVisible && !rafId) rafId = requestAnimationFrame(loop);
+  });
+  document.getElementById('evo-reset').addEventListener('click', reset);
+  window.addEventListener('resize', function() { init(); draw(); });
+
+  reset();
+})();
+
+/* ============================================================
+   DEMO 7: PREDICTION QUIZ
+   ============================================================ */
+(function() {
+  var cards = [
+    {
+      id: 'predict-1', correct: 'c',
+      msg: 'Both are true simultaneously. The Nash equilibrium of the price-setting game is mutual low prices \u2014 neither station can profit by unilaterally raising prices (customers would switch). Yet both would prefer the outcome where both charge high prices. This is a Prisoner\'s Dilemma in disguise: the Nash equilibrium is Pareto-inferior.'
+    },
+    {
+      id: 'predict-2', correct: 'b',
+      msg: 'Tit-for-Tat ties against itself (mutual cooperation), earns well against other cooperators, and limits its losses against defectors by retaliating immediately. It never "wins" a match outright, but its score profile is consistent and high across a diverse field. A strategy optimized to exploit one opponent is brittle against others.'
+    },
+    {
+      id: 'predict-3', correct: 'a',
+      msg: 'Always kick right \u2014 it\'s the pure best response to a deterministic opponent. But here\'s the deeper point: if you always kick right, a rational keeper will update and start diving right. The Nash equilibrium requires BOTH players to randomize. Any pure strategy creates an exploitable pattern.'
+    }
+  ];
+
+  cards.forEach(function(c) {
+    var card = document.getElementById(c.id);
+    card.querySelectorAll('.options .btn-secondary').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var answer = btn.dataset.answer;
+        card.querySelectorAll('.options .btn-secondary').forEach(function(b) {
+          b.disabled = true;
+          if (b.dataset.answer === c.correct) {
+            b.classList.add('active');
+            b.style.background = 'var(--green)';
+            b.style.color = 'white';
+            b.style.borderColor = 'var(--green)';
+          }
+          if (b === btn && answer !== c.correct) {
+            b.style.background = 'var(--red)';
+            b.style.color = 'white';
+            b.style.borderColor = 'var(--red)';
+          }
+        });
+        card.classList.add('revealed');
+        card.querySelector('.reveal-area p').textContent = (answer === c.correct ? 'Correct! ' : 'Not quite. ') + c.msg;
+      });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
