@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Much Can You Say With a Coin Flip?</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Figtree:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #FAF9F7;
+  --demo-bg:      #F3F2EE;
+  --text:         #2D2D2D;
+  --text-secondary:#666;
+  --accent:       #4338CA;
+  --accent-light: #EEF2FF;
+  --accent-hover: #3730A3;
+  --blue:         #2563EB;
+  --red:          #DC2626;
+  --green:        #16A34A;
+  --amber:        #D97706;
+  --purple:       #7C3AED;
+  --orange:       #EA580C;
+  --border:       #E5E5E0;
+  --radius:       12px;
+  --max-w:        680px;
+  --font-serif:   'Newsreader', Georgia, serif;
+  --font-sans:    'Figtree', system-ui, sans-serif;
+  --font-mono:    'Source Code Pro', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+article { max-width: var(--max-w); margin: 0 auto; padding: 0 24px 120px; }
+
+.hero {
+  background: linear-gradient(135deg, #312E81 0%, #4338CA 40%, #6366F1 70%, #A5B4FC 100%);
+  padding: 80px 24px 60px; margin-bottom: 48px;
+  border-radius: 0 0 16px 16px; text-align: left;
+  max-width: 900px; margin-left: auto; margin-right: auto;
+}
+.hero-inner { max-width: var(--max-w); margin: 0 auto; }
+.hero h1 { font-family: var(--font-serif); font-size: clamp(36px, 6vw, 70px); font-weight: 700; line-height: 0.94; margin-bottom: 12px; color: white; }
+.hero .subtitle { font-family: var(--font-sans); font-size: clamp(16px, 2.5vw, 22px); font-weight: 500; color: rgba(255,255,255,0.85); max-width: 540px; line-height: 1.35; }
+
+section { margin-bottom: 72px; }
+.section-heading { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; padding-top: 32px; border-top: 1px solid var(--border); }
+.section-number { font-family: var(--font-serif); font-size: 30px; font-weight: 400; color: var(--text); white-space: nowrap; line-height: 1; }
+.section-heading h2 { font-family: var(--font-sans); font-size: clamp(24px, 4vw, 34px); font-weight: 700; line-height: 1.15; color: var(--text); letter-spacing: -0.01em; }
+section h3 { font-family: var(--font-sans); font-size: 22px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+
+p { margin-bottom: 12px; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+.callout { background: var(--accent-light); border-left: 4px solid var(--accent); padding: 18px 22px; margin: 28px 0; border-radius: 0 var(--radius) var(--radius) 0; font-size: 19px; line-height: 1.5; }
+.callout.fun { background: #FEF3C7; border-left-color: var(--amber); }
+.callout.math-box { background: #EEF2FF; border-left-color: var(--accent); font-family: var(--font-sans); font-size: 17px; line-height: 1.55; }
+
+.figure-caption { text-align: center; font-style: italic; font-size: 17px; color: var(--text-secondary); margin-top: 12px; margin-bottom: 20px; line-height: 1.45; }
+
+.demo { background: var(--demo-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin: 32px 0; position: relative; }
+.demo-title { font-family: var(--font-sans); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 18px; }
+.demo canvas { display: block; width: 100%; border-radius: 8px; background: white; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 18px; }
+.control-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+.control-group label { font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+.control-group .value-display { font-family: var(--font-mono); font-size: 13px; color: var(--accent); min-width: 50px; text-align: right; }
+.label-row { display: flex; justify-content: space-between; align-items: center; }
+
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 3px; background: #D4D4D0; outline: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+.btn { font-family: var(--font-sans); font-size: 14px; font-weight: 600; padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #F5F5F0; }
+.btn-secondary.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.btn-group { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.btn-group .btn-secondary { border: none; border-radius: 0; border-right: 1px solid var(--border); font-size: 13px; padding: 7px 14px; }
+.btn-group .btn-secondary:last-child { border-right: none; }
+
+.predict-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
+.predict-card .question { font-family: var(--font-sans); font-weight: 600; font-size: 17px; margin-bottom: 14px; }
+.predict-card .options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.predict-card .reveal-area { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.predict-card.revealed .reveal-area { display: block; }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+.toc { max-width: var(--max-w); margin: 0 auto 48px; padding: 0 24px; }
+.toc h3 { font-family: var(--font-sans); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 12px; }
+.toc ol { list-style: none; counter-reset: toc; padding: 0; }
+.toc li { font-family: var(--font-sans); font-size: 17px; padding: 6px 0; color: var(--text); }
+.toc li::before { counter-increment: toc; content: counter(toc, upper-roman) ". "; color: var(--text-secondary); font-size: 15px; margin-right: 8px; }
+.toc a { text-decoration: none; color: var(--text); }
+.toc a:hover { color: var(--accent); }
+
+.footnote { font-size: 17px; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 28px; margin-top: 56px; line-height: 1.5; }
+.katex-display { margin: 24px 0; overflow-x: auto; }
+
+/* Demo-specific */
+.text-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--font-mono); font-size: 14px; resize: vertical; min-height: 60px; outline: none; }
+.text-input:focus { border-color: var(--accent); }
+
+.entropy-display { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--accent); margin: 12px 0; }
+.entropy-label { font-family: var(--font-sans); font-size: 13px; color: var(--text-secondary); }
+
+.bit-grid { display: flex; gap: 4px; flex-wrap: wrap; margin: 12px 0; }
+.bit-cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-family: var(--font-mono); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; border: 2px solid var(--border); }
+.bit-cell.zero { background: white; color: var(--text); }
+.bit-cell.one { background: var(--accent); color: white; border-color: var(--accent); }
+.bit-cell.error { background: var(--red); color: white; border-color: var(--red); }
+.bit-cell.corrected { background: var(--green); color: white; border-color: var(--green); }
+.bit-cell.parity { border-style: dashed; }
+
+.bar-compare { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { font-family: var(--font-sans); font-size: 12px; font-weight: 600; color: var(--text-secondary); min-width: 80px; text-align: right; }
+.bar-track { flex: 1; height: 24px; background: #E5E7EB; border-radius: 12px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 12px; transition: width 0.3s ease; display: flex; align-items: center; padding-left: 8px; font-family: var(--font-mono); font-size: 11px; color: white; font-weight: 600; }
+
+.bankroll-chart { width: 100%; height: 200px; border-radius: 8px; background: white; }
+
+@media (max-width: 768px) {
+  body { font-size: 19px; }
+  article { padding: 0 16px 80px; }
+  .hero { padding: 60px 20px 44px; }
+  .hero h1 { font-size: 36px; }
+  .demo { padding: 18px; }
+  .controls { gap: 10px; }
+  .control-group { min-width: 120px; }
+  .section-heading { gap: 10px; }
+  .section-number { font-size: 24px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 30px; line-height: 1; }
+  .btn-group { flex-wrap: wrap; }
+  .btn-group .btn-secondary { flex: 1; min-width: 70px; text-align: center; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero reveal">
+  <div class="hero-inner">
+    <h1>How Much Can You Say With a Coin Flip?</h1>
+    <p class="subtitle">Shannon's information theory &mdash; the most important idea you've never fully understood.</p>
+  </div>
+</div>
+
+<nav class="toc reveal">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#sec-what">What IS information?</a></li>
+    <li><a href="#sec-surprise">Measuring surprise</a></li>
+    <li><a href="#sec-compress">The first free lunch</a></li>
+    <li><a href="#sec-huffman">Building the optimal code</a></li>
+    <li><a href="#sec-noisy">The noisy channel</a></li>
+    <li><a href="#sec-correction">Messages that fix themselves</a></li>
+    <li><a href="#sec-gambling">Information meets gambling</a></li>
+    <li><a href="#sec-quiz">Testing your intuition</a></li>
+    <li><a href="#sec-deep">The deepest idea</a></li>
+  </ol>
+</nav>
+
+<article>
+
+<!-- INTRO -->
+<section id="intro" class="reveal">
+  <p>
+    A coin flip. Heads or tails. One bit of information. That's the atom of communication &mdash; the smallest possible message. Everything else is built from it: this sentence, the photo on your phone, every Netflix stream, every phone call, every gene in your DNA.
+  </p>
+  <p>
+    In 1948, a 32-year-old engineer at Bell Labs named Claude Shannon published a paper called <em>"A Mathematical Theory of Communication."</em> It was 55 pages long. It created an entire field of science. And it contained one of the most radical ideas in the history of thought:
+  </p>
+  <div class="callout">
+    <strong>Information has nothing to do with meaning.</strong> Shannon defined information purely as the <em>reduction of uncertainty</em>. A message is informative not because it's true, or important, or interesting &mdash; but because it tells you something you didn't already know.
+  </div>
+  <p>
+    This might sound abstract. But Shannon's theory is the reason your phone works, your WiFi connects, your photos compress, and your messages arrive intact. It sets hard physical limits on what communication can achieve &mdash; limits that no technology, no matter how advanced, can ever break.
+  </p>
+  <p>Let's see what one bit can do.</p>
+</section>
+
+<!-- SECTION I -->
+<section id="sec-what" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">I.</span>
+    <h2>What IS Information?</h2>
+  </div>
+  <p>
+    Forget everything you think you know about information. Shannon's definition has nothing to do with facts, knowledge, or meaning. For Shannon, information is <strong>surprise</strong>.
+  </p>
+  <p>
+    If I tell you "the sun will rise tomorrow," that's zero information &mdash; you already knew that. If I tell you "a meteor will hit Paris tomorrow," that's a <em>lot</em> of information, because you had no idea.
+  </p>
+  <p>
+    More precisely: the information content of a message is the number of <strong>yes/no questions</strong> you'd need to ask to figure it out. A coin flip? One question: "Is it heads?" That's 1 bit. A roll of a die? You need about 2.58 questions on average. That's 2.58 bits.
+  </p>
+  <p>
+    The <strong>entropy</strong> of a source is the average information per symbol &mdash; how surprising its messages are on average. A source that always says the same thing has zero entropy (no surprise). A source that's completely random has maximum entropy (maximum surprise).
+  </p>
+  <p>
+    Type some text and see its entropy:
+  </p>
+
+  <!-- DEMO 1: ENTROPY CALCULATOR -->
+  <div class="demo" id="demo-entropy">
+    <div class="demo-title">Demo 1 &middot; Entropy Calculator</div>
+    <textarea class="text-input" id="entropy-input" placeholder="Type something here...">The quick brown fox jumps over the lazy dog</textarea>
+    <div class="controls" style="margin-top:12px">
+      <button class="btn btn-secondary" data-preset="english">English</button>
+      <button class="btn btn-secondary" data-preset="dna">DNA</button>
+      <button class="btn btn-secondary" data-preset="binary">Binary</button>
+      <button class="btn btn-secondary" data-preset="random">Random</button>
+      <button class="btn btn-secondary" data-preset="repeat">Repetitive</button>
+    </div>
+    <div style="display:flex;gap:24px;align-items:flex-start;margin-top:18px;flex-wrap:wrap">
+      <div>
+        <div class="entropy-label">ENTROPY</div>
+        <div class="entropy-display" id="entropy-value">0.00 bits/char</div>
+        <div class="entropy-label" id="entropy-max">Maximum possible: 0.00 bits/char</div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <canvas id="entropy-chart" height="150"></canvas>
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Try typing different kinds of text. English has about 4 bits/char. Random characters hit ~6.6. Repeating "aaa" gives 0. The gap between actual entropy and maximum entropy is <em>redundancy</em> &mdash; and redundancy is what makes compression possible.
+  </p>
+
+  <div class="callout math-box">
+    <strong>Shannon's Entropy Formula</strong><br>
+    $$H = -\sum_{i} p(x_i) \log_2 p(x_i)$$
+    Where $p(x_i)$ is the probability of symbol $x_i$. When all symbols are equally likely, entropy is maximized. When one symbol dominates, entropy drops toward zero.
+  </div>
+</section>
+
+<!-- SECTION II -->
+<section id="sec-surprise" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">II.</span>
+    <h2>Measuring Surprise</h2>
+  </div>
+  <p>
+    Why is the formula $-\log_2 p$? Think about it this way. If an event has probability $p = 1/2$ (a coin flip), you need 1 question to determine the outcome. If $p = 1/4$ (two coin flips), you need 2 questions. If $p = 1/8$, you need 3. See the pattern?
+  </p>
+  <p>
+    The number of yes/no questions needed is $\log_2(1/p) = -\log_2 p$. That's the <strong>information content</strong> of a single event. Entropy is just the <em>average</em> of this across all possible events, weighted by their probabilities.
+  </p>
+  <p>
+    Some intuitive consequences:
+  </p>
+  <p>
+    <strong>A fair coin:</strong> $H = -\frac{1}{2}\log_2\frac{1}{2} - \frac{1}{2}\log_2\frac{1}{2} = 1$ bit. Maximum uncertainty for two outcomes.<br>
+    <strong>A biased coin (90% heads):</strong> $H \approx 0.47$ bits. Less surprising &mdash; you can usually guess "heads" and be right.<br>
+    <strong>A two-headed coin:</strong> $H = 0$ bits. No uncertainty at all.
+  </p>
+  <div class="callout fun">
+    <strong>Why "bits"?</strong> Shannon originally considered calling the unit a "bigit" or a "binit." His colleague John Tukey suggested "bit" &mdash; short for <em>binary digit</em> &mdash; and it stuck. The word appeared in Shannon's 1948 paper, possibly for the first time in history.
+  </div>
+  <p>
+    The key insight is that information and compression are two sides of the same coin. A source with low entropy is predictable &mdash; and predictable things can be compressed. The entropy tells you exactly how much.
+  </p>
+</section>
+
+<!-- SECTION III -->
+<section id="sec-compress" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">III.</span>
+    <h2>The First Free Lunch</h2>
+  </div>
+  <p>
+    Here's the practical payoff of entropy: <strong>compression</strong>. If English text has an entropy of about 4 bits per character, but we're using 8 bits per character (standard ASCII), then roughly <em>half</em> of those bits are wasted. They carry no information. They're pure redundancy.
+  </p>
+  <p>
+    Shannon proved a theorem that stunned the world: <strong>you can compress any source down to its entropy, but no further.</strong> Entropy is the floor. You can get to the floor, but you can never go below it. This is the <em>source coding theorem</em>.
+  </p>
+
+  <!-- DEMO 2: LIVE COMPRESSOR -->
+  <div class="demo" id="demo-compress">
+    <div class="demo-title">Demo 2 &middot; Compression in Action</div>
+    <textarea class="text-input" id="compress-input" placeholder="Type text to compress...">To be or not to be, that is the question. Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles.</textarea>
+    <div class="controls" style="margin-top:12px">
+      <button class="btn btn-secondary" data-preset="shakespeare">Shakespeare</button>
+      <button class="btn btn-secondary" data-preset="dna">DNA</button>
+      <button class="btn btn-secondary" data-preset="random">Random</button>
+      <button class="btn btn-secondary" data-preset="repeat">aaaa...</button>
+    </div>
+    <div class="bar-compare" id="compress-bars">
+      <div class="bar-row"><span class="bar-label">Original</span><div class="bar-track"><div class="bar-fill" id="bar-original" style="width:100%;background:#999"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Compressed</span><div class="bar-track"><div class="bar-fill" id="bar-compressed" style="width:50%;background:var(--accent)"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Entropy Limit</span><div class="bar-track"><div class="bar-fill" id="bar-entropy" style="width:40%;background:var(--green)"></div></div></div>
+    </div>
+    <div style="font-family:var(--font-sans);font-size:14px;color:var(--text-secondary);margin-top:8px" id="compress-stats"></div>
+  </div>
+  <p class="figure-caption">
+    The green bar is Shannon's limit &mdash; no compressor in the universe can beat it. Notice how random text barely compresses at all, while repetitive text shrinks enormously.
+  </p>
+
+  <p>
+    Why does English compress so well? Because it's incredibly redundant. After "q" comes "u" with near certainty. After "the" comes a noun or adjective. After "information theo" you can almost certainly guess "ry." Every pattern, every regularity, every statistical bias is redundancy &mdash; and redundancy is free space that compression can reclaim.
+  </p>
+  <div class="callout">
+    <strong>Shannon's source coding theorem (1948):</strong> No lossless compression scheme can compress data below the entropy rate. But there <em>exist</em> schemes that get arbitrarily close to it. The entropy is the hard floor, and we can reach it.
+  </div>
+</section>
+
+<!-- SECTION IV -->
+<section id="sec-huffman" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IV.</span>
+    <h2>Building the Optimal Code</h2>
+  </div>
+  <p>
+    In 1951, a graduate student named David Huffman was given a term paper assignment: find the most efficient binary code. His professor, Robert Fano, had been working on the problem with Shannon himself and hadn't solved it optimally. Huffman did &mdash; as a homework exercise.
+  </p>
+  <p>
+    The idea is elegant: give frequent symbols short codes and rare symbols long codes. The letter "e" appears 13% of the time in English &mdash; it should get a short code, maybe 3 bits. The letter "z" appears 0.07% of the time &mdash; it can afford a longer code, maybe 10 bits.
+  </p>
+  <p>
+    The algorithm builds a binary tree from the bottom up, merging the two least frequent symbols at each step. Watch it work:
+  </p>
+
+  <!-- DEMO 3: HUFFMAN TREE -->
+  <div class="demo" id="demo-huffman">
+    <div class="demo-title">Demo 3 &middot; Huffman Tree Builder</div>
+    <textarea class="text-input" id="huffman-input" placeholder="Enter text to build a Huffman tree..." style="min-height:40px">hello world</textarea>
+    <div class="controls" style="margin-top:12px">
+      <button class="btn btn-primary" id="huffman-build">Build Tree</button>
+      <button class="btn btn-secondary" id="huffman-reset">Reset</button>
+    </div>
+    <canvas id="huffman-canvas" height="300" style="margin-top:14px"></canvas>
+    <div id="huffman-table" style="margin-top:14px;font-family:var(--font-mono);font-size:13px;line-height:1.8"></div>
+    <div id="huffman-stats" style="margin-top:8px;font-family:var(--font-sans);font-size:14px;color:var(--text-secondary)"></div>
+  </div>
+  <p class="figure-caption">
+    Enter text and click "Build Tree." Frequent characters get short codes (near the root), rare characters get long codes (deep in the tree). The average code length approaches the entropy.
+  </p>
+
+  <div class="callout math-box">
+    <strong>Huffman's guarantee:</strong> For any source, the average code length $L$ satisfies:
+    $$H \leq L < H + 1$$
+    The Huffman code is always within 1 bit per symbol of the theoretical optimum. No prefix code can do better.
+  </div>
+</section>
+
+<!-- SECTION V -->
+<section id="sec-noisy" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">V.</span>
+    <h2>The Noisy Channel</h2>
+  </div>
+  <p>
+    Compression is half the story. The other half is what happens when your message has to travel through a <strong>noisy channel</strong> &mdash; a wire that crackles, a WiFi signal that drops, a phone connection that garbles.
+  </p>
+  <p>
+    Shannon asked: if a channel randomly flips each bit with probability $p$, how much information can you actually get through? The answer is the <strong>channel capacity</strong>:
+  </p>
+  <div class="callout math-box">
+    <strong>Channel Capacity (Binary Symmetric Channel)</strong>
+    $$C = 1 - H(p) = 1 + p\log_2 p + (1-p)\log_2(1-p)$$
+    When $p = 0$ (no errors): $C = 1$ bit per transmission. Perfect channel.<br>
+    When $p = 0.5$ (random flips): $C = 0$ bits. The channel is useless &mdash; output is independent of input.
+  </div>
+  <p>
+    Shannon's <em>channel coding theorem</em> says: <strong>if your data rate is below capacity $C$, you can communicate with arbitrarily low error rate.</strong> If your data rate is above $C$, errors are unavoidable. There's a sharp cliff.
+  </p>
+
+  <!-- DEMO 4: NOISY CHANNEL -->
+  <div class="demo" id="demo-noisy">
+    <div class="demo-title">Demo 4 &middot; The Noisy Channel</div>
+    <textarea class="text-input" id="noisy-input" style="min-height:40px" placeholder="Type a message...">Hello, World!</textarea>
+    <div class="controls" style="margin-top:12px">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Error Rate</label>
+          <span class="value-display" id="error-rate-val">5%</span>
+        </div>
+        <input type="range" id="error-rate-slider" min="0" max="50" step="1" value="5">
+      </div>
+      <button class="btn btn-primary" id="noisy-send">Send</button>
+    </div>
+    <div style="margin-top:18px">
+      <div class="entropy-label">SENT BITS</div>
+      <div id="noisy-sent" class="bit-grid"></div>
+      <div class="entropy-label" style="margin-top:12px">RECEIVED BITS <span style="color:var(--red)">(errors in red)</span></div>
+      <div id="noisy-received" class="bit-grid"></div>
+      <div class="entropy-label" style="margin-top:12px">DECODED MESSAGE</div>
+      <div id="noisy-decoded" style="font-family:var(--font-mono);font-size:16px;margin-top:4px;word-break:break-all"></div>
+    </div>
+    <div style="margin-top:14px;font-family:var(--font-sans);font-size:14px;color:var(--text-secondary)" id="noisy-capacity"></div>
+  </div>
+  <p class="figure-caption">
+    Try cranking the error rate up. At 50%, the received message is pure noise &mdash; every bit is independent of what you sent. The channel capacity drops to zero.
+  </p>
+
+  <p>
+    The profound part isn't the formula &mdash; it's the <em>existence theorem</em>. Shannon proved that error-free communication is possible on a noisy channel, as long as you stay below capacity. He didn't build the codes &mdash; he proved they must exist. Engineers spent the next 50 years finding them.
+  </p>
+</section>
+
+<!-- SECTION VI -->
+<section id="sec-correction" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VI.</span>
+    <h2>Messages That Fix Themselves</h2>
+  </div>
+  <p>
+    How do you actually protect data from noise? <strong>Error-correcting codes.</strong> The simplest idea: repeat everything three times. Send "1" as "111". If one bit gets flipped to "101", the majority vote recovers the original "1". But this is wasteful &mdash; you're sending 3 bits to protect 1.
+  </p>
+  <p>
+    In 1950, Richard Hamming (also at Bell Labs) invented something far more clever: a code that protects 4 data bits with just 3 extra parity bits. That's 7 bits total, and it can detect <em>and correct</em> any single-bit error.
+  </p>
+  <p>
+    Click any bit below to "corrupt" it, then watch the code find and fix the error:
+  </p>
+
+  <!-- DEMO 5: HAMMING CODE -->
+  <div class="demo" id="demo-hamming">
+    <div class="demo-title">Demo 5 &middot; Hamming(7,4) Error Correction</div>
+    <div style="font-family:var(--font-sans);font-size:14px;color:var(--text-secondary);margin-bottom:12px">
+      Click any bit to flip it. The code will detect and correct the error.
+    </div>
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div class="entropy-label">DATA BITS</div>
+        <div class="bit-grid" id="hamming-data"></div>
+        <div class="entropy-label" style="margin-top:12px">ENCODED (data + <span style="border-bottom:2px dashed var(--accent)">parity</span>)</div>
+        <div class="bit-grid" id="hamming-encoded"></div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div class="entropy-label">SYNDROME CHECK</div>
+        <div id="hamming-syndrome" style="font-family:var(--font-mono);font-size:14px;margin-top:6px;line-height:1.8"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-primary" id="hamming-new">New Random Data</button>
+      <button class="btn btn-secondary" id="hamming-fix">Decode &amp; Fix</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    4 data bits + 3 parity bits = 7-bit codeword. Any single-bit error is located and corrected automatically. This is the principle behind WiFi, satellite links, QR codes, and hard drives.
+  </p>
+
+  <div class="callout">
+    <strong>How it works:</strong> Each parity bit checks a specific subset of data bits. If an error occurs, the pattern of parity failures (the "syndrome") uniquely identifies which bit was flipped. It's like a detective narrowing down suspects: "The error is in group A but not group B, and in group C" &mdash; that pinpoints exactly one bit.
+  </div>
+</section>
+
+<!-- SECTION VII -->
+<section id="sec-gambling" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VII.</span>
+    <h2>Information Meets Gambling</h2>
+  </div>
+  <p>
+    In 1956, physicist John Kelly at Bell Labs made a startling connection: <strong>information theory tells you how to gamble optimally.</strong>
+  </p>
+  <p>
+    Suppose you have a biased coin &mdash; it lands heads 60% of the time &mdash; and you can bet on each flip. How much of your bankroll should you wager? Bet everything and one bad flip wipes you out. Bet too little and you grow slowly. There's an optimum:
+  </p>
+  <div class="callout math-box">
+    <strong>The Kelly Criterion</strong><br>
+    For an even-money bet with win probability $p$:
+    $$f^* = 2p - 1$$
+    With a 60% coin: bet 20% of your bankroll each round. This maximizes the long-run growth rate of your wealth &mdash; and that growth rate equals the <em>information advantage</em> you have over the bookie.
+  </div>
+  <p>
+    The deep connection: your edge in bits equals your wealth growth rate. If you know 1 bit about the outcome that the bookie doesn't, you can double your money at a rate proportional to that 1 bit. Information <em>is</em> money.
+  </p>
+
+  <!-- DEMO 6: KELLY BETTING -->
+  <div class="demo" id="demo-kelly">
+    <div class="demo-title">Demo 6 &middot; The Kelly Criterion</div>
+    <canvas id="kelly-canvas" class="bankroll-chart"></canvas>
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Your Bet Size</label>
+          <span class="value-display" id="kelly-bet-val">20%</span>
+        </div>
+        <input type="range" id="kelly-bet-slider" min="1" max="100" step="1" value="20">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Coin Bias (% Heads)</label>
+          <span class="value-display" id="kelly-bias-val">60%</span>
+        </div>
+        <input type="range" id="kelly-bias-slider" min="51" max="90" step="1" value="60">
+      </div>
+      <button class="btn btn-primary" id="kelly-play">Play 200 Rounds</button>
+    </div>
+    <div style="margin-top:12px;font-family:var(--font-sans);font-size:14px;color:var(--text-secondary)" id="kelly-stats"></div>
+  </div>
+  <p class="figure-caption">
+    Try different bet sizes. Too small grows slowly. Too large goes to zero. The Kelly fraction (shown in green on the slider) maximizes long-term growth. Overbetting is much worse than underbetting.
+  </p>
+
+  <div class="callout fun">
+    <strong>Real-world Kelly:</strong> Ed Thorp used the Kelly criterion to beat the casinos at blackjack (and wrote <em>Beat the Dealer</em> in 1962), then used it to become one of the most successful hedge fund managers in history. Warren Buffett and Jim Simons are also reputed Kelly followers. Information theory, from Bell Labs to Wall Street.
+  </div>
+</section>
+
+<!-- SECTION VIII -->
+<section id="sec-quiz" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">VIII.</span>
+    <h2>Testing Your Intuition</h2>
+  </div>
+  <p>Let's see how well you've absorbed information theory.</p>
+
+  <div class="predict-card" id="predict-1">
+    <div class="question">Which has more entropy per character: English text or a DNA sequence (ACGT)?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="english">English (~26 letters, more variety)</button>
+      <button class="btn btn-secondary" data-answer="dna">DNA (only 4 symbols, but used more uniformly)</button>
+      <button class="btn btn-secondary" data-answer="same">About the same</button>
+    </div>
+    <div class="reveal-area"><p></p></div>
+  </div>
+
+  <div class="predict-card" id="predict-2">
+    <div class="question">You're sending data over a channel that corrupts 10% of bits. Can you communicate reliably?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="no">No &mdash; 10% errors means 10% of the message is wrong</button>
+      <button class="btn btn-secondary" data-answer="yes">Yes &mdash; as long as data rate is below channel capacity</button>
+      <button class="btn btn-secondary" data-answer="repeat">Only if you repeat everything multiple times</button>
+    </div>
+    <div class="reveal-area"><p></p></div>
+  </div>
+
+  <div class="predict-card" id="predict-3">
+    <div class="question">A ZIP file is already compressed. What happens if you ZIP it again?</div>
+    <div class="options">
+      <button class="btn btn-secondary" data-answer="smaller">It gets even smaller</button>
+      <button class="btn btn-secondary" data-answer="same">It stays the same size</button>
+      <button class="btn btn-secondary" data-answer="bigger">It gets slightly bigger</button>
+    </div>
+    <div class="reveal-area"><p></p></div>
+  </div>
+</section>
+
+<!-- SECTION IX -->
+<section id="sec-deep" class="reveal">
+  <div class="section-heading">
+    <span class="section-number">IX.</span>
+    <h2>The Deepest Idea</h2>
+  </div>
+  <p>
+    Shannon's entropy formula looks suspiciously like a formula from thermodynamics &mdash; Boltzmann's entropy from 1877. This is not a coincidence. When Shannon showed his formula to the mathematician John von Neumann, von Neumann reportedly said:
+  </p>
+  <div class="callout">
+    <em>"You should call it entropy, for two reasons. First, the function is already in use in thermodynamics under that name. Second, and more importantly, nobody really knows what entropy is, so in a debate you will always have the advantage."</em>
+  </div>
+  <p>
+    The connection between information and physics runs deeper than a shared formula. In 1961, Rolf Landauer proved that <strong>erasing a bit of information necessarily generates heat</strong> &mdash; at least $kT \ln 2$ joules, where $k$ is Boltzmann's constant and $T$ is temperature. Information is physical. Destroying it has a thermodynamic cost.
+  </p>
+  <p>
+    This resolved a century-old paradox: Maxwell's demon, a hypothetical being that could sort fast and slow molecules to decrease entropy, violating the second law of thermodynamics. Landauer showed that the demon must <em>erase</em> its memory of previous measurements, and that erasure generates exactly enough heat to save the second law. Information and thermodynamics are unified.
+  </p>
+
+  <h3>The Thread Through Everything</h3>
+  <p>
+    Machine learning? The loss function for training neural networks is <strong>cross-entropy</strong> &mdash; directly from Shannon's theory. The KL divergence that measures how different two probability distributions are? Shannon. The theoretical limit on data rates for 5G networks? Shannon. The reason your genome can be sequenced from noisy fragments? Error-correcting codes, descended from Hamming and Shannon.
+  </p>
+  <p>
+    Shannon's 55-page paper didn't just create a theory. It revealed that information is a fundamental quantity of the universe, as real as energy or mass, subject to precise mathematical laws. A coin flip carries exactly 1 bit. And from that humble beginning, everything follows.
+  </p>
+</section>
+
+<!-- FOOTNOTES -->
+<div class="footnote reveal">
+  <p><strong>Further reading:</strong></p>
+  <p>Claude Shannon, <em>"A Mathematical Theory of Communication"</em> (1948) &mdash; the original paper. Readable and astonishingly clear.</p>
+  <p>James Gleick, <em>The Information: A History, A Theory, A Flood</em> (2011) &mdash; the definitive popular history.</p>
+  <p>David MacKay, <em>Information Theory, Inference, and Learning Algorithms</em> (2003) &mdash; freely available online, the best textbook.</p>
+  <p>Jimmy Soni & Rob Goodman, <em>A Mind at Play</em> (2017) &mdash; Shannon's biography.</p>
+</div>
+
+</article>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function entropy(text) {
+  if (!text.length) return 0;
+  const freq = {};
+  for (const c of text) freq[c] = (freq[c] || 0) + 1;
+  let h = 0;
+  const n = text.length;
+  for (const c in freq) {
+    const p = freq[c] / n;
+    if (p > 0) h -= p * Math.log2(p);
+  }
+  return h;
+}
+
+function charFrequencies(text) {
+  const freq = {};
+  for (const c of text) freq[c] = (freq[c] || 0) + 1;
+  return Object.entries(freq).sort((a, b) => b[1] - a[1]);
+}
+
+function setupCanvas(canvas, fixedHeight) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = fixedHeight * dpr;
+  canvas.style.height = fixedHeight + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w: rect.width, h: fixedHeight };
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ============================================================
+   DEMO 1: ENTROPY CALCULATOR
+   ============================================================ */
+(function() {
+  const input = document.getElementById('entropy-input');
+  const valueEl = document.getElementById('entropy-value');
+  const maxEl = document.getElementById('entropy-max');
+  const canvas = document.getElementById('entropy-chart');
+  const presets = {
+    english: 'The quick brown fox jumps over the lazy dog. To be or not to be, that is the question.',
+    dna: 'ATCGATCGATCGATCGATCGATCGATCGAATTCCGGTTAACCGGTTAACCGG',
+    binary: '01101001011010010110100101101001011010010110100101101001',
+    random: '',
+    repeat: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  };
+
+  function genRandom() {
+    let s = '';
+    for (let i = 0; i < 60; i++) s += String.fromCharCode(33 + Math.floor(Math.random() * 94));
+    return s;
+  }
+
+  function update() {
+    const text = input.value;
+    const h = entropy(text);
+    const uniqueChars = new Set(text).size;
+    const maxH = uniqueChars > 1 ? Math.log2(uniqueChars) : 0;
+    valueEl.textContent = h.toFixed(2) + ' bits/char';
+    maxEl.textContent = 'Maximum possible: ' + maxH.toFixed(2) + ' bits/char (' + uniqueChars + ' unique symbols)';
+    drawChart(text);
+  }
+
+  function drawChart(text) {
+    const { ctx, w, h } = setupCanvas(canvas, 150);
+    ctx.clearRect(0, 0, w, h);
+    if (!text.length) return;
+
+    const freqs = charFrequencies(text);
+    const maxFreq = freqs[0][1];
+    const barW = Math.max(2, Math.min(20, (w - 20) / freqs.length - 2));
+    const pad = 10;
+
+    freqs.forEach(([char, count], i) => {
+      const x = pad + i * (barW + 2);
+      const barH = (count / maxFreq) * (h - 30);
+      ctx.fillStyle = '#4338CA';
+      ctx.globalAlpha = 0.7;
+      ctx.fillRect(x, h - 15 - barH, barW, barH);
+      ctx.globalAlpha = 1;
+      if (barW >= 8) {
+        ctx.font = '9px Figtree, sans-serif';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        const label = char === ' ' ? '␣' : char;
+        ctx.fillText(label, x + barW / 2, h - 3);
+      }
+    });
+  }
+
+  input.addEventListener('input', update);
+  document.querySelectorAll('#demo-entropy .btn-secondary').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = btn.dataset.preset;
+      input.value = p === 'random' ? genRandom() : presets[p];
+      update();
+    });
+  });
+
+  update();
+})();
+
+/* ============================================================
+   DEMO 2: LIVE COMPRESSOR
+   ============================================================ */
+(function() {
+  const input = document.getElementById('compress-input');
+  const barOrig = document.getElementById('bar-original');
+  const barComp = document.getElementById('bar-compressed');
+  const barEnt = document.getElementById('bar-entropy');
+  const statsEl = document.getElementById('compress-stats');
+
+  const presets = {
+    shakespeare: "To be or not to be, that is the question. Whether 'tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles.",
+    dna: 'ATCGATCGATCGATCGATCGATCGATCGAATTCCGGTTAACCGGTTAACCGGATCGATCGATCG',
+    random: '',
+    repeat: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+  };
+
+  function genRandom() {
+    let s = '';
+    for (let i = 0; i < 80; i++) s += String.fromCharCode(33 + Math.floor(Math.random() * 94));
+    return s;
+  }
+
+  // Simple Huffman compression to get actual compressed size
+  function huffmanCompress(text) {
+    if (!text.length) return 0;
+    const freq = {};
+    for (const c of text) freq[c] = (freq[c] || 0) + 1;
+    if (Object.keys(freq).length <= 1) return text.length; // 1 bit per char minimum in practice
+
+    // Build Huffman tree
+    const nodes = Object.entries(freq).map(([c, f]) => ({ char: c, freq: f }));
+    while (nodes.length > 1) {
+      nodes.sort((a, b) => a.freq - b.freq);
+      const left = nodes.shift();
+      const right = nodes.shift();
+      nodes.push({ freq: left.freq + right.freq, left, right });
+    }
+
+    // Get code lengths
+    const codes = {};
+    function walk(node, depth) {
+      if (node.char !== undefined) { codes[node.char] = depth || 1; return; }
+      if (node.left) walk(node.left, depth + 1);
+      if (node.right) walk(node.right, depth + 1);
+    }
+    walk(nodes[0], 0);
+
+    let totalBits = 0;
+    for (const c of text) totalBits += codes[c];
+    return totalBits;
+  }
+
+  function update() {
+    const text = input.value;
+    if (!text.length) {
+      statsEl.textContent = '';
+      barOrig.style.width = '0%';
+      barComp.style.width = '0%';
+      barEnt.style.width = '0%';
+      return;
+    }
+
+    const origBits = text.length * 8;
+    const compBits = huffmanCompress(text);
+    const h = entropy(text);
+    const entBits = Math.ceil(h * text.length);
+
+    const maxBits = origBits;
+    barOrig.style.width = '100%';
+    barOrig.textContent = origBits + ' bits';
+    barComp.style.width = Math.max(3, (compBits / maxBits) * 100) + '%';
+    barComp.textContent = compBits + ' bits';
+    barEnt.style.width = Math.max(3, (entBits / maxBits) * 100) + '%';
+    barEnt.textContent = entBits + ' bits';
+
+    const ratio = ((1 - compBits / origBits) * 100).toFixed(1);
+    statsEl.textContent = 'Compression ratio: ' + ratio + '% saved. Entropy: ' + h.toFixed(2) + ' bits/char. Original: 8 bits/char (ASCII).';
+  }
+
+  input.addEventListener('input', update);
+  document.querySelectorAll('#demo-compress .btn-secondary').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = btn.dataset.preset;
+      input.value = p === 'random' ? genRandom() : presets[p];
+      update();
+    });
+  });
+
+  update();
+})();
+
+/* ============================================================
+   DEMO 3: HUFFMAN TREE
+   ============================================================ */
+(function() {
+  const input = document.getElementById('huffman-input');
+  const canvas = document.getElementById('huffman-canvas');
+  const tableEl = document.getElementById('huffman-table');
+  const statsEl = document.getElementById('huffman-stats');
+  const buildBtn = document.getElementById('huffman-build');
+  const resetBtn = document.getElementById('huffman-reset');
+
+  function buildHuffman(text) {
+    const freq = {};
+    for (const c of text) freq[c] = (freq[c] || 0) + 1;
+    const nodes = Object.entries(freq).map(([c, f]) => ({ char: c, freq: f, left: null, right: null }));
+    if (nodes.length === 0) return null;
+    if (nodes.length === 1) { nodes[0].code = '0'; return nodes[0]; }
+
+    while (nodes.length > 1) {
+      nodes.sort((a, b) => a.freq - b.freq);
+      const left = nodes.shift();
+      const right = nodes.shift();
+      nodes.push({ freq: left.freq + right.freq, left, right });
+    }
+    return nodes[0];
+  }
+
+  function getCodes(root) {
+    const codes = {};
+    function walk(node, prefix) {
+      if (!node) return;
+      if (node.char !== undefined) { codes[node.char] = prefix || '0'; return; }
+      walk(node.left, prefix + '0');
+      walk(node.right, prefix + '1');
+    }
+    walk(root, '');
+    return codes;
+  }
+
+  function drawTree(root) {
+    const { ctx, w, h } = setupCanvas(canvas, 300);
+    ctx.clearRect(0, 0, w, h);
+    if (!root) return;
+
+    // Compute positions
+    let leafCount = 0;
+    function countLeaves(n) { if (!n) return; if (n.char !== undefined) { leafCount++; return; } countLeaves(n.left); countLeaves(n.right); }
+    countLeaves(root);
+
+    let leafIdx = 0;
+    function layout(node, depth) {
+      if (!node) return;
+      if (node.char !== undefined) {
+        node._x = 30 + (leafIdx / Math.max(leafCount - 1, 1)) * (w - 60);
+        node._y = Math.min(depth * 50 + 20, h - 30);
+        leafIdx++;
+        return;
+      }
+      layout(node.left, depth + 1);
+      layout(node.right, depth + 1);
+      node._x = ((node.left ? node.left._x : 0) + (node.right ? node.right._x : 0)) / 2;
+      node._y = depth * 50 + 20;
+    }
+    layout(root, 0);
+
+    // Draw edges
+    function drawEdges(node) {
+      if (!node) return;
+      if (node.left) {
+        ctx.beginPath(); ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1.5;
+        ctx.moveTo(node._x, node._y); ctx.lineTo(node.left._x, node.left._y); ctx.stroke();
+        // Label
+        ctx.font = '11px Source Code Pro, monospace'; ctx.fillStyle = '#4338CA';
+        ctx.fillText('0', (node._x + node.left._x) / 2 - 8, (node._y + node.left._y) / 2);
+        drawEdges(node.left);
+      }
+      if (node.right) {
+        ctx.beginPath(); ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1.5;
+        ctx.moveTo(node._x, node._y); ctx.lineTo(node.right._x, node.right._y); ctx.stroke();
+        ctx.font = '11px Source Code Pro, monospace'; ctx.fillStyle = '#DC2626';
+        ctx.fillText('1', (node._x + node.right._x) / 2 + 4, (node._y + node.right._y) / 2);
+        drawEdges(node.right);
+      }
+    }
+    drawEdges(root);
+
+    // Draw nodes
+    function drawNodes(node) {
+      if (!node) return;
+      const isLeaf = node.char !== undefined;
+      ctx.beginPath();
+      ctx.arc(node._x, node._y, isLeaf ? 14 : 8, 0, Math.PI * 2);
+      ctx.fillStyle = isLeaf ? '#4338CA' : '#E5E7EB';
+      ctx.fill();
+      if (isLeaf) {
+        ctx.font = 'bold 11px Figtree, sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const label = node.char === ' ' ? '␣' : node.char;
+        ctx.fillText(label, node._x, node._y);
+      }
+      drawNodes(node.left);
+      drawNodes(node.right);
+    }
+    drawNodes(root);
+  }
+
+  function showTable(text, codes) {
+    const freq = {};
+    for (const c of text) freq[c] = (freq[c] || 0) + 1;
+    const entries = Object.entries(codes).sort((a, b) => a[1].length - b[1].length);
+    let html = '<table style="border-collapse:collapse;width:100%">';
+    html += '<tr style="border-bottom:1px solid #ddd"><th style="text-align:left;padding:4px 8px">Char</th><th style="text-align:left;padding:4px 8px">Freq</th><th style="text-align:left;padding:4px 8px">Code</th><th style="text-align:left;padding:4px 8px">Bits</th></tr>';
+    entries.forEach(([c, code]) => {
+      const label = c === ' ' ? '␣' : c;
+      html += '<tr><td style="padding:2px 8px">' + label + '</td><td style="padding:2px 8px">' + freq[c] + '</td><td style="padding:2px 8px;color:#4338CA">' + code + '</td><td style="padding:2px 8px">' + code.length + '</td></tr>';
+    });
+    html += '</table>';
+    tableEl.innerHTML = html;
+
+    let totalBits = 0;
+    for (const c of text) totalBits += codes[c].length;
+    const avgLen = totalBits / text.length;
+    const h = entropy(text);
+    statsEl.textContent = 'Average code length: ' + avgLen.toFixed(2) + ' bits/char. Entropy: ' + h.toFixed(2) + ' bits/char. Overhead: ' + (avgLen - h).toFixed(2) + ' bits.';
+  }
+
+  buildBtn.addEventListener('click', () => {
+    const text = input.value;
+    if (!text) return;
+    const root = buildHuffman(text);
+    const codes = getCodes(root);
+    drawTree(root);
+    showTable(text, codes);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    const { ctx, w, h } = setupCanvas(canvas, 300);
+    ctx.clearRect(0, 0, w, h);
+    tableEl.innerHTML = '';
+    statsEl.textContent = '';
+  });
+})();
+
+/* ============================================================
+   DEMO 4: NOISY CHANNEL
+   ============================================================ */
+(function() {
+  const input = document.getElementById('noisy-input');
+  const slider = document.getElementById('error-rate-slider');
+  const rateVal = document.getElementById('error-rate-val');
+  const sendBtn = document.getElementById('noisy-send');
+  const sentEl = document.getElementById('noisy-sent');
+  const recvEl = document.getElementById('noisy-received');
+  const decodedEl = document.getElementById('noisy-decoded');
+  const capacityEl = document.getElementById('noisy-capacity');
+
+  function textToBits(text) {
+    const bits = [];
+    for (const c of text) {
+      const code = c.charCodeAt(0);
+      for (let i = 7; i >= 0; i--) bits.push((code >> i) & 1);
+    }
+    return bits;
+  }
+
+  function bitsToText(bits) {
+    let text = '';
+    for (let i = 0; i + 7 < bits.length; i += 8) {
+      let code = 0;
+      for (let j = 0; j < 8; j++) code = (code << 1) | bits[i + j];
+      if (code >= 32 && code < 127) text += String.fromCharCode(code);
+      else text += '\u2589';
+    }
+    return text;
+  }
+
+  function send() {
+    const text = input.value;
+    const p = parseInt(slider.value) / 100;
+    const bits = textToBits(text);
+
+    // Show max 120 bits
+    const showBits = bits.slice(0, 120);
+    sentEl.innerHTML = '';
+    recvEl.innerHTML = '';
+
+    const received = [];
+    const errors = [];
+    for (let i = 0; i < bits.length; i++) {
+      const flip = Math.random() < p;
+      received.push(flip ? (1 - bits[i]) : bits[i]);
+      errors.push(flip);
+    }
+
+    showBits.forEach((b, i) => {
+      const el = document.createElement('div');
+      el.className = 'bit-cell ' + (b ? 'one' : 'zero');
+      el.textContent = b;
+      el.style.width = '18px'; el.style.height = '18px'; el.style.fontSize = '10px'; el.style.borderWidth = '1px';
+      sentEl.appendChild(el);
+
+      const el2 = document.createElement('div');
+      el2.className = 'bit-cell ' + (errors[i] ? 'error' : (received[i] ? 'one' : 'zero'));
+      el2.textContent = received[i];
+      el2.style.width = '18px'; el2.style.height = '18px'; el2.style.fontSize = '10px'; el2.style.borderWidth = '1px';
+      recvEl.appendChild(el2);
+    });
+
+    if (bits.length > 120) {
+      sentEl.innerHTML += '<span style="font-family:var(--font-sans);font-size:12px;color:#999;margin-left:4px">...' + (bits.length - 120) + ' more</span>';
+      recvEl.innerHTML += '<span style="font-family:var(--font-sans);font-size:12px;color:#999;margin-left:4px">...' + (bits.length - 120) + ' more</span>';
+    }
+
+    decodedEl.textContent = bitsToText(received);
+
+    const errCount = errors.filter(Boolean).length;
+    const cap = p > 0 && p < 1 ? (1 + p * Math.log2(p) + (1 - p) * Math.log2(1 - p)) : (p === 0 ? 1 : 0);
+    capacityEl.textContent = 'Errors: ' + errCount + '/' + bits.length + ' bits flipped (' + (errCount / bits.length * 100).toFixed(1) + '%). Channel capacity: ' + cap.toFixed(3) + ' bits per transmission.';
+  }
+
+  slider.addEventListener('input', () => { rateVal.textContent = slider.value + '%'; });
+  sendBtn.addEventListener('click', send);
+  send();
+})();
+
+/* ============================================================
+   DEMO 5: HAMMING(7,4) CODE
+   ============================================================ */
+(function() {
+  const dataEl = document.getElementById('hamming-data');
+  const encodedEl = document.getElementById('hamming-encoded');
+  const syndromeEl = document.getElementById('hamming-syndrome');
+  const newBtn = document.getElementById('hamming-new');
+  const fixBtn = document.getElementById('hamming-fix');
+
+  let dataBits = [1, 0, 1, 1];
+  let encoded = [];
+  let errorPos = -1;
+
+  function encode(d) {
+    // Hamming(7,4): positions 1-7, parity at 1,2,4
+    // p1 covers 1,3,5,7; p2 covers 2,3,6,7; p4 covers 4,5,6,7
+    const p1 = d[0] ^ d[1] ^ d[3];
+    const p2 = d[0] ^ d[2] ^ d[3];
+    const p4 = d[1] ^ d[2] ^ d[3];
+    return [p1, p2, d[0], p4, d[1], d[2], d[3]]; // positions 1-7
+  }
+
+  function init() {
+    dataBits = [Math.round(Math.random()), Math.round(Math.random()), Math.round(Math.random()), Math.round(Math.random())];
+    encoded = encode(dataBits);
+    errorPos = -1;
+    render();
+  }
+
+  function render() {
+    dataEl.innerHTML = '';
+    dataBits.forEach((b, i) => {
+      const el = document.createElement('div');
+      el.className = 'bit-cell ' + (b ? 'one' : 'zero');
+      el.textContent = b;
+      dataEl.appendChild(el);
+    });
+
+    encodedEl.innerHTML = '';
+    const parityPositions = [0, 1, 3]; // indices 0,1,3 are parity bits
+    encoded.forEach((b, i) => {
+      const el = document.createElement('div');
+      const isParity = parityPositions.includes(i);
+      el.className = 'bit-cell ' + (b ? 'one' : 'zero') + (isParity ? ' parity' : '');
+      if (i === errorPos) el.className = 'bit-cell error';
+      el.textContent = b;
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => {
+        encoded[i] = 1 - encoded[i];
+        errorPos = i;
+        render();
+        checkSyndrome();
+      });
+      encodedEl.appendChild(el);
+    });
+
+    if (errorPos === -1) {
+      syndromeEl.innerHTML = '<span style="color:#16A34A">No errors detected. Click a bit to flip it.</span>';
+    }
+  }
+
+  function checkSyndrome() {
+    const e = encoded;
+    const s1 = e[0] ^ e[2] ^ e[4] ^ e[6];
+    const s2 = e[1] ^ e[2] ^ e[5] ^ e[6];
+    const s4 = e[3] ^ e[4] ^ e[5] ^ e[6];
+    const syndrome = s1 + s2 * 2 + s4 * 4;
+
+    let html = 'Parity check 1 (pos 1,3,5,7): ' + (s1 ? '<span style="color:var(--red)">FAIL</span>' : '<span style="color:var(--green)">OK</span>') + '<br>';
+    html += 'Parity check 2 (pos 2,3,6,7): ' + (s2 ? '<span style="color:var(--red)">FAIL</span>' : '<span style="color:var(--green)">OK</span>') + '<br>';
+    html += 'Parity check 4 (pos 4,5,6,7): ' + (s4 ? '<span style="color:var(--red)">FAIL</span>' : '<span style="color:var(--green)">OK</span>') + '<br>';
+
+    if (syndrome === 0) {
+      html += '<br><strong style="color:var(--green)">No error detected.</strong>';
+    } else {
+      html += '<br><strong>Syndrome = ' + syndrome + ' → Error at position ' + syndrome + '</strong>';
+    }
+    syndromeEl.innerHTML = html;
+  }
+
+  fixBtn.addEventListener('click', () => {
+    const e = encoded;
+    const s1 = e[0] ^ e[2] ^ e[4] ^ e[6];
+    const s2 = e[1] ^ e[2] ^ e[5] ^ e[6];
+    const s4 = e[3] ^ e[4] ^ e[5] ^ e[6];
+    const syndrome = s1 + s2 * 2 + s4 * 4;
+
+    if (syndrome > 0 && syndrome <= 7) {
+      encoded[syndrome - 1] = 1 - encoded[syndrome - 1];
+      // Briefly show corrected state
+      errorPos = -1;
+      render();
+      const cells = encodedEl.querySelectorAll('.bit-cell');
+      cells[syndrome - 1].className = 'bit-cell corrected';
+      setTimeout(() => { render(); checkSyndrome(); }, 1200);
+      syndromeEl.innerHTML = '<strong style="color:var(--green)">Error at position ' + syndrome + ' corrected!</strong>';
+    } else {
+      syndromeEl.innerHTML = '<strong style="color:var(--green)">No error to correct.</strong>';
+    }
+  });
+
+  newBtn.addEventListener('click', init);
+  init();
+})();
+
+/* ============================================================
+   DEMO 6: KELLY CRITERION
+   ============================================================ */
+(function() {
+  const canvas = document.getElementById('kelly-canvas');
+  const betSlider = document.getElementById('kelly-bet-slider');
+  const betVal = document.getElementById('kelly-bet-val');
+  const biasSlider = document.getElementById('kelly-bias-slider');
+  const biasVal = document.getElementById('kelly-bias-val');
+  const playBtn = document.getElementById('kelly-play');
+  const statsEl = document.getElementById('kelly-stats');
+
+  function simulate(p, fraction, rounds) {
+    const history = [100]; // start with $100
+    let bankroll = 100;
+    for (let i = 0; i < rounds; i++) {
+      const bet = bankroll * fraction;
+      if (Math.random() < p) bankroll += bet;
+      else bankroll -= bet;
+      bankroll = Math.max(bankroll, 0.01);
+      history.push(bankroll);
+    }
+    return history;
+  }
+
+  function drawChart(userHistory, kellyHistory) {
+    const { ctx, w, h } = setupCanvas(canvas, 200);
+    ctx.clearRect(0, 0, w, h);
+
+    const all = [...userHistory, ...kellyHistory];
+    const maxVal = Math.max(...all, 100);
+    const minVal = Math.min(...all, 1);
+    const logMax = Math.log10(maxVal);
+    const logMin = Math.log10(Math.max(minVal, 0.01));
+    const pad = { l: 45, r: 10, t: 10, b: 25 };
+    const pw = w - pad.l - pad.r;
+    const ph = h - pad.t - pad.b;
+
+    // Grid
+    ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
+    [0.01, 1, 100, 10000, 1000000].forEach(v => {
+      if (Math.log10(v) >= logMin && Math.log10(v) <= logMax) {
+        const y = pad.t + ph - ((Math.log10(v) - logMin) / (logMax - logMin)) * ph;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+        ctx.font = '10px Figtree'; ctx.fillStyle = '#999'; ctx.textAlign = 'right';
+        ctx.fillText(v >= 1 ? '$' + Math.round(v) : '$' + v.toFixed(2), pad.l - 4, y + 3);
+      }
+    });
+
+    function drawLine(history, color) {
+      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 2;
+      history.forEach((v, i) => {
+        const x = pad.l + (i / (history.length - 1)) * pw;
+        const logV = Math.log10(Math.max(v, 0.01));
+        const y = pad.t + ph - ((logV - logMin) / (logMax - logMin)) * ph;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    drawLine(kellyHistory, '#16A34A');
+    drawLine(userHistory, '#4338CA');
+
+    // Legend
+    ctx.font = '11px Figtree'; ctx.fillStyle = '#4338CA'; ctx.textAlign = 'left';
+    ctx.fillText('Your bet', pad.l + 8, pad.t + 14);
+    ctx.fillStyle = '#16A34A';
+    ctx.fillText('Kelly optimal', pad.l + 8, pad.t + 28);
+
+    ctx.font = '10px Figtree'; ctx.fillStyle = '#999'; ctx.textAlign = 'center';
+    ctx.fillText('Rounds', pad.l + pw / 2, h - 3);
+  }
+
+  function play() {
+    const p = parseInt(biasSlider.value) / 100;
+    const userFrac = parseInt(betSlider.value) / 100;
+    const kellyFrac = Math.max(0, 2 * p - 1);
+    const rounds = 200;
+
+    const userH = simulate(p, userFrac, rounds);
+    const kellyH = simulate(p, kellyFrac, rounds);
+
+    drawChart(userH, kellyH);
+
+    const userFinal = userH[userH.length - 1];
+    const kellyFinal = kellyH[kellyH.length - 1];
+    statsEl.textContent = 'Your bankroll: $' + userFinal.toFixed(2) + ' | Kelly bankroll: $' + kellyFinal.toFixed(2) + ' | Kelly fraction: ' + (kellyFrac * 100).toFixed(0) + '%';
+  }
+
+  betSlider.addEventListener('input', () => { betVal.textContent = betSlider.value + '%'; });
+  biasSlider.addEventListener('input', () => { biasVal.textContent = biasSlider.value + '%'; });
+  playBtn.addEventListener('click', play);
+  play();
+})();
+
+/* ============================================================
+   DEMO 7: PREDICTION QUIZ
+   ============================================================ */
+(function() {
+  const cards = [
+    {
+      id: 'predict-1', correct: 'dna',
+      msg: 'Trick question! English has 26+ characters but uses them very unevenly (e, t, a dominate), giving ~1.0-4.0 bits/char depending on how you measure. DNA has only 4 symbols (A, C, G, T) but uses them roughly equally, giving ~2 bits/char. In terms of raw per-character entropy, DNA is actually higher than English when you account for English\'s massive redundancy from word structure, grammar, and predictable patterns.'
+    },
+    {
+      id: 'predict-2', correct: 'yes',
+      msg: 'Yes! Shannon\'s channel coding theorem proves that reliable communication is possible at ANY error rate below 50%, as long as your data rate stays below the channel capacity. At 10% error rate, C \u2248 0.53 bits per transmission. You\'ll need to add redundancy (roughly doubling the data), but the errors can be completely corrected. This is not obvious \u2014 it\'s one of the most surprising results in all of mathematics.'
+    },
+    {
+      id: 'predict-3', correct: 'bigger',
+      msg: 'It gets slightly BIGGER. A well-compressed file looks like random data \u2014 it has near-maximum entropy, with almost no redundancy left for a second compressor to exploit. But the second ZIP adds its own header and metadata (file tables, checksums), increasing the size. You can\'t compress past the entropy floor, and you certainly can\'t compress randomness.'
+    }
+  ];
+
+  cards.forEach(({ id, correct, msg }) => {
+    const card = document.getElementById(id);
+    card.querySelectorAll('.options .btn-secondary').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const answer = btn.dataset.answer;
+        card.querySelectorAll('.options .btn-secondary').forEach(b => {
+          b.disabled = true;
+          if (b.dataset.answer === correct) {
+            b.classList.add('active');
+            b.style.background = 'var(--green)'; b.style.color = 'white'; b.style.borderColor = 'var(--green)';
+          }
+          if (b === btn && answer !== correct) {
+            b.style.background = 'var(--red)'; b.style.color = 'white'; b.style.borderColor = 'var(--red)';
+          }
+        });
+        card.classList.add('revealed');
+        card.querySelector('.reveal-area p').textContent = (answer === correct ? 'Correct! ' : 'Not quite. ') + msg;
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
