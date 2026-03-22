@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Can a Bucket of Water Compute? — Reservoir Computing Explained</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS DESIGN SYSTEM
+       Based on explainers.blog style guide
+       ============================================ */
+
+    :root {
+      --text-color: #2d2d2d;
+      --border-color: #D3D3D3;
+      --link-color: #6C5CE7;
+      --brand-color: #6C5CE7;
+      --brand-secondary: #00B894;
+      --brand-tertiary: #FD79A8;
+      --background-color: #FAF9F7;
+      --widget-background-color: #F5F5F5;
+      --font-serif: "Newsreader", Georgia, serif;
+      --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 19px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      margin: 0;
+      padding: 20px;
+      font-optical-sizing: auto;
+    }
+
+    @media (min-width: 700px) {
+      html { font-size: 21px; }
+      body { line-height: 1.4; padding: 32px; }
+    }
+
+    /* Layout */
+    .page-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    article {
+      max-width: 790px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      article { padding: 0 45px; }
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    nav a {
+      color: var(--text-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--brand-color);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #6C5CE7 0%, #0984E3 60%, #00B894 100%);
+      border: 8px solid white;
+      border-radius: 40px;
+      padding: 60px 40px;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    @media (min-width: 700px) {
+      .hero {
+        padding: 80px 60px;
+        min-height: 380px;
+      }
+    }
+
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 700;
+      color: white;
+      line-height: 0.94;
+      margin: 0 0 12px 0;
+    }
+
+    @media (min-width: 700px) {
+      .hero h1 { font-size: 64px; }
+    }
+
+    @media (min-width: 900px) {
+      .hero h1 { font-size: 70px; }
+    }
+
+    .hero h2 {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    @media (min-width: 700px) {
+      .hero h2 { font-size: 26px; }
+    }
+
+    /* Hero SVG animation */
+    .hero-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    /* Intro paragraph */
+    .intro {
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: #424242;
+      max-width: 650px;
+      margin: 0 auto 48px;
+      padding: 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      .intro { padding: 0 45px; }
+    }
+
+    /* Links */
+    a {
+      color: var(--link-color);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #5A4BD1;
+    }
+
+    /* Headings */
+    h2 {
+      font-family: var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      color: var(--text-color);
+      margin: 80px 0 0 0;
+      padding-bottom: 12px;
+      position: relative;
+    }
+
+    @media (min-width: 700px) {
+      h2 { font-size: 40px; }
+    }
+
+    @media (min-width: 900px) {
+      h2 { font-size: 50px; }
+    }
+
+    h2::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 1px;
+      background: var(--border-color);
+      margin-top: 16px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin: 80px 0 24px;
+    }
+
+    .section-ordinal {
+      font-family: var(--font-sans);
+      font-size: 40px;
+      font-weight: 700;
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--text-color);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    @media (min-width: 700px) {
+      .section-ordinal { font-size: 50px; }
+    }
+
+    .section-heading h2 {
+      margin: 0;
+    }
+
+    .section-heading h2::after {
+      width: 100%;
+    }
+
+    h3 {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-color);
+      margin: 48px 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      h3 { font-size: 30px; }
+    }
+
+    /* Paragraphs */
+    p {
+      margin: 0 0 16px;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Emphasis */
+    em {
+      font-style: italic;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    /* Table of Contents */
+    .toc {
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 24px 0;
+      margin: 0 auto 48px;
+      max-width: 790px;
+    }
+
+    .toc h4 {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 16px;
+      color: #808080;
+    }
+
+    .toc ol {
+      list-style: none;
+      padding: 0;
+      counter-reset: toc-counter;
+    }
+
+    .toc li {
+      counter-increment: toc-counter;
+      margin-bottom: 6px;
+      font-family: var(--font-sans);
+      font-size: 16px;
+    }
+
+    .toc li::before {
+      content: counter(toc-counter, upper-roman) ".";
+      display: inline-block;
+      width: 40px;
+      color: #808080;
+      font-size: 14px;
+    }
+
+    .toc a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--link-color);
+    }
+
+    /* Figures & Captions */
+    figure {
+      margin: 40px 0;
+      padding: 0;
+    }
+
+    figure img,
+    figure svg,
+    figure .interactive-widget {
+      border-radius: 20px;
+      display: block;
+      max-width: 100%;
+    }
+
+    figcaption {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    /* Interactive Widgets */
+    .interactive-widget {
+      background: var(--widget-background-color);
+      border-radius: 20px;
+      padding: 24px;
+      margin: 32px 0;
+      overflow: hidden;
+    }
+
+    .widget-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #808080;
+      margin-bottom: 4px;
+    }
+
+    .widget-value {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    /* Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-color);
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-color);
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Buttons */
+    button {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 2px solid var(--brand-color);
+      background: white;
+      color: var(--brand-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--brand-color);
+      color: white;
+    }
+
+    button.active {
+      background: var(--brand-color);
+      color: white;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      margin: 32px 0;
+    }
+
+    thead th {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.8;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-weight: 600;
+    }
+
+    /* Sidenotes */
+    .sidenote {
+      background: rgba(108, 92, 231, 0.06);
+      border-left: 3px solid var(--brand-color);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 24px 0;
+      font-size: 0.92rem;
+    }
+
+    .sidenote-title {
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--brand-color);
+      margin-bottom: 6px;
+    }
+
+    /* Footnotes */
+    sup a {
+      font-size: 0.75em;
+      color: var(--link-color);
+      text-decoration: none;
+    }
+
+    .footnotes {
+      border-top: 1px solid var(--border-color);
+      margin-top: 48px;
+      padding-top: 24px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    /* Footer */
+    footer {
+      background: linear-gradient(135deg, #6C5CE7, #0984E3);
+      border: 8px solid white;
+      border-radius: 40px;
+      padding: 60px 40px;
+      margin-top: 80px;
+      color: white;
+      text-align: center;
+      min-height: 200px;
+    }
+
+    footer a {
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* SVG responsive defaults */
+    .diagram-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Ensure SVG text is readable */
+    .diagram-svg text {
+      font-family: var(--font-sans);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--background-color); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    /* Selection */
+    ::selection {
+      background: rgba(108, 92, 231, 0.2);
+    }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Code inline */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--widget-background-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<a href="../index.html" style="position:sticky;top:0;z-index:9999;display:block;padding:10px 20px;font-family:'Figtree',system-ui,sans-serif;font-size:14px;color:#888;text-decoration:none;background:rgba(250,249,247,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">&#8592; All Explainers</a>
+
+  <div class="page-wrapper">
+    <nav>
+      <span style="font-style: italic; font-family: var(--font-serif);">explainer</span>
+      <a href="#contents">Contents</a>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero">
+      <svg class="hero-animation" viewBox="0 0 1400 400" preserveAspectRatio="xMidYMid slice">
+        <!-- Animated ripple circles representing reservoir dynamics -->
+        <defs>
+          <radialGradient id="ripple-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="white" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="300" cy="200" r="0" fill="none" stroke="white" stroke-width="1.5" opacity="0.5">
+          <animate attributeName="r" from="0" to="200" dur="4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.6" to="0" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="300" cy="200" r="0" fill="none" stroke="white" stroke-width="1.5" opacity="0.5">
+          <animate attributeName="r" from="0" to="200" dur="4s" begin="1.3s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.6" to="0" dur="4s" begin="1.3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="300" cy="200" r="0" fill="none" stroke="white" stroke-width="1.5" opacity="0.5">
+          <animate attributeName="r" from="0" to="200" dur="4s" begin="2.6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.6" to="0" dur="4s" begin="2.6s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="800" cy="150" r="0" fill="none" stroke="white" stroke-width="1" opacity="0.4">
+          <animate attributeName="r" from="0" to="180" dur="5s" begin="0.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.5" to="0" dur="5s" begin="0.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="800" cy="150" r="0" fill="none" stroke="white" stroke-width="1" opacity="0.4">
+          <animate attributeName="r" from="0" to="180" dur="5s" begin="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.5" to="0" dur="5s" begin="2.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="1100" cy="300" r="0" fill="none" stroke="white" stroke-width="1" opacity="0.3">
+          <animate attributeName="r" from="0" to="150" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" from="0.4" to="0" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Small network nodes -->
+        <g opacity="0.3">
+          <circle cx="500" cy="100" r="4" fill="white">
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="600" cy="250" r="3" fill="white">
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="700" cy="180" r="5" fill="white">
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.8s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="950" cy="220" r="3" fill="white">
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" begin="0.3s" repeatCount="indefinite"/>
+          </circle>
+          <line x1="500" y1="100" x2="600" y2="250" stroke="white" stroke-width="0.5" opacity="0.2"/>
+          <line x1="600" y1="250" x2="700" y2="180" stroke="white" stroke-width="0.5" opacity="0.2"/>
+          <line x1="700" y1="180" x2="950" y2="220" stroke="white" stroke-width="0.5" opacity="0.2"/>
+          <line x1="500" y1="100" x2="700" y2="180" stroke="white" stroke-width="0.5" opacity="0.15"/>
+        </g>
+      </svg>
+      <h1>How can a bucket of water compute?</h1>
+      <h2>The strangest idea in machine learning — and why it actually works.</h2>
+    </header>
+
+    <!-- INTRO -->
+    <p class="intro">
+      In 2003, a team of researchers literally dropped stones into a bucket of water — and used the ripples to perform computation. This isn't a metaphor. This is reservoir computing, and it might be the most elegant idea in all of machine learning. In this article, we'll explore how it works, why it works, and why you should care — with enough depth that, by the end, you'll be able to build one yourself.
+    </p>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc" id="contents">
+      <h4>Contents</h4>
+      <ol>
+        <li><a href="#problem-with-training">The problem with training</a></li>
+        <li><a href="#what-if-no-training">What if you didn't train?</a></li>
+        <li><a href="#bucket-of-water">The bucket of water</a></li>
+        <li><a href="#how-reservoirs-work">How reservoirs actually work</a></li>
+        <li><a href="#echo-state-networks">Echo state networks</a></li>
+        <li><a href="#why-does-this-work">Why does this work?</a></li>
+        <li><a href="#edge-of-chaos">The edge of chaos</a></li>
+        <li><a href="#build-your-own">Building your own reservoir</a></li>
+        <li><a href="#where-it-shines">Where reservoir computing shines</a></li>
+        <li><a href="#bigger-picture">The bigger picture</a></li>
+      </ol>
+    </div>
+
+    <article>
+
+      <!-- ============================================
+           SECTION I: THE PROBLEM WITH TRAINING
+           ============================================ -->
+      <section id="problem-with-training">
+        <div class="section-heading">
+          <span class="section-ordinal">I.</span>
+          <h2>The problem with training</h2>
+        </div>
+
+        <p>Let's start with what you probably already know. Neural networks are powerful because they <em>learn</em>. You feed them data, and through an iterative process called backpropagation, they adjust millions — sometimes billions — of internal parameters until they can perform a task.</p>
+
+        <p>This is remarkable. But it's also extraordinarily expensive.</p>
+
+        <p>Training GPT-3 cost an estimated $4.6 million in compute alone. Training a modest image classifier might take hours on a GPU. Even a simple recurrent neural network (RNN) processing time series data requires careful gradient computation through every timestep, through every connection, through every layer.</p>
+
+        <p>Here's what's happening inside a typical neural network during training:</p>
+
+        <figure>
+          <div class="interactive-widget" id="training-widget">
+            <svg class="diagram-svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+              <!-- Input layer -->
+              <text x="80" y="30" text-anchor="middle" font-size="14" font-weight="600" fill="#FD79A8">INPUT</text>
+              <circle cx="80" cy="100" r="18" fill="#FD79A8" opacity="0.2" stroke="#FD79A8" stroke-width="2"/>
+              <circle cx="80" cy="200" r="18" fill="#FD79A8" opacity="0.2" stroke="#FD79A8" stroke-width="2"/>
+              <circle cx="80" cy="300" r="18" fill="#FD79A8" opacity="0.2" stroke="#FD79A8" stroke-width="2"/>
+
+              <!-- Hidden layer 1 -->
+              <text x="280" y="30" text-anchor="middle" font-size="14" font-weight="600" fill="#6C5CE7">HIDDEN 1</text>
+              <circle cx="280" cy="80" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+              <circle cx="280" cy="160" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+              <circle cx="280" cy="240" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+              <circle cx="280" cy="320" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+
+              <!-- Hidden layer 2 -->
+              <text x="480" y="30" text-anchor="middle" font-size="14" font-weight="600" fill="#6C5CE7">HIDDEN 2</text>
+              <circle cx="480" cy="80" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+              <circle cx="480" cy="160" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+              <circle cx="480" cy="240" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+              <circle cx="480" cy="320" r="18" fill="#6C5CE7" opacity="0.2" stroke="#6C5CE7" stroke-width="2"/>
+
+              <!-- Output layer -->
+              <text x="680" y="30" text-anchor="middle" font-size="14" font-weight="600" fill="#00B894">OUTPUT</text>
+              <circle cx="680" cy="150" r="18" fill="#00B894" opacity="0.2" stroke="#00B894" stroke-width="2"/>
+              <circle cx="680" cy="250" r="18" fill="#00B894" opacity="0.2" stroke="#00B894" stroke-width="2"/>
+
+              <!-- Connections (will be animated) -->
+              <g id="nn-connections" opacity="0.3">
+              </g>
+
+              <!-- Training status -->
+              <text x="400" y="390" text-anchor="middle" font-size="14" font-family="var(--font-mono)" fill="#808080" id="training-status">Click "Train" to watch weights update</text>
+            </svg>
+            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 16px;">
+              <button id="train-btn" onclick="startTraining()">Train the network</button>
+              <button id="reset-btn" onclick="resetNetwork()">Reset</button>
+            </div>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">WEIGHTS UPDATED: </span>
+              <span class="widget-value" id="weight-counter">0</span>
+              <span class="widget-label" style="margin-left: 16px;">EPOCH: </span>
+              <span class="widget-value" id="epoch-counter">0</span>
+            </div>
+          </div>
+          <figcaption>Every colored connection is a weight that must be individually adjusted during training. In a real network with millions of parameters, this process can take days or weeks on specialized hardware.</figcaption>
+        </figure>
+
+        <p>Every single line in that diagram is a <em>weight</em> — a number that needs to be carefully adjusted. And these adjustments aren't independent; changing one weight affects what every downstream weight should be. It's an enormous, coupled optimization problem.</p>
+
+        <p>For recurrent neural networks — the kind that process sequences like speech, text, or stock prices — training is even harder. You have to compute gradients not just through layers, but through <em>time</em>. This is called Backpropagation Through Time (BPTT), and it comes with nasty problems: gradients that explode to infinity or vanish to zero.</p>
+
+        <p>LSTMs partially solved this with clever gating mechanisms. Transformers sidestepped it entirely by processing all timesteps in parallel with attention. But both approaches still require training every single weight in the network.</p>
+
+        <p>Consider the scale. GPT-3 has 175 billion parameters. Training it consumed an estimated 3.14 × 10²³ floating-point operations. Even a modest recurrent network with 1,000 neurons has about a million trainable connections, each requiring hundreds of gradient updates to converge. Multiply that by the length of your training sequences, and you begin to understand why RNN training is a nightmare.</p>
+
+        <p>But here's a question that might seem absurd at first: <em>what if most of those weights don't actually need to be trained?</em></p>
+
+        <p>What if the network's complex internal dynamics — the very thing that makes it powerful — could emerge from <em>random</em> connections? And you only needed to train a thin layer at the very end?</p>
+
+        <p>This isn't hypothetical. It's exactly what reservoir computing does. And it works.</p>
+
+      </section>
+
+      <!-- ============================================
+           SECTION II: WHAT IF YOU DIDN'T TRAIN?
+           ============================================ -->
+      <section id="what-if-no-training">
+        <div class="section-heading">
+          <span class="section-ordinal">II.</span>
+          <h2>What if you didn't train?</h2>
+        </div>
+
+        <p>Here's the radical proposition at the heart of reservoir computing:</p>
+
+        <p><strong>What if the complex, recurrent part of the network was completely random — and you never trained it at all?</strong></p>
+
+        <p>Instead of laboriously tuning millions of weights through backpropagation, you just... generate them randomly. Fix them. Never touch them again. The only thing you train is a simple linear readout layer at the end — which is just linear regression. Something you can solve in one step with basic linear algebra.</p>
+
+        <p>This sounds insane. Like saying you could build a telescope by gluing random pieces of glass together and then just adjusting where you put your eye. But it turns out this is roughly what happens, and there's deep mathematical reasons why it works.</p>
+
+        <p>Think of it like a kaleidoscope. You don't <em>design</em> the intricate patterns inside a kaleidoscope. The mirrors are arranged in a fixed, somewhat arbitrary way. But when you look through it, simple inputs (a few colored beads) get transformed into rich, complex, beautiful patterns. All you need to do is <em>learn to read</em> those patterns.</p>
+
+        <p>Here's the key architectural difference:</p>
+
+        <figure>
+          <div class="interactive-widget" id="comparison-widget">
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; justify-content: center;">
+              <button id="btn-traditional" class="active" onclick="showArchitecture('traditional')">Traditional NN</button>
+              <button id="btn-reservoir" onclick="showArchitecture('reservoir')">Reservoir</button>
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 800 380" preserveAspectRatio="xMidYMid meet" id="architecture-svg">
+              <!-- Will be populated by JS -->
+            </svg>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #FD79A8; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Input</span></div>
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #6C5CE7; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Hidden / Reservoir</span></div>
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #00B894; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Output</span></div>
+              <div><span style="display: inline-block; width: 30px; height: 3px; background: #E74C3C; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Trained</span></div>
+              <div><span style="display: inline-block; width: 30px; height: 3px; background: #D3D3D3; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Fixed (random)</span></div>
+            </div>
+          </div>
+          <figcaption>In a traditional neural network, <em>all</em> connections are trained (red). In a reservoir, only the output connections are trained (red) — the reservoir's internal connections are random and fixed (gray). This makes training orders of magnitude faster.</figcaption>
+        </figure>
+
+        <p>The numbers are striking. A traditional recurrent network with 1,000 neurons has roughly a <em>million</em> trainable parameters. A reservoir with the same number of neurons? Just 1,000 — the output weights. That's a 1,000x reduction in training complexity.</p>
+
+        <p>And because the readout is linear, you don't need gradient descent at all. You can solve it in closed form with ridge regression. Training takes seconds, not hours.</p>
+
+        <p>This idea — that random projections can be useful — isn't as crazy as it sounds. Think about it this way: when you throw a stone into a pond, the resulting ripple pattern is incredibly complex. It encodes information about where the stone landed, how big it was, and even the shape of the pond's boundaries. Nobody <em>designed</em> those ripple patterns. They emerge from the physics of wave propagation. But they contain rich information that a clever observer could decode.</p>
+
+        <p>A reservoir works the same way. The random connections create complex dynamics that <em>encode</em> the input signal in a rich, high-dimensional state. A linear readout then <em>decodes</em> whatever aspect of that signal you're interested in.</p>
+
+        <p>But this only works if the random reservoir actually does something useful with the input. So... does it?</p>
+      </section>
+
+      <!-- ============================================
+           SECTION III: THE BUCKET OF WATER
+           ============================================ -->
+      <section id="bucket-of-water">
+        <div class="section-heading">
+          <span class="section-ordinal">III.</span>
+          <h2>The bucket of water</h2>
+        </div>
+
+        <p>In 2003, Chrisantha Fernando and Sampsa Sojakka published a paper with one of the most delightful titles in computer science: <em>"Pattern Recognition in a Bucket."</em></p>
+
+        <p>Their experiment was beautifully simple. They took a literal bucket of water, attached motors to its edges to create vibrations, and pointed a camera at the water's surface. The motors created different vibration patterns corresponding to different inputs. The camera recorded the resulting ripple patterns on the water surface.</p>
+
+        <p>Then — and here's the key — they took the pixel values from the camera image and used them as inputs to a simple linear classifier. No neural network. No backpropagation. Just the water doing the complex nonlinear transformation, and a linear readout interpreting the result.</p>
+
+        <p><strong>It worked.</strong> The water bucket could perform nonlinear classification — separating input patterns that a simple linear classifier couldn't distinguish. The water's complex wave dynamics provided exactly the kind of nonlinear transformation needed.</p>
+
+        <p>Try it yourself:</p>
+
+        <figure>
+          <div class="interactive-widget" id="bucket-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">WATER BUCKET SIMULATOR</span>
+            </div>
+            <canvas id="water-canvas" width="760" height="300" style="width: 100%; border-radius: 12px; background: #1a1a2e; cursor: pointer;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+              <button onclick="dropStone('left')">Drop stone (left)</button>
+              <button onclick="dropStone('right')">Drop stone (right)</button>
+              <button onclick="dropBoth()">Drop both</button>
+              <button onclick="resetWater()">Reset</button>
+            </div>
+            <div style="margin-top: 12px; text-align: center;">
+              <span class="widget-label">READOUT LINE VALUES: </span>
+              <span class="widget-value" id="readout-values" style="font-size: 12px;">—</span>
+            </div>
+            <div style="margin-top: 8px; text-align: center;">
+              <span class="widget-label">INPUT: </span>
+              <span class="widget-value" id="bucket-input">None</span>
+              <span class="widget-label" style="margin-left: 16px;">SURFACE STATE: </span>
+              <span class="widget-value" id="surface-state">Calm</span>
+            </div>
+          </div>
+          <figcaption>A simulated water surface acting as a reservoir computer. Drop stones to create ripple patterns — the dashed readout line samples the surface height at multiple points, creating a high-dimensional state vector that a linear classifier can use.</figcaption>
+        </figure>
+
+        <p>The water surface is a <em>reservoir</em>. It takes simple inputs (stone drops) and transforms them into complex, high-dimensional patterns (ripple interference). Different input combinations produce different patterns, and these patterns are rich enough that a linear readout can distinguish them.</p>
+
+        <p>Why does this work for XOR specifically? XOR is the canonical example of a problem that's <em>not linearly separable</em>. If you try to separate XOR outputs (0 XOR 0 = 0, 0 XOR 1 = 1, 1 XOR 0 = 1, 1 XOR 1 = 0) with a straight line in 2D input space, you can't. That's why a single-layer perceptron fails at XOR — it was one of the key findings in Minsky & Papert's 1969 book that temporarily killed the field of neural networks.</p>
+
+        <p>But the water bucket transforms the 2D inputs into a <em>high-dimensional</em> representation — the pixel values of the water surface. In that space, the XOR problem <em>is</em> linearly separable. A simple linear classifier can draw a hyperplane through the pixel space that correctly separates the four cases. The water's nonlinear dynamics did the hard work; the linear classifier just reads the result.</p>
+
+        <p>This is the core insight of reservoir computing: <strong>you don't need to engineer the complex transformation. Nature — or randomness — can provide it for free. You just need to learn to read the output.</strong></p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The deeper point</div>
+          <p style="margin: 0;">The water bucket isn't just a cute demo. It illustrates a profound principle: <em>any</em> sufficiently complex dynamical system can potentially serve as a computational reservoir. This includes electronic circuits, optical systems, even colonies of bacteria. The physical substrate doesn't matter — what matters is that it produces rich, input-dependent dynamics.</p>
+        </div>
+
+        <p>But of course, in practice, we don't usually use actual buckets of water. We use mathematical models that capture the same essential properties. Let's look at how these work.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION IV: HOW RESERVOIRS ACTUALLY WORK
+           ============================================ -->
+      <section id="how-reservoirs-work">
+        <div class="section-heading">
+          <span class="section-ordinal">IV.</span>
+          <h2>How reservoirs actually work</h2>
+        </div>
+
+        <p>A reservoir computer has three components, and understanding each one is straightforward:</p>
+
+        <p><strong>1. Input weights (W<sub>in</sub>)</strong> — A set of random, fixed weights that project the input signal into the reservoir. If your input is a single number (like a stock price at time <em>t</em>), these weights spread it across all the reservoir neurons. Think of it as taking a 1D signal and spraying it into a high-dimensional space.</p>
+
+        <p><strong>2. The reservoir (W)</strong> — A recurrent neural network with random, fixed connections. Each neuron receives input from other neurons and from the input layer. The connections create feedback loops, so the reservoir has <em>memory</em> — its current state depends not just on the current input, but on past inputs too. This is key for processing time series.</p>
+
+        <p><strong>3. Output weights (W<sub>out</sub>)</strong> — The <em>only</em> trained part. A simple linear combination of all reservoir neuron activations. Training these weights is just linear regression — fast, simple, and solved in closed form.</p>
+
+        <p>The update rule for the reservoir state is deceptively simple:</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The math</div>
+          <p style="margin: 0 0 8px;"><strong>Reservoir update</strong> (random, fixed — not trained):</p>
+          <p style="margin: 0 0 8px;"><strong>x</strong>(t+1) = tanh(<strong>W</strong> · <strong>x</strong>(t) + <strong>W<sub>in</sub></strong> · <strong>u</strong>(t))</p>
+          <p style="margin: 0 0 8px;"><strong>Readout</strong> (the only trained part!):</p>
+          <p style="margin: 0 0 8px;"><strong>y</strong>(t) = <strong>W<sub>out</sub></strong> · <strong>x</strong>(t)</p>
+          <p style="margin: 0 0 8px;">Where <strong>u</strong>(t) is the input at time t, <strong>x</strong>(t) is the reservoir state (a vector of all neuron activations), <strong>W</strong> and <strong>W<sub>in</sub></strong> are random and fixed, and <strong>W<sub>out</sub></strong> is the only thing you train — using simple linear regression.</p>
+          <p style="margin: 0;">The <code>tanh</code> provides essential nonlinearity. Without it, the reservoir would just be a linear transformation — and a linear readout of a linear system is still linear. Useless for nonlinear tasks like XOR.</p>
+        </div>
+
+        <p>Here's an interactive reservoir you can play with. Below you'll see three sliders: the number of neurons, the <em>spectral radius</em> (the largest absolute eigenvalue of the weight matrix W — it controls how long the reservoir remembers past inputs), and the input scaling. Adjust them and watch how the reservoir neurons respond to a simple sine wave input:</p>
+
+        <figure>
+          <div class="interactive-widget" id="reservoir-widget">
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">NEURONS: <span id="neuron-count-val">30</span></div>
+                <input type="range" id="neuron-count" min="5" max="80" value="30" step="1">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">SPECTRAL RADIUS: <span id="spectral-radius-val">0.90</span></div>
+                <input type="range" id="spectral-radius" min="10" max="150" value="90" step="1">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">INPUT SCALING: <span id="input-scaling-val">0.50</span></div>
+                <input type="range" id="input-scaling" min="5" max="200" value="50" step="1">
+              </div>
+            </div>
+            <canvas id="reservoir-canvas" width="760" height="360" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: #FD79A8; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Input signal</span></div>
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: #6C5CE7; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Reservoir neuron activations</span></div>
+            </div>
+          </div>
+          <figcaption>A reservoir receiving a sine wave input. Each colored trace is one neuron's activation over time. Notice how the neurons produce diverse, rich responses from a single simple input — this is the reservoir creating a high-dimensional representation.</figcaption>
+        </figure>
+
+        <p>Notice something crucial: from a single input signal (the sine wave), the reservoir produces <em>many</em> different response patterns. Some neurons track the input closely. Others respond with delays. Some oscillate at different frequencies. This diversity is exactly what makes the reservoir useful — it's projecting the input into a rich, high-dimensional space where linear separation becomes possible.</p>
+
+        <p>This is the magic of recurrence. In a feedforward network, each neuron's response depends only on the current input. But in a recurrent reservoir, each neuron integrates information from the current input <em>and</em> from all other neurons' previous states. This means each neuron effectively computes a different nonlinear function of the input <em>history</em> — a different weighted mixture of recent inputs with different delays and nonlinear transformations.</p>
+
+        <p>If you have 100 reservoir neurons, you effectively have 100 different "feature detectors," each capturing a different temporal pattern in the input. And these features weren't designed — they emerged spontaneously from random connectivity. That's the beauty of it.</p>
+
+        <p>Try adjusting the sliders above. Increase the spectral radius and notice how the neuron responses become more complex and varied. Decrease it and they become simpler, more directly correlated with the input. Increase input scaling and the responses become more nonlinear (more tanh saturation). These are the key knobs you have for tuning a reservoir.</p>
+
+        <p>The <em>spectral radius</em> — the largest absolute eigenvalue of the weight matrix (max |λ|) — is the single most important hyperparameter. It controls how much influence past states have on the current state. We'll explore this more in the next section.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION V: ECHO STATE NETWORKS
+           ============================================ -->
+      <section id="echo-state-networks">
+        <div class="section-heading">
+          <span class="section-ordinal">V.</span>
+          <h2>Echo state networks</h2>
+        </div>
+
+        <p>In 2001 — two years <em>before</em> the water bucket paper — Herbert Jaeger introduced the <em>Echo State Network</em> (ESN), which formalized the reservoir computing idea mathematically. Around the same time, Wolfgang Maass independently developed <em>Liquid State Machines</em> (LSMs) for spiking neural networks. The umbrella term "reservoir computing" came later to unite these approaches.</p>
+
+        <p>The key concept Jaeger introduced is the <strong>echo state property</strong>: the idea that the reservoir's state should be an "echo" of its recent input history. Inputs create ripples in the reservoir's dynamics, and these ripples gradually fade over time. After enough time passes without input, the reservoir should settle back to a neutral state — it should "forget."</p>
+
+        <p>This forgetting is essential. If the reservoir remembered <em>everything</em> forever, it would just be a recording device, not a computer. If it forgot <em>instantly</em>, it would have no memory at all. The sweet spot is somewhere in between — and the spectral radius is a key factor in controlling where on this spectrum the reservoir sits.</p>
+
+        <p>Watch what happens when we send a single pulse into a reservoir and observe how the echoes decay:</p>
+
+        <figure>
+          <div class="interactive-widget" id="echo-widget">
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 200px;">
+                <div class="widget-label">SPECTRAL RADIUS: <span id="echo-sr-val">0.90</span></div>
+                <input type="range" id="echo-sr" min="10" max="150" value="90" step="1">
+              </div>
+              <div style="flex: 1; min-width: 200px;">
+                <div class="widget-label">REGIME: <span id="echo-regime">Stable — echoes fade gradually</span></div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; justify-content: center;">
+              <button onclick="setEchoSR(50)">Ordered (0.5)</button>
+              <button onclick="setEchoSR(95)">Edge of chaos (0.95)</button>
+              <button onclick="setEchoSR(130)">Chaotic (1.3)</button>
+              <button onclick="pulseEcho()" style="background: var(--brand-tertiary); border-color: var(--brand-tertiary); color: white;">Send pulse</button>
+            </div>
+            <canvas id="echo-canvas" width="760" height="320" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: #FD79A8; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Input pulse</span></div>
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: rgba(108,92,231,0.7); margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Neuron responses (echoes)</span></div>
+            </div>
+          </div>
+          <figcaption>Send a pulse into the reservoir and watch the "echoes" — how individual neurons respond over time. With a low spectral radius, echoes die quickly. Near 1.0, they persist beautifully. Above 1.0, they tend to become unstable (though input-driven dynamics can sometimes stabilize them).</figcaption>
+        </figure>
+
+        <p>This brings us to a critical practical point: the <strong>washout period</strong>. When you first start feeding data into a reservoir, its state is arbitrary (usually zeros). The first few timesteps of reservoir activity are contaminated by this arbitrary initial state, not by the actual input signal. So in practice, you discard the first ~100 timesteps of reservoir states before training the readout. This is called the "washout" or "burn-in" period.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The spectral radius rule of thumb</div>
+          <p style="margin: 0;">A common starting point is to set the spectral radius just below 1.0 (like 0.9 or 0.95). At this point the reservoir has long memory without being unstable. But this is just a guideline — the optimal value depends on your specific task. Tasks that need long memory (e.g. slow patterns) benefit from values closer to 1.0. Tasks with fast dynamics can use lower values.</p>
+        </div>
+
+        <p>There's also the question of <strong>memory vs. nonlinearity</strong>. A reservoir can't have infinite memory <em>and</em> infinite nonlinear processing power simultaneously. There's a fundamental tradeoff: high spectral radius gives you more memory but less nonlinear transformation, and vice versa. This tradeoff is intrinsic to the dynamics of recurrent systems.</p>
+
+        <p>Jaeger formalized this as <strong>memory capacity</strong> — the ability of the reservoir to reconstruct past inputs from its current state. For a reservoir with N neurons, the total memory capacity is bounded by N. This is a hard information-theoretic limit: you can't store more than N independent pieces of past information in N neurons.</p>
+
+        <p>But memory capacity is distributed across different delays. A reservoir might be excellent at remembering what happened 5 timesteps ago, mediocre at 15 timesteps ago, and useless at 50 timesteps ago. The spectral radius controls this distribution: higher spectral radius shifts memory toward longer delays, but the total capacity stays bounded at N.</p>
+
+        <p>This is why reservoir size matters. More neurons means more total memory capacity <em>and</em> a richer nonlinear representation. In practice, a larger reservoir generally helps — up to a point. A reservoir with 500 neurons will typically outperform one with 50, though with diminishing returns. Beyond a certain size, you risk overfitting and ill-conditioned state matrices, which is why regularization in the readout matters.</p>
+
+        <p>So how do we set the spectral radius? How do we know what regime the reservoir is in? And what exactly happens at the boundary between order and chaos? That's where things get really interesting.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VI: WHY DOES THIS WORK?
+           ============================================ -->
+      <section id="why-does-this-work">
+        <div class="section-heading">
+          <span class="section-ordinal">VI.</span>
+          <h2>Why does this work?</h2>
+        </div>
+
+        <p>This is the question that trips people up. How can a <em>random</em> network — one you never trained — produce useful results?</p>
+
+        <p>The answer comes from a beautiful idea in machine learning called the <strong>kernel trick</strong>, and specifically from Cover's theorem (1965).</p>
+
+        <p>Cover's theorem states: <em>a complex pattern classification problem cast into a high-dimensional space is more likely to be linearly separable than in a low-dimensional space</em>.</p>
+
+        <p>In plain English: if your data is a tangled mess in low dimensions, project it into enough dimensions and it will untangle itself. A straight line (or hyperplane) can then separate what was previously inseparable.</p>
+
+        <p>Here's an analogy. Imagine you have a crumpled piece of paper with two different colors of ink on it. In 2D (looking at the paper from above), the colors overlap — you can't draw a straight line to separate them. But unfold the paper into 3D, and now you can probably find a flat plane that separates the red ink from the blue ink. The crumpled 3D shape has "spread out" the patterns.</p>
+
+        <p>The reservoir does exactly this — it's a random nonlinear projection into a high-dimensional space. But it's even better than a static projection: because the reservoir is <em>recurrent</em>, each neuron's activation encodes not just the current input but a nonlinear function of the <em>input history</em>. So the high-dimensional space includes temporal features too — delayed versions, moving averages, nonlinear combinations of recent inputs. All for free.</p>
+
+        <figure>
+          <div class="interactive-widget" id="projection-widget">
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;">
+              <button id="btn-2d" class="active" onclick="showProjection('2d')">2D (not separable)</button>
+              <button id="btn-3d" onclick="showProjection('3d')">3D (separable!)</button>
+            </div>
+            <canvas id="projection-canvas" width="760" height="400" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-value" id="projection-label">In 2D, the two classes (pink and green) form concentric rings — no straight line can separate them.</span>
+            </div>
+          </div>
+          <figcaption>The reservoir acts like a random nonlinear projection. Data that's hopelessly tangled in low dimensions becomes linearly separable in the reservoir's high-dimensional state space. Toggle between views to see the transformation.</figcaption>
+        </figure>
+
+        <p>This is closely related to the "random kitchen sinks" idea from Rahimi and Recht (2007): you can replace expensive kernel methods with random nonlinear features and still get excellent results. The reservoir is essentially a temporal version of this — it creates random nonlinear features that also incorporate <em>history</em>.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Why random works</div>
+          <p style="margin: 0;">It might seem like carefully designed features should beat random ones. And sometimes they do. But random projections have a remarkable property: with high probability, they approximately preserve the distances between points (the Johnson-Lindenstrauss lemma). So random projections don't <em>distort</em> the structure of your data — they just spread it into more dimensions, making linear separation easier.</p>
+        </div>
+
+        <p>This explains why the reservoir doesn't need training. Its job isn't to learn a specific representation — it's to create a <em>rich enough</em> representation that a linear readout can extract whatever information is needed. As long as the reservoir is sufficiently large and has the right dynamical properties, almost <em>any</em> random reservoir will work.</p>
+
+        <p>Of course, "right dynamical properties" is doing a lot of heavy lifting in that sentence. What are those properties? This brings us to one of the most fascinating concepts in complex systems theory.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VII: THE EDGE OF CHAOS
+           ============================================ -->
+      <section id="edge-of-chaos">
+        <div class="section-heading">
+          <span class="section-ordinal">VII.</span>
+          <h2>The edge of chaos</h2>
+        </div>
+
+        <p>Every dynamical system — from weather patterns to neural networks to economies — operates in one of three regimes:</p>
+
+        <p><strong>Ordered</strong>: The system is too stable. Perturbations die out quickly. The system always converges to the same state regardless of input. It has no memory, no complexity, no computational power. Think of a pendulum with heavy damping — push it, and it immediately stops.</p>
+
+        <p><strong>Chaotic</strong>: The system is too unstable. Tiny perturbations grow exponentially. Two nearly identical initial states diverge wildly. The system is unpredictable and useless for computation because outputs aren't reproducible. Think of turbulent fluid — drop two identical dye blobs side by side, and they end up in completely different places.</p>
+
+        <p><strong>Edge of chaos</strong>: The Goldilocks zone. Perturbations neither die nor explode — they propagate through the system at a stable amplitude, creating complex but reproducible dynamics. This is where computation happens. This is where <em>life</em> happens.</p>
+
+        <p>For reservoir computing, the edge of chaos is where the <strong>largest Lyapunov exponent</strong> crosses zero. This exponent measures whether nearby trajectories in state space diverge (positive = chaos) or converge (negative = order). Right at zero, the system has maximum computational capacity.</p>
+
+        <p>See it for yourself:</p>
+
+        <figure>
+          <div class="interactive-widget" id="chaos-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">DYNAMICAL REGIME EXPLORER</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 200px;">
+                <div class="widget-label">SPECTRAL RADIUS: <span id="chaos-sr-val">0.50</span></div>
+                <input type="range" id="chaos-sr" min="10" max="160" value="50" step="1">
+              </div>
+              <div style="flex: 1; min-width: 200px;">
+                <div class="widget-label">REGIME: <span id="chaos-regime" style="font-weight: 600;">Ordered</span></div>
+                <div class="widget-label" style="margin-top: 4px;">LYAPUNOV: <span id="chaos-lyapunov">Negative (stable)</span></div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap;">
+              <button onclick="setChaosMode('ordered')">Ordered (0.5)</button>
+              <button onclick="setChaosMode('edge')">Edge of chaos (0.98)</button>
+              <button onclick="setChaosMode('chaotic')">Chaotic (1.4)</button>
+            </div>
+            <canvas id="chaos-canvas" width="760" height="350" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #00B894; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Trajectory A</span></div>
+              <div><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #FD79A8; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Trajectory B (tiny perturbation)</span></div>
+              <div><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #FFEAA7; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Divergence</span></div>
+            </div>
+          </div>
+          <figcaption>Two nearly identical reservoir states (tiny perturbation) evolving through time. In the ordered regime, they converge immediately. At the edge of chaos, they stay close but maintain distinct, complex patterns. In chaos, they diverge wildly. The bottom trace shows the distance between the two trajectories.</figcaption>
+        </figure>
+
+        <p>The practical implication is clear: <strong>a well-tuned reservoir operates near the edge of chaos</strong>, where it has maximal sensitivity to inputs (good for computation) while still being stable enough that the readout layer can extract meaningful patterns.</p>
+
+        <p>This is related to a profound idea in complex systems theory: the edge of chaos is where <em>information processing</em> is maximized. Too ordered, and the system can't represent complex patterns. Too chaotic, and it can't reliably transmit information from input to output. Right at the boundary, you get the best of both worlds.</p>
+
+        <p>Chris Langton proposed this idea for cellular automata in the 1990s, and it's been observed in systems from sandpiles to gene networks to economies. Reservoir computing provides perhaps the cleanest demonstration of the principle in machine learning: you can literally slide a single parameter (the spectral radius) across the phase transition and watch computational performance peak at the boundary.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Caveats about the edge of chaos</div>
+          <p style="margin: 0;">The "edge of chaos" story is beautiful and largely true, but it's not the whole picture. Some tasks work better slightly away from the edge. And the relationship between spectral radius and the Lyapunov exponent isn't always straightforward — input-driven dynamics can stabilize an otherwise chaotic reservoir. The rule of thumb (spectral radius ≈ 1) is a good starting point, but always validate empirically.</p>
+        </div>
+
+        <p>Now that we understand the theory, let's actually build one.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VIII: BUILD YOUR OWN RESERVOIR
+           ============================================ -->
+      <section id="build-your-own">
+        <div class="section-heading">
+          <span class="section-ordinal">VIII.</span>
+          <h2>Building your own reservoir</h2>
+        </div>
+
+        <p>Here's the recipe for building an echo state network. It's surprisingly simple:</p>
+
+        <p><strong>Step 1: Create the reservoir.</strong> Generate a random N×N weight matrix W. Make it sparse (most entries zero — say, 80% sparsity). Then scale W so its spectral radius (largest absolute eigenvalue) is your target value (start with ~0.9).</p>
+
+        <p><strong>Step 2: Create the input weights.</strong> Generate a random N×1 vector W<sub>in</sub>. Scale it by your desired input scaling factor (start with ~0.5). These weights are fixed — you never train them.</p>
+
+        <p><strong>Step 3: Drive the reservoir.</strong> Your input signal is a time series: u(1), u(2), u(3), ... — just a sequence of numbers. At each timestep, you feed the <em>next value</em> from this sequence into the reservoir: <strong>x</strong>(t+1) = tanh(<strong>W</strong> · <strong>x</strong>(t) + <strong>W<sub>in</sub></strong> · u(t)). There's no feedback loop here — u(t) is simply the t-th value from your input data. The reservoir state <strong>x</strong>(t) accumulates memory of all past inputs automatically through its recurrent connections. Save each state x(t) as a row in a big matrix X.</p>
+
+        <p><strong>Step 4: Discard the washout.</strong> Throw away the first ~100 timesteps of X (the burn-in period where the reservoir is still "warming up" and its initial random state still dominates).</p>
+
+        <p><strong>Step 5: Train the readout.</strong> This is the <em>only</em> training step, and it's just linear regression. You want to find weights W<sub>out</sub> such that <strong>y</strong>(t) = W<sub>out</sub> · <strong>x</strong>(t) ≈ target(t). In other words: find the best weighted average of neuron activations that matches your target signal. With ridge regression (linear regression + a small regularization term λ to prevent overfitting), this has a direct closed-form solution — no iteration, no gradient descent, solved in one step.</p>
+
+        <p><strong>Step 6: Predict.</strong> For new inputs, feed them through the same reservoir one step at a time (same W, same W<sub>in</sub>), and apply the trained W<sub>out</sub> to each new state to get predictions.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Teacher forcing vs. free-running</div>
+          <p style="margin: 0;">During training, you feed the <em>actual</em> signal values as input (this is called "teacher forcing"). But for autonomous prediction — predicting further into the future — you feed the reservoir's <em>own output</em> back as the next input. This "free-running" mode is where reservoirs can struggle: small errors compound over time. Getting good free-running performance usually requires careful tuning of spectral radius and regularization.</p>
+        </div>
+
+        <p>That's it. No backpropagation. No gradient descent. No vanishing gradients. Let's see it in action:</p>
+
+        <figure>
+          <div class="interactive-widget" id="demo-widget">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; justify-content: center;">
+              <button id="btn-sine" class="active" onclick="setTask('sine')">Sine prediction</button>
+              <button id="btn-mackey" onclick="setTask('mackey')">Mackey-Glass</button>
+              <button id="btn-square" onclick="setTask('square')">Square wave</button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 150px;">
+                <div class="widget-label">RESERVOIR SIZE: <span id="demo-size-val">50</span></div>
+                <input type="range" id="demo-size" min="10" max="150" value="50" step="5">
+              </div>
+              <div style="flex: 1; min-width: 150px;">
+                <div class="widget-label">SPECTRAL RADIUS: <span id="demo-sr-val">0.95</span></div>
+                <input type="range" id="demo-sr" min="10" max="140" value="95" step="1">
+              </div>
+              <div style="flex: 1; min-width: 150px;">
+                <div class="widget-label">INPUT SCALING: <span id="demo-is-val">0.50</span></div>
+                <input type="range" id="demo-is" min="5" max="200" value="50" step="5">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
+              <button onclick="trainReservoir()" style="background: var(--brand-secondary); border-color: var(--brand-secondary); color: white;">Train & predict</button>
+            </div>
+            <canvas id="demo-canvas" width="760" height="350" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: rgba(255,255,255,0.5); margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Target</span></div>
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: #00B894; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Reservoir prediction</span></div>
+              <div><span style="display: inline-block; width: 20px; height: 3px; background: #FD79A8; margin-right: 4px; vertical-align: middle;"></span><span class="widget-label">Training region</span></div>
+            </div>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">NRMSE: </span>
+              <span class="widget-value" id="demo-nrmse">—</span>
+              <span class="widget-label" style="margin-left: 16px;">STATUS: </span>
+              <span class="widget-value" id="demo-status">Ready</span>
+            </div>
+          </div>
+          <figcaption>A complete working reservoir computer. Pick a task, adjust parameters, and click "Train & predict." The left portion (pink background) is used for training; the right portion tests on unseen data. Lower NRMSE = better prediction.</figcaption>
+        </figure>
+
+        <p>Play with the parameters. Notice how increasing the reservoir size generally improves predictions (more neurons = richer representation). Notice how the spectral radius matters — too low and the reservoir can't capture temporal patterns; too high and it becomes chaotic. The sweet spot depends on the task.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Leaky integrator neurons</div>
+          <p style="margin: 0;">In practice, many reservoir implementations use "leaky integrator" neurons: <strong>x</strong>(t+1) = (1−α)<strong>x</strong>(t) + α·tanh(<strong>W</strong>·<strong>x</strong>(t) + <strong>W<sub>in</sub></strong>·u(t)), where α is the leak rate. A small α means slow dynamics (long memory), while α=1 gives the standard ESN. This extra parameter lets you match the reservoir's timescale to your data's timescale.</p>
+        </div>
+      </section>
+
+      <!-- ============================================
+           SECTION IX: WHERE RESERVOIR COMPUTING SHINES
+           ============================================ -->
+      <section id="where-it-shines">
+        <div class="section-heading">
+          <span class="section-ordinal">IX.</span>
+          <h2>Where reservoir computing shines</h2>
+        </div>
+
+        <p>Reservoir computing isn't the best at everything. It won't beat a Transformer at language modeling or a deep CNN at image classification. But there are domains where it absolutely excels — sometimes outperforming far more complex models.</p>
+
+        <h3>Time series prediction</h3>
+
+        <p>This is the bread and butter of reservoir computing. Predicting chaotic time series (weather, financial markets, physiological signals) is where ESNs first made their name. For short-to-medium-term prediction of dynamical systems, they're often competitive with LSTMs while training in seconds instead of hours.</p>
+
+        <p>The key advantage here is speed of adaptation. In many real-world scenarios — adaptive control, real-time signal processing, brain-computer interfaces — you need to train and retrain models continuously as conditions change. An ESN can be retrained in milliseconds (just re-solve the linear regression), while retraining an LSTM takes orders of magnitude longer. This makes reservoir computing ideal for online learning scenarios.</p>
+
+        <h3>Physical reservoir computing</h3>
+
+        <p>Here's where things get wild. Since <em>any</em> sufficiently complex physical system can serve as a reservoir, researchers have built reservoir computers out of:</p>
+
+        <ul>
+          <li><strong>Photonic systems</strong> — using light bouncing through optical fibers or semiconductor lasers. These can process data at the speed of light, enabling ultra-fast computation.</li>
+          <li><strong>Spintronic devices</strong> — exploiting the magnetic spin of electrons in nanoscale materials. These could power next-generation neuromorphic chips.</li>
+          <li><strong>Mechanical systems</strong> — including the original water bucket, but also mass-spring networks and even origami structures.</li>
+          <li><strong>Biological systems</strong> — gene regulatory networks, bacterial colonies, and even slime molds have been shown to exhibit reservoir-like computation.</li>
+        </ul>
+
+        <h3>Neuromorphic computing</h3>
+
+        <p>The brain itself might work like a reservoir. Cortical microcircuits have the right properties — recurrent connections, nonlinear dynamics, and readout via downstream areas. Reservoir computing provides a theoretical framework for understanding how the brain might compute without training every synapse.</p>
+
+        <h3>How does it compare?</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Traditional RNN</th>
+              <th>Echo State Network</th>
+              <th>Physical Reservoir</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Training method</td>
+              <td>Backpropagation through time</td>
+              <td>Linear regression</td>
+              <td>Linear regression</td>
+            </tr>
+            <tr>
+              <td>Training speed</td>
+              <td>Hours to days</td>
+              <td>Seconds to minutes</td>
+              <td>Seconds to minutes</td>
+            </tr>
+            <tr>
+              <td>Trainable params</td>
+              <td>All weights (N²)</td>
+              <td>Output only (N)</td>
+              <td>Output only (sensors)</td>
+            </tr>
+            <tr>
+              <td>Gradient issues</td>
+              <td>Vanishing/exploding</td>
+              <td>None</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td>Hardware</td>
+              <td>GPU required</td>
+              <td>CPU sufficient</td>
+              <td>Physical substrate</td>
+            </tr>
+            <tr>
+              <td>Energy efficiency</td>
+              <td>Low</td>
+              <td>High</td>
+              <td>Very high (potentially)</td>
+            </tr>
+            <tr>
+              <td>Best for</td>
+              <td>General sequence tasks</td>
+              <td>Time series, control</td>
+              <td>Ultra-fast, edge computing</td>
+            </tr>
+            <tr>
+              <td>Limitations</td>
+              <td>Training cost</td>
+              <td>Scaling to very large tasks</td>
+              <td>Reproducibility, noise</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Why hasn't it taken over?</h3>
+
+        <p>If reservoir computing is so elegant and efficient, why isn't everyone using it? A few reasons:</p>
+
+        <ul>
+          <li><strong>Scaling</strong> — ESNs struggle with very high-dimensional or very long-range dependencies. LSTMs and Transformers handle these better because they can learn specialized internal representations.</li>
+          <li><strong>Hyperparameter sensitivity</strong> — While you don't train the reservoir, you do need to choose its size, spectral radius, sparsity, input scaling, and regularization. Getting these right can be tricky.</li>
+          <li><strong>No feature learning</strong> — The reservoir's representation is fixed. It works great when the raw representation is already informative (time series), but struggles when deep feature extraction is needed (vision, language).</li>
+          <li><strong>The deep learning tsunami</strong> — When GPUs made deep learning practical, research attention (and funding) shifted massively. Reservoir computing became a niche field despite its merits.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================
+           SECTION X: THE BIGGER PICTURE
+           ============================================ -->
+      <section id="bigger-picture">
+        <div class="section-heading">
+          <span class="section-ordinal">X.</span>
+          <h2>The bigger picture</h2>
+        </div>
+
+        <p>Reservoir computing is part of a broader, somewhat contrarian idea in machine learning: <em>not everything needs gradient descent</em>.</p>
+
+        <p>This idea shows up in many places. Random features and random kitchen sinks (Rahimi & Recht, 2007). Extreme learning machines, which are feedforward networks with random hidden weights. The lottery ticket hypothesis, which suggests that most of a trained network's capacity is in a small subnetwork that could have been found without full training. Even the success of transfer learning — where most of the network is frozen and only a small readout layer is fine-tuned — echoes the reservoir philosophy.</p>
+
+        <p>There's a deeper philosophical point too. When Fernando and Sojakka showed that a bucket of water can compute, they weren't just making a clever demo. They were suggesting something profound: <strong>computation isn't a property of the substrate, but of how we interact with it.</strong></p>
+
+        <p>The water wasn't "designed" to classify patterns. Its physics — wave interference, nonlinear fluid dynamics, surface tension — create a rich enough dynamical space that, with the right readout, computation emerges. The computational structure was always there; all that was needed was someone to read it.</p>
+
+        <p>This leads to a provocative question: if any dynamical system with nonlinear dynamics and fading memory can potentially serve as a computational reservoir, and the universe is full of complex dynamical systems... then perhaps <em>the universe itself is a reservoir</em>. Every physical process — from protein folding to galaxy formation — is performing a kind of computation. We just need to learn to read the output.</p>
+
+        <p>That might be too philosophical for a technical article. But there's a practical message here too.</p>
+
+        <p>In an era where machine learning is increasingly defined by scale — bigger models, more data, more compute — reservoir computing offers a reminder that <em>cleverness can substitute for brute force</em>. Not always. Not for everything. But for a surprisingly large class of problems, a random network with a linear readout can match the performance of models that cost a thousand times more to train.</p>
+
+        <p>The field is experiencing a quiet renaissance. Physical reservoir computing, in particular, is gaining traction as the energy cost of training large neural networks becomes impossible to ignore. When your reservoir is a photonic chip running at the speed of light and consuming microwatts of power, the efficiency argument becomes overwhelming.</p>
+
+        <p>So the next time someone tells you that machine learning requires massive GPU clusters and billions of parameters, tell them about a group of researchers who did it with a bucket of water. And then ask them: what else might be computing, right under our noses, if only we knew how to read the output?</p>
+      </section>
+
+      <!-- ============================================
+           FURTHER RESOURCES
+           ============================================ -->
+      <section id="further-resources">
+        <div class="section-heading">
+          <span class="section-ordinal" style="-webkit-text-stroke-width: 1px;">✦</span>
+          <h2>Further resources</h2>
+        </div>
+
+        <ul>
+          <li><strong>Jaeger, H. (2001)</strong> — "The 'echo state' approach to analysing and training recurrent neural networks." The original ESN technical report. Dense but essential.</li>
+          <li><strong>Maass, W., Natschläger, T., & Markram, H. (2002)</strong> — "Real-time computing without stable states." Introduces Liquid State Machines, the spiking neural network version of reservoir computing.</li>
+          <li><strong>Fernando, C. & Sojakka, S. (2003)</strong> — "Pattern Recognition in a Bucket." The famous water bucket paper. Short, delightful, and mind-expanding.</li>
+          <li><strong>Lukoševičius, M. & Jaeger, H. (2009)</strong> — "Reservoir computing approaches to recurrent neural network training." The best survey of the field. Start here if you want one comprehensive reference.</li>
+          <li><strong>Tanaka, G. et al. (2019)</strong> — "Recent advances in physical reservoir computing." Covers the fascinating world of physical implementations.</li>
+          <li><strong>ReservoirPy</strong> — A Python library for reservoir computing. Great for getting hands-on quickly.</li>
+        </ul>
+      </section>
+
+      <!-- FOOTNOTES -->
+      <section class="footnotes">
+        <p>This explainer was written to be as self-contained as possible. For corrections or feedback, please open an issue.</p>
+      </section>
+
+    </article>
+
+    <footer>
+      <p style="font-family: var(--font-sans); font-weight: 600; font-size: 20px; margin-bottom: 8px;">Reservoir Computing Explainer</p>
+      <p style="font-family: var(--font-sans); font-size: 15px; opacity: 0.8;">Built with curiosity and a bucket of water.</p>
+    </footer>
+  </div>
+  <script>
+  // ============================================
+  // SECTION I: Neural Network Training Animation
+  // ============================================
+  (function() {
+    const svg = document.querySelector('#training-widget svg');
+    const connGroup = document.getElementById('nn-connections');
+    const statusEl = document.getElementById('training-status');
+    const weightCounter = document.getElementById('weight-counter');
+    const epochCounter = document.getElementById('epoch-counter');
+
+    const layers = [
+      [{x:80,y:100},{x:80,y:200},{x:80,y:300}],
+      [{x:280,y:80},{x:280,y:160},{x:280,y:240},{x:280,y:320}],
+      [{x:480,y:80},{x:480,y:160},{x:480,y:240},{x:480,y:320}],
+      [{x:680,y:150},{x:680,y:250}]
+    ];
+
+    const colors = ['#FD79A8', '#6C5CE7', '#6C5CE7', '#00B894'];
+    let connections = [];
+    let animating = false;
+    let animFrame = null;
+
+    function initConnections() {
+      connGroup.innerHTML = '';
+      connections = [];
+      for (let l = 0; l < layers.length - 1; l++) {
+        for (let i = 0; i < layers[l].length; i++) {
+          for (let j = 0; j < layers[l+1].length; j++) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', layers[l][i].x);
+            line.setAttribute('y1', layers[l][i].y);
+            line.setAttribute('x2', layers[l+1][j].x);
+            line.setAttribute('y2', layers[l+1][j].y);
+            const w = (Math.random() - 0.5) * 2;
+            line.setAttribute('stroke', w > 0 ? '#6C5CE7' : '#FD79A8');
+            line.setAttribute('stroke-width', Math.abs(w) * 2.5 + 0.5);
+            line.setAttribute('opacity', 0.25);
+            connGroup.appendChild(line);
+            connections.push({ el: line, weight: w, layer: l });
+          }
+        }
+      }
+    }
+
+    initConnections();
+
+    let totalUpdates = 0;
+    let epoch = 0;
+
+    window.startTraining = function() {
+      if (animating) return;
+      animating = true;
+      document.getElementById('train-btn').textContent = 'Training...';
+      document.getElementById('train-btn').classList.add('active');
+
+      let connIdx = 0;
+      let speed = 0;
+
+      function step() {
+        if (!animating) return;
+        speed = Math.min(speed + 0.05, 8);
+        const numUpdates = Math.max(1, Math.floor(speed));
+
+        for (let u = 0; u < numUpdates; u++) {
+          const conn = connections[connIdx % connections.length];
+          const delta = (Math.random() - 0.5) * 0.3;
+          conn.weight = Math.max(-1, Math.min(1, conn.weight + delta));
+
+          conn.el.setAttribute('stroke', conn.weight > 0 ? '#6C5CE7' : '#FD79A8');
+          conn.el.setAttribute('stroke-width', Math.abs(conn.weight) * 3 + 0.3);
+          conn.el.setAttribute('opacity', Math.abs(conn.weight) * 0.5 + 0.15);
+
+          // Flash effect
+          conn.el.setAttribute('opacity', '0.9');
+          setTimeout(() => {
+            if (conn.el) conn.el.setAttribute('opacity', Math.abs(conn.weight) * 0.5 + 0.15);
+          }, 100);
+
+          totalUpdates++;
+          connIdx++;
+
+          if (connIdx % connections.length === 0) {
+            epoch++;
+            epochCounter.textContent = epoch;
+          }
+        }
+
+        weightCounter.textContent = totalUpdates.toLocaleString();
+        statusEl.textContent = `Updating weights... (${connections.length} per epoch)`;
+
+        if (epoch < 50) {
+          animFrame = requestAnimationFrame(step);
+        } else {
+          animating = false;
+          document.getElementById('train-btn').textContent = 'Train more';
+          document.getElementById('train-btn').classList.remove('active');
+          statusEl.textContent = `Training complete — ${totalUpdates.toLocaleString()} weight updates across ${epoch} epochs`;
+        }
+      }
+
+      animFrame = requestAnimationFrame(step);
+    };
+
+    window.resetNetwork = function() {
+      animating = false;
+      if (animFrame) cancelAnimationFrame(animFrame);
+      totalUpdates = 0;
+      epoch = 0;
+      weightCounter.textContent = '0';
+      epochCounter.textContent = '0';
+      document.getElementById('train-btn').textContent = 'Train the network';
+      document.getElementById('train-btn').classList.remove('active');
+      statusEl.textContent = 'Click "Train" to watch weights update';
+      initConnections();
+    };
+  })();
+  // ============================================
+  // SECTION II: Architecture Comparison
+  // ============================================
+  (function() {
+    const svg = document.getElementById('architecture-svg');
+
+    function drawArchitecture(type) {
+      svg.innerHTML = '';
+      const ns = 'http://www.w3.org/2000/svg';
+
+      const inputNodes = [{x:80,y:120},{x:80,y:200},{x:80,y:280}];
+      const hiddenNodes = [
+        {x:260,y:70},{x:320,y:130},{x:260,y:190},{x:340,y:250},{x:280,y:310},
+        {x:400,y:90},{x:440,y:170},{x:400,y:250},{x:460,y:310},{x:380,y:170}
+      ];
+      const outputNodes = [{x:650,y:160},{x:650,y:260}];
+
+      const isReservoir = type === 'reservoir';
+      const trainedColor = '#E74C3C';
+      const fixedColor = '#D3D3D3';
+
+      // Draw connections: input → hidden
+      inputNodes.forEach(inp => {
+        hiddenNodes.forEach(hid => {
+          if (Math.random() > 0.4) {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', inp.x); line.setAttribute('y1', inp.y);
+            line.setAttribute('x2', hid.x); line.setAttribute('y2', hid.y);
+            line.setAttribute('stroke', isReservoir ? fixedColor : trainedColor);
+            line.setAttribute('stroke-width', isReservoir ? '1' : '1.5');
+            line.setAttribute('opacity', isReservoir ? '0.4' : '0.3');
+            svg.appendChild(line);
+          }
+        });
+      });
+
+      // Draw connections: hidden → hidden (recurrent)
+      hiddenNodes.forEach((h1, i) => {
+        hiddenNodes.forEach((h2, j) => {
+          if (i !== j && Math.random() > 0.65) {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', h1.x); line.setAttribute('y1', h1.y);
+            line.setAttribute('x2', h2.x); line.setAttribute('y2', h2.y);
+            line.setAttribute('stroke', isReservoir ? fixedColor : trainedColor);
+            line.setAttribute('stroke-width', isReservoir ? '1' : '1.5');
+            line.setAttribute('opacity', isReservoir ? '0.3' : '0.2');
+            svg.appendChild(line);
+          }
+        });
+      });
+
+      // Draw connections: hidden → output
+      hiddenNodes.forEach(hid => {
+        outputNodes.forEach(out => {
+          const line = document.createElementNS(ns, 'line');
+          line.setAttribute('x1', hid.x); line.setAttribute('y1', hid.y);
+          line.setAttribute('x2', out.x); line.setAttribute('y2', out.y);
+          line.setAttribute('stroke', trainedColor);
+          line.setAttribute('stroke-width', '2');
+          line.setAttribute('opacity', '0.5');
+          svg.appendChild(line);
+        });
+      });
+
+      // Draw nodes
+      inputNodes.forEach(n => {
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r', '16');
+        c.setAttribute('fill', '#FD79A8'); c.setAttribute('opacity', '0.8');
+        svg.appendChild(c);
+      });
+
+      hiddenNodes.forEach(n => {
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r', '14');
+        c.setAttribute('fill', '#6C5CE7'); c.setAttribute('opacity', '0.7');
+        svg.appendChild(c);
+      });
+
+      outputNodes.forEach(n => {
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r', '16');
+        c.setAttribute('fill', '#00B894'); c.setAttribute('opacity', '0.8');
+        svg.appendChild(c);
+      });
+
+      // Labels
+      const labels = [
+        { text: 'INPUT', x: 80, y: 40, color: '#FD79A8' },
+        { text: isReservoir ? 'RESERVOIR (fixed)' : 'HIDDEN (trained)', x: 360, y: 40, color: '#6C5CE7' },
+        { text: 'OUTPUT', x: 650, y: 40, color: '#00B894' }
+      ];
+
+      labels.forEach(l => {
+        const t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', l.x); t.setAttribute('y', l.y);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '14');
+        t.setAttribute('font-weight', '600'); t.setAttribute('fill', l.color);
+        t.textContent = l.text;
+        svg.appendChild(t);
+      });
+
+      // Trainable params count
+      const totalConns = svg.querySelectorAll('line').length;
+      const trainedConns = svg.querySelectorAll(`line[stroke="${trainedColor}"]`).length;
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', 400); t.setAttribute('y', 370);
+      t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '14');
+      t.setAttribute('fill', '#808080');
+      t.setAttribute('font-family', 'var(--font-mono)');
+      t.textContent = isReservoir ?
+        `Trained: ${outputNodes.length * hiddenNodes.length} connections — Fixed: the rest` :
+        `Trained: ALL ${totalConns} connections`;
+      svg.appendChild(t);
+    }
+
+    window.showArchitecture = function(type) {
+      drawArchitecture(type);
+      document.getElementById('btn-traditional').classList.toggle('active', type === 'traditional');
+      document.getElementById('btn-reservoir').classList.toggle('active', type === 'reservoir');
+    };
+
+    drawArchitecture('traditional');
+  })();
+
+  // ============================================
+  // SECTION III: Water Bucket Simulator
+  // ============================================
+  (function() {
+    const canvas = document.getElementById('water-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const GRID = 150;
+    const dx = W / GRID;
+
+    let heights = new Float64Array(GRID).fill(0);
+    let velocities = new Float64Array(GRID).fill(0);
+    let prevHeights = new Float64Array(GRID).fill(0);
+    const damping = 0.998;
+    const c = 0.8;
+
+    let animId;
+    const readoutY = H * 0.35;
+
+    function simulate() {
+      const newH = new Float64Array(GRID);
+      for (let i = 1; i < GRID - 1; i++) {
+        newH[i] = 2 * heights[i] - prevHeights[i] + c * c * (heights[i-1] - 2*heights[i] + heights[i+1]);
+        newH[i] *= damping;
+      }
+      prevHeights.set(heights);
+      heights.set(newH);
+    }
+
+    function draw() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      // Water surface
+      ctx.beginPath();
+      ctx.moveTo(0, H);
+      for (let i = 0; i < GRID; i++) {
+        const x = i * dx;
+        const y = H/2 - heights[i] * 80;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, H/2 - 60, 0, H);
+      grad.addColorStop(0, 'rgba(108, 92, 231, 0.6)');
+      grad.addColorStop(0.3, 'rgba(9, 132, 227, 0.5)');
+      grad.addColorStop(1, 'rgba(0, 184, 148, 0.3)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Surface line
+      ctx.beginPath();
+      for (let i = 0; i < GRID; i++) {
+        const x = i * dx;
+        const y = H/2 - heights[i] * 80;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Readout line (dashed horizontal)
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(20, readoutY);
+      ctx.lineTo(W - 20, readoutY);
+      ctx.strokeStyle = 'rgba(0, 184, 148, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Readout label
+      ctx.font = '12px monospace';
+      ctx.fillStyle = 'rgba(0, 184, 148, 0.8)';
+      ctx.fillText('READOUT', W - 70, readoutY - 6);
+
+      // Sample points on readout line
+      const samples = [];
+      for (let s = 0; s < 8; s++) {
+        const si = Math.floor((s + 0.5) * GRID / 8);
+        const x = si * dx;
+        const surfaceY = H/2 - heights[si] * 80;
+        const val = (readoutY - surfaceY).toFixed(1);
+        samples.push(val);
+
+        // Draw sample dot
+        ctx.beginPath();
+        ctx.arc(x, readoutY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#00B894';
+        ctx.fill();
+
+        // Draw line from surface to readout
+        ctx.beginPath();
+        ctx.moveTo(x, surfaceY);
+        ctx.lineTo(x, readoutY);
+        ctx.strokeStyle = 'rgba(0, 184, 148, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      document.getElementById('readout-values').textContent = '[' + samples.join(', ') + ']';
+
+      simulate();
+      animId = requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    window.dropStone = function(side) {
+      const pos = side === 'left' ? Math.floor(GRID * 0.25) : Math.floor(GRID * 0.75);
+      for (let i = -5; i <= 5; i++) {
+        const idx = pos + i;
+        if (idx >= 0 && idx < GRID) {
+          heights[idx] += Math.cos(i * Math.PI / 10) * 2.5;
+        }
+      }
+      document.getElementById('bucket-input').textContent = side === 'left' ? 'Left (1,0)' : 'Right (0,1)';
+      document.getElementById('surface-state').textContent = 'Disturbed';
+    };
+
+    window.dropBoth = function() {
+      dropStone('left');
+      dropStone('right');
+      document.getElementById('bucket-input').textContent = 'Both (1,1)';
+    };
+
+    window.resetWater = function() {
+      heights.fill(0);
+      velocities.fill(0);
+      prevHeights.fill(0);
+      document.getElementById('bucket-input').textContent = 'None';
+      document.getElementById('surface-state').textContent = 'Calm';
+    };
+
+    // Click to drop stone at position
+    canvas.addEventListener('click', function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const pos = Math.floor(x * GRID);
+      for (let i = -5; i <= 5; i++) {
+        const idx = pos + i;
+        if (idx >= 0 && idx < GRID) {
+          heights[idx] += Math.cos(i * Math.PI / 10) * 2.5;
+        }
+      }
+      document.getElementById('bucket-input').textContent = `Click at ${Math.round(x*100)}%`;
+      document.getElementById('surface-state').textContent = 'Disturbed';
+    });
+  })();
+
+  // ============================================
+  // SECTION IV: Reservoir Neuron Activations
+  // ============================================
+  (function() {
+    const canvas = document.getElementById('reservoir-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    let N = 30, sr = 0.9, inpScale = 0.5;
+    let reservoir, Wmat, Win;
+    let history = [];
+    let t = 0;
+
+    function initReservoir() {
+      N = parseInt(document.getElementById('neuron-count').value);
+      sr = parseInt(document.getElementById('spectral-radius').value) / 100;
+      inpScale = parseInt(document.getElementById('input-scaling').value) / 100;
+
+      Wmat = [];
+      for (let i = 0; i < N; i++) {
+        Wmat[i] = [];
+        for (let j = 0; j < N; j++) {
+          Wmat[i][j] = Math.random() > 0.8 ? (Math.random() - 0.5) * 2 : 0;
+        }
+      }
+      // Simple spectral radius scaling (approximate)
+      let maxAbs = 0;
+      for (let i = 0; i < N; i++)
+        for (let j = 0; j < N; j++)
+          maxAbs = Math.max(maxAbs, Math.abs(Wmat[i][j]));
+      if (maxAbs > 0)
+        for (let i = 0; i < N; i++)
+          for (let j = 0; j < N; j++)
+            Wmat[i][j] *= sr / maxAbs;
+
+      Win = [];
+      for (let i = 0; i < N; i++) Win[i] = (Math.random() - 0.5) * 2 * inpScale;
+
+      reservoir = new Float64Array(N);
+      history = [];
+      t = 0;
+    }
+
+    function step() {
+      const input = Math.sin(t * 0.08) * 0.5 + Math.sin(t * 0.03) * 0.3;
+      const newState = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        let sum = Win[i] * input;
+        for (let j = 0; j < N; j++) sum += Wmat[i][j] * reservoir[j];
+        newState[i] = Math.tanh(sum);
+      }
+      reservoir = newState;
+      history.push({ input, states: Array.from(reservoir) });
+      if (history.length > 200) history.shift();
+      t++;
+    }
+
+    function draw() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      const len = history.length;
+      if (len < 2) { requestAnimationFrame(draw); step(); return; }
+
+      const margin = 40;
+      const plotW = W - margin * 2;
+      const plotH = H - margin * 2;
+
+      // Draw input signal
+      ctx.beginPath();
+      for (let i = 0; i < len; i++) {
+        const x = margin + (i / 200) * plotW;
+        const y = margin + plotH * 0.1 - history[i].input * plotH * 0.08;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#FD79A8';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = '11px monospace';
+      ctx.fillStyle = '#FD79A8';
+      ctx.fillText('INPUT', margin + 2, margin + 12);
+
+      // Draw neuron activations
+      const displayN = Math.min(N, 20);
+      const hues = [];
+      for (let n = 0; n < displayN; n++) hues.push(250 + n * (120 / displayN));
+
+      for (let n = 0; n < displayN; n++) {
+        ctx.beginPath();
+        const yCenter = margin + plotH * 0.3 + (n / displayN) * plotH * 0.6;
+        for (let i = 0; i < len; i++) {
+          const x = margin + (i / 200) * plotW;
+          const y = yCenter + history[i].states[n] * (plotH * 0.025);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        const hue = hues[n];
+        ctx.strokeStyle = `hsla(${hue}, 70%, 65%, 0.6)`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+
+      // Labels
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '11px monospace';
+      ctx.fillText('NEURON ACTIVATIONS', margin + 2, margin + plotH * 0.28);
+
+      step();
+      requestAnimationFrame(draw);
+    }
+
+    initReservoir();
+    draw();
+
+    // Slider listeners
+    document.getElementById('neuron-count').addEventListener('input', function() {
+      document.getElementById('neuron-count-val').textContent = this.value;
+      initReservoir();
+    });
+    document.getElementById('spectral-radius').addEventListener('input', function() {
+      document.getElementById('spectral-radius-val').textContent = (this.value / 100).toFixed(2);
+      initReservoir();
+    });
+    document.getElementById('input-scaling').addEventListener('input', function() {
+      document.getElementById('input-scaling-val').textContent = (this.value / 100).toFixed(2);
+      initReservoir();
+    });
+  })();
+
+  // ============================================
+  // SECTION V: Echo State / Pulse Response
+  // ============================================
+  (function() {
+    const canvas = document.getElementById('echo-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const N = 20;
+    let sr = 0.9;
+    let Wmat, Win, reservoir;
+    let history = [];
+    let t = 0;
+    let pulseTime = -1;
+
+    function initEcho() {
+      Wmat = [];
+      for (let i = 0; i < N; i++) {
+        Wmat[i] = [];
+        for (let j = 0; j < N; j++) {
+          Wmat[i][j] = Math.random() > 0.75 ? (Math.random() - 0.5) * 2 : 0;
+        }
+      }
+      let maxAbs = 0;
+      for (let i = 0; i < N; i++)
+        for (let j = 0; j < N; j++)
+          maxAbs = Math.max(maxAbs, Math.abs(Wmat[i][j]));
+      if (maxAbs > 0)
+        for (let i = 0; i < N; i++)
+          for (let j = 0; j < N; j++)
+            Wmat[i][j] *= sr / maxAbs;
+
+      Win = [];
+      for (let i = 0; i < N; i++) Win[i] = (Math.random() - 0.5) * 1.5;
+
+      reservoir = new Float64Array(N);
+      history = [];
+      t = 0;
+      pulseTime = -1;
+    }
+
+    function stepEcho() {
+      const input = (t === pulseTime) ? 1.0 : 0.0;
+      const newState = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        let sum = Win[i] * input;
+        for (let j = 0; j < N; j++) sum += Wmat[i][j] * reservoir[j];
+        newState[i] = Math.tanh(sum);
+        // Clamp to prevent visual overflow
+        newState[i] = Math.max(-3, Math.min(3, newState[i]));
+      }
+      reservoir = newState;
+      history.push({ input, states: Array.from(reservoir) });
+      if (history.length > 200) history.shift();
+      t++;
+    }
+
+    function drawEcho() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      const len = history.length;
+      if (len < 2) { requestAnimationFrame(drawEcho); stepEcho(); return; }
+
+      const margin = 40;
+      const plotW = W - margin * 2;
+      const plotH = H - margin * 2;
+
+      // Draw input pulse
+      ctx.beginPath();
+      for (let i = 0; i < len; i++) {
+        const x = margin + (i / 200) * plotW;
+        const y = margin + 20 - history[i].input * 30;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#FD79A8';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.font = '11px monospace';
+      ctx.fillStyle = '#FD79A8';
+      ctx.fillText('INPUT PULSE', margin + 2, margin + 12);
+
+      // Draw neuron echoes
+      for (let n = 0; n < N; n++) {
+        ctx.beginPath();
+        const yCenter = margin + plotH * 0.35 + (n / N) * plotH * 0.55;
+        for (let i = 0; i < len; i++) {
+          const x = margin + (i / 200) * plotW;
+          const val = history[i].states[n];
+          const y = yCenter + val * (plotH * 0.02);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        const hue = 250 + n * 6;
+        const alpha = 0.4 + Math.abs(history[len-1]?.states[n] || 0) * 0.5;
+        ctx.strokeStyle = `hsla(${hue}, 70%, 65%, ${Math.min(0.8, alpha)})`;
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fillText('ECHOES', margin + 2, margin + plotH * 0.33);
+
+      stepEcho();
+      requestAnimationFrame(drawEcho);
+    }
+
+    function updateEchoRegime() {
+      const el = document.getElementById('echo-regime');
+      if (sr < 0.7) el.textContent = 'Ordered — echoes die quickly';
+      else if (sr < 1.05) el.textContent = 'Stable — echoes fade gradually';
+      else el.textContent = 'Chaotic — echoes may explode!';
+    }
+
+    initEcho();
+    drawEcho();
+
+    window.setEchoSR = function(val) {
+      document.getElementById('echo-sr').value = val;
+      sr = val / 100;
+      document.getElementById('echo-sr-val').textContent = sr.toFixed(2);
+      updateEchoRegime();
+      initEcho();
+      // Auto-send pulse
+      setTimeout(() => { pulseTime = t + 5; }, 200);
+    };
+
+    window.pulseEcho = function() {
+      pulseTime = t + 2;
+    };
+
+    document.getElementById('echo-sr').addEventListener('input', function() {
+      sr = this.value / 100;
+      document.getElementById('echo-sr-val').textContent = sr.toFixed(2);
+      updateEchoRegime();
+      initEcho();
+    });
+  })();
+
+  // ============================================
+  // SECTION VI: 2D → 3D Projection
+  // ============================================
+  (function() {
+    const canvas = document.getElementById('projection-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    let mode = '2d';
+    let angle = 0;
+
+    // Generate concentric ring data (XOR-like)
+    const points = [];
+    for (let i = 0; i < 150; i++) {
+      const classA = i < 75;
+      const r = classA ? (0.3 + Math.random() * 0.3) : (0.7 + Math.random() * 0.3);
+      const theta = Math.random() * Math.PI * 2;
+      const x = r * Math.cos(theta);
+      const y = r * Math.sin(theta);
+      // 3D projection: z = x^2 + y^2 (radial basis function)
+      const z = x * x + y * y;
+      points.push({ x, y, z, classA, r, theta });
+    }
+
+    function draw() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      const cx = W / 2, cy = H / 2;
+      const scale = Math.min(W, H) * 0.35;
+
+      if (mode === '2d') {
+        // Draw axes
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx - scale * 1.2, cy); ctx.lineTo(cx + scale * 1.2, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, cy - scale * 1.2); ctx.lineTo(cx, cy + scale * 1.2); ctx.stroke();
+
+        ctx.font = '12px monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fillText('x', cx + scale * 1.15, cy - 8);
+        ctx.fillText('y', cx + 8, cy - scale * 1.1);
+
+        // Draw "no separating line possible" text
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.font = '13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('No straight line can separate these!', cx, cy + scale * 1.35);
+        ctx.textAlign = 'left';
+
+        // Draw points
+        points.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(cx + p.x * scale, cy - p.y * scale, 4, 0, Math.PI * 2);
+          ctx.fillStyle = p.classA ? 'rgba(253, 121, 168, 0.8)' : 'rgba(0, 184, 148, 0.8)';
+          ctx.fill();
+        });
+      } else {
+        // 3D view with rotation around vertical (z) axis, tilted view
+        angle += 0.008;
+        const cosA = Math.cos(angle), sinA = Math.sin(angle);
+        const tilt = 0.45; // ~26° above horizontal — lower angle for clearer up/down
+        const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
+        const zPlane = 0.42; // separating plane z-threshold
+        const zScale = 2.0; // exaggerate vertical separation
+
+        function project3D(x, y, z) {
+          const rx = x * cosA - y * sinA;
+          const ry = x * sinA + y * cosA;
+          const rz = (z - zPlane) * zScale; // center on plane, exaggerate
+          const viewX = rx;
+          const viewY = -ry * sinT + rz * cosT;
+          const viewZ = ry * cosT + rz * sinT;
+          return { sx: cx + viewX * scale, sy: cy - viewY * scale, depth: viewZ };
+        }
+
+        // Draw z-axis
+        const zBot = project3D(0, 0, 0.0);
+        const zTop = project3D(0, 0, 1.05);
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(zBot.sx, zBot.sy); ctx.lineTo(zTop.sx, zTop.sy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = '12px monospace';
+        ctx.fillText('z = x\u00B2 + y\u00B2', zTop.sx + 8, zTop.sy + 4);
+
+        // Project all data points
+        const projected = points.map(p => {
+          const proj = project3D(p.x, p.y, p.z);
+          return { ...proj, classA: p.classA, z: p.z };
+        });
+
+        // Project separating plane
+        const planeR = 1.25;
+        const nPlanePts = 48;
+        const planePts = [];
+        for (let i = 0; i < nPlanePts; i++) {
+          const t = (i / nPlanePts) * Math.PI * 2;
+          planePts.push(project3D(planeR * Math.cos(t), planeR * Math.sin(t), zPlane));
+        }
+
+        // Split points by ACTUAL z-value (above/below plane), not camera depth
+        const belowPlane = projected.filter(p => p.z < zPlane).sort((a, b) => a.depth - b.depth);
+        const abovePlane = projected.filter(p => p.z >= zPlane).sort((a, b) => a.depth - b.depth);
+
+        // 1) Draw below-plane points (pink, dimmer — occluded by plane)
+        belowPlane.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, 4, 0, Math.PI * 2);
+          ctx.fillStyle = p.classA ? 'rgba(253, 121, 168, 0.35)' : 'rgba(0, 184, 148, 0.35)';
+          ctx.fill();
+        });
+
+        // 2) Draw separating plane (semi-opaque, clearly occludes below points)
+        ctx.fillStyle = 'rgba(108, 92, 231, 0.22)';
+        ctx.strokeStyle = 'rgba(108, 92, 231, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(planePts[0].sx, planePts[0].sy);
+        for (let i = 1; i < planePts.length; i++) ctx.lineTo(planePts[i].sx, planePts[i].sy);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Plane label
+        const labelPt = project3D(-planeR * 0.5, -planeR * 0.6, zPlane);
+        ctx.font = '13px monospace';
+        ctx.fillStyle = 'rgba(108, 92, 231, 0.8)';
+        ctx.textAlign = 'center';
+        ctx.fillText('separating plane', labelPt.sx, labelPt.sy - 14);
+        ctx.textAlign = 'left';
+
+        // 3) Draw above-plane points (green, bright — on top of plane)
+        abovePlane.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, 5, 0, Math.PI * 2);
+          ctx.fillStyle = p.classA ? 'rgba(253, 121, 168, 0.9)' : 'rgba(0, 184, 148, 0.9)';
+          ctx.fill();
+        });
+
+        // Bottom label
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.font = '13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Pink (inner ring) below the plane, green (outer ring) above', cx, H - 20);
+        ctx.textAlign = 'left';
+
+        requestAnimationFrame(draw);
+      }
+    }
+
+    draw();
+
+    window.showProjection = function(m) {
+      mode = m;
+      document.getElementById('btn-2d').classList.toggle('active', m === '2d');
+      document.getElementById('btn-3d').classList.toggle('active', m === '3d');
+      document.getElementById('projection-label').textContent = m === '2d' ?
+        'In 2D, the two classes (pink and green) form concentric rings — no straight line can separate them.' :
+        'Projected into 3D, a flat plane cleanly separates the two classes. The view rotates to show depth.';
+      if (m === '2d') draw();
+      else requestAnimationFrame(draw);
+    };
+  })();
+
+  // ============================================
+  // SECTION VII: Edge of Chaos Explorer
+  // ============================================
+  (function() {
+    const canvas = document.getElementById('chaos-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const N = 15;
+    let sr = 0.5;
+    let Wmat, Win;
+    let stateA, stateB;
+    let historyA = [], historyB = [], divergence = [];
+    let t = 0;
+
+    function initChaos() {
+      Wmat = [];
+      for (let i = 0; i < N; i++) {
+        Wmat[i] = [];
+        for (let j = 0; j < N; j++) {
+          Wmat[i][j] = Math.random() > 0.7 ? (Math.random() - 0.5) * 2 : 0;
+        }
+      }
+      let maxAbs = 0;
+      for (let i = 0; i < N; i++)
+        for (let j = 0; j < N; j++)
+          maxAbs = Math.max(maxAbs, Math.abs(Wmat[i][j]));
+      if (maxAbs > 0)
+        for (let i = 0; i < N; i++)
+          for (let j = 0; j < N; j++)
+            Wmat[i][j] *= sr / maxAbs;
+
+      Win = [];
+      for (let i = 0; i < N; i++) Win[i] = (Math.random() - 0.5) * 0.8;
+
+      stateA = new Float64Array(N);
+      stateB = new Float64Array(N);
+      // Tiny perturbation between A and B
+      for (let i = 0; i < N; i++) {
+        stateA[i] = (Math.random() - 0.5) * 0.1;
+        stateB[i] = stateA[i] + (Math.random() - 0.5) * 0.001;
+      }
+
+      historyA = []; historyB = []; divergence = [];
+      t = 0;
+    }
+
+    function stepChaos() {
+      const input = Math.sin(t * 0.1) * 0.3;
+      const newA = new Float64Array(N);
+      const newB = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        let sumA = Win[i] * input;
+        let sumB = Win[i] * input;
+        for (let j = 0; j < N; j++) {
+          sumA += Wmat[i][j] * stateA[j];
+          sumB += Wmat[i][j] * stateB[j];
+        }
+        newA[i] = Math.tanh(sumA);
+        newB[i] = Math.tanh(sumB);
+      }
+      stateA = newA;
+      stateB = newB;
+
+      // Compute divergence
+      let dist = 0;
+      for (let i = 0; i < N; i++) dist += (stateA[i] - stateB[i]) ** 2;
+      dist = Math.sqrt(dist);
+
+      historyA.push(Array.from(stateA));
+      historyB.push(Array.from(stateB));
+      divergence.push(dist);
+      if (historyA.length > 200) {
+        historyA.shift(); historyB.shift(); divergence.shift();
+      }
+      t++;
+    }
+
+    function drawChaos() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      const len = historyA.length;
+      if (len < 2) { stepChaos(); requestAnimationFrame(drawChaos); return; }
+
+      const margin = 40;
+      const plotW = W - margin * 2;
+      const plotH = H - margin * 2;
+
+      // Draw trajectory B first (pink, underneath)
+      ctx.beginPath();
+      for (let i = 0; i < len; i++) {
+        const x = margin + (i / 200) * plotW;
+        const avg = (historyB[i][0] + historyB[i][1] + historyB[i][2]) / 3;
+        const y = margin + plotH * 0.25 - avg * plotH * 0.15;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(253, 121, 168, 0.7)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Draw trajectory A on top (green, clearly visible)
+      ctx.beginPath();
+      for (let i = 0; i < len; i++) {
+        const x = margin + (i / 200) * plotW;
+        const avg = (historyA[i][0] + historyA[i][1] + historyA[i][2]) / 3;
+        const y = margin + plotH * 0.25 - avg * plotH * 0.15;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#00B894';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Labels
+      ctx.font = '11px monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillText('TRAJECTORIES (A vs B)', margin + 2, margin + 12);
+
+      // Draw divergence
+      const maxDiv = Math.max(0.001, ...divergence);
+      ctx.beginPath();
+      for (let i = 0; i < len; i++) {
+        const x = margin + (i / 200) * plotW;
+        const y = margin + plotH * 0.85 - (divergence[i] / maxDiv) * plotH * 0.25;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#FFEAA7';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255, 234, 167, 0.4)';
+      ctx.fillText('DIVERGENCE', margin + 2, margin + plotH * 0.62);
+
+      // Zero line for divergence
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(margin, margin + plotH * 0.85);
+      ctx.lineTo(margin + plotW, margin + plotH * 0.85);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      stepChaos();
+      requestAnimationFrame(drawChaos);
+    }
+
+    initChaos();
+    drawChaos();
+
+    function updateChaosUI() {
+      document.getElementById('chaos-sr-val').textContent = sr.toFixed(2);
+      const regimeEl = document.getElementById('chaos-regime');
+      const lyapEl = document.getElementById('chaos-lyapunov');
+      if (sr < 0.8) {
+        regimeEl.textContent = 'Ordered';
+        regimeEl.style.color = '#00B894';
+        lyapEl.textContent = 'Negative (stable)';
+      } else if (sr < 1.1) {
+        regimeEl.textContent = 'Edge of Chaos';
+        regimeEl.style.color = '#6C5CE7';
+        lyapEl.textContent = '≈ Zero (critical)';
+      } else {
+        regimeEl.textContent = 'Chaotic';
+        regimeEl.style.color = '#E74C3C';
+        lyapEl.textContent = 'Positive (unstable)';
+      }
+    }
+
+    window.setChaosMode = function(mode) {
+      if (mode === 'ordered') sr = 0.5;
+      else if (mode === 'edge') sr = 0.98;
+      else sr = 1.4;
+      document.getElementById('chaos-sr').value = sr * 100;
+      updateChaosUI();
+      initChaos();
+    };
+
+    document.getElementById('chaos-sr').addEventListener('input', function() {
+      sr = this.value / 100;
+      updateChaosUI();
+      initChaos();
+    });
+
+    updateChaosUI();
+  })();
+
+  // ============================================
+  // SECTION VIII: Mini Reservoir Demo
+  // ============================================
+  (function() {
+    const canvas = document.getElementById('demo-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const CW = canvas.width, CH = canvas.height;
+
+    let currentTask = 'sine';
+    let trainResult = null;
+
+    function generateSignal(task, len) {
+      const sig = new Float64Array(len);
+      for (let i = 0; i < len; i++) {
+        const t = i / len;
+        if (task === 'sine') {
+          sig[i] = Math.sin(2 * Math.PI * t * 5) * 0.5 + Math.sin(2 * Math.PI * t * 13) * 0.3;
+        } else if (task === 'mackey') {
+          // Approximated Mackey-Glass-like chaotic signal
+          if (i < 30) sig[i] = 0.1 * Math.sin(i * 0.5);
+          else {
+            const tau = 17;
+            const delayed = i >= tau ? sig[i - tau] : 0.1;
+            sig[i] = sig[i-1] + 0.01 * (0.2 * delayed / (1 + Math.pow(delayed, 10)) - 0.1 * sig[i-1]);
+          }
+        } else if (task === 'square') {
+          sig[i] = Math.sin(2 * Math.PI * t * 4) > 0 ? 0.8 : -0.8;
+          sig[i] += Math.sin(2 * Math.PI * t * 11) * 0.15;
+        }
+      }
+      // Normalize
+      let mn = Infinity, mx = -Infinity;
+      for (let i = 0; i < len; i++) { mn = Math.min(mn, sig[i]); mx = Math.max(mx, sig[i]); }
+      const range = mx - mn || 1;
+      for (let i = 0; i < len; i++) sig[i] = (sig[i] - mn) / range * 2 - 1;
+      return sig;
+    }
+
+    function runReservoir(signal, N, sr, inpScale) {
+      // Generate reservoir matrix
+      const W = [];
+      for (let i = 0; i < N; i++) {
+        W[i] = new Float64Array(N);
+        for (let j = 0; j < N; j++) {
+          W[i][j] = Math.random() > 0.8 ? (Math.random() - 0.5) * 2 : 0;
+        }
+      }
+      // Scale spectral radius (approximate)
+      let maxAbs = 0;
+      for (let i = 0; i < N; i++)
+        for (let j = 0; j < N; j++)
+          maxAbs = Math.max(maxAbs, Math.abs(W[i][j]));
+      if (maxAbs > 0)
+        for (let i = 0; i < N; i++)
+          for (let j = 0; j < N; j++)
+            W[i][j] *= sr / maxAbs;
+
+      const Win = new Float64Array(N);
+      for (let i = 0; i < N; i++) Win[i] = (Math.random() - 0.5) * 2 * inpScale;
+
+      // Run reservoir
+      const len = signal.length;
+      const states = [];
+      let state = new Float64Array(N);
+
+      for (let t = 0; t < len; t++) {
+        const newState = new Float64Array(N);
+        for (let i = 0; i < N; i++) {
+          let sum = Win[i] * signal[t];
+          for (let j = 0; j < N; j++) sum += W[i][j] * state[j];
+          newState[i] = Math.tanh(sum);
+        }
+        state = newState;
+        states.push(Array.from(state));
+      }
+
+      return states;
+    }
+
+    function ridgeRegression(X, Y, lambda) {
+      // X is states matrix (N x T), Y is target (1 x T)
+      // Wout = Y * X^T * (X * X^T + lambda * I)^-1
+      // Simplified: solve for each output independently
+      const N = X.length;
+      const T = X[0].length;
+
+      // Compute X * X^T + lambda * I (N x N)
+      const XXT = [];
+      for (let i = 0; i < N; i++) {
+        XXT[i] = new Float64Array(N);
+        for (let j = 0; j < N; j++) {
+          let sum = 0;
+          for (let t = 0; t < T; t++) sum += X[i][t] * X[j][t];
+          XXT[i][j] = sum + (i === j ? lambda : 0);
+        }
+      }
+
+      // Compute Y * X^T (1 x N)
+      const YXT = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        let sum = 0;
+        for (let t = 0; t < T; t++) sum += Y[t] * X[i][t];
+        YXT[i] = sum;
+      }
+
+      // Solve using Gauss-Jordan elimination
+      const aug = [];
+      for (let i = 0; i < N; i++) {
+        aug[i] = new Float64Array(N + 1);
+        for (let j = 0; j < N; j++) aug[i][j] = XXT[i][j];
+        aug[i][N] = YXT[i];
+      }
+
+      for (let col = 0; col < N; col++) {
+        let maxRow = col;
+        for (let row = col + 1; row < N; row++)
+          if (Math.abs(aug[row][col]) > Math.abs(aug[maxRow][col])) maxRow = row;
+        [aug[col], aug[maxRow]] = [aug[maxRow], aug[col]];
+
+        const pivot = aug[col][col];
+        if (Math.abs(pivot) < 1e-10) continue;
+        for (let j = col; j <= N; j++) aug[col][j] /= pivot;
+
+        for (let row = 0; row < N; row++) {
+          if (row !== col) {
+            const factor = aug[row][col];
+            for (let j = col; j <= N; j++) aug[row][j] -= factor * aug[col][j];
+          }
+        }
+      }
+
+      const Wout = new Float64Array(N);
+      for (let i = 0; i < N; i++) Wout[i] = aug[i][N];
+      return Wout;
+    }
+
+    function drawDemo() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, CW, CH);
+
+      if (!trainResult) {
+        ctx.font = '16px var(--font-sans)';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.textAlign = 'center';
+        ctx.fillText('Click "Train & predict" to see results', CW / 2, CH / 2);
+        ctx.textAlign = 'left';
+        return;
+      }
+
+      const { signal, prediction, trainLen, totalLen } = trainResult;
+      const margin = 40;
+      const plotW = CW - margin * 2;
+      const plotH = CH - margin * 2;
+
+      // Training region background
+      const trainEndX = margin + (trainLen / totalLen) * plotW;
+      ctx.fillStyle = 'rgba(253, 121, 168, 0.08)';
+      ctx.fillRect(margin, margin, trainEndX - margin, plotH);
+
+      // Separator line
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(trainEndX, margin);
+      ctx.lineTo(trainEndX, margin + plotH);
+      ctx.strokeStyle = 'rgba(253, 121, 168, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '11px monospace';
+      ctx.fillStyle = 'rgba(253, 121, 168, 0.5)';
+      ctx.fillText('TRAIN', margin + 5, margin + 14);
+      ctx.fillStyle = 'rgba(0, 184, 148, 0.5)';
+      ctx.fillText('TEST (unseen)', trainEndX + 5, margin + 14);
+
+      // Draw target signal
+      ctx.beginPath();
+      for (let i = 0; i < totalLen; i++) {
+        const x = margin + (i / totalLen) * plotW;
+        const y = margin + plotH / 2 - signal[i] * plotH * 0.35;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Draw prediction
+      ctx.beginPath();
+      for (let i = 0; i < prediction.length; i++) {
+        const x = margin + (i / totalLen) * plotW;
+        const y = margin + plotH / 2 - prediction[i] * plotH * 0.35;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#00B894';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    drawDemo();
+
+    window.setTask = function(task) {
+      currentTask = task;
+      trainResult = null;
+      drawDemo();
+      document.getElementById('demo-nrmse').textContent = '—';
+      document.getElementById('demo-status').textContent = 'Ready';
+      document.getElementById('btn-sine').classList.toggle('active', task === 'sine');
+      document.getElementById('btn-mackey').classList.toggle('active', task === 'mackey');
+      document.getElementById('btn-square').classList.toggle('active', task === 'square');
+    };
+
+    window.trainReservoir = function() {
+      document.getElementById('demo-status').textContent = 'Training...';
+
+      const N = parseInt(document.getElementById('demo-size').value);
+      const sr = parseInt(document.getElementById('demo-sr').value) / 100;
+      const inpScale = parseInt(document.getElementById('demo-is').value) / 100;
+
+      setTimeout(() => {
+        const totalLen = 500;
+        const washout = 50;
+        const trainLen = 300;
+
+        const signal = generateSignal(currentTask, totalLen);
+        const states = runReservoir(signal, N, sr, inpScale);
+
+        // Prepare training data (after washout, up to trainLen)
+        const trainStates = [];
+        for (let n = 0; n < N; n++) {
+          trainStates[n] = [];
+          for (let t = washout; t < trainLen; t++) {
+            trainStates[n].push(states[t][n]);
+          }
+        }
+        const trainTarget = [];
+        for (let t = washout; t < trainLen; t++) {
+          trainTarget.push(signal[t]);
+        }
+
+        // Train readout
+        const Wout = ridgeRegression(trainStates, trainTarget, 1e-4);
+
+        // Predict full signal
+        const prediction = new Float64Array(totalLen);
+        for (let t = 0; t < totalLen; t++) {
+          let sum = 0;
+          for (let n = 0; n < N; n++) sum += Wout[n] * states[t][n];
+          prediction[t] = sum;
+        }
+
+        // Compute NRMSE on test set
+        let mse = 0, variance = 0;
+        let meanTest = 0;
+        for (let t = trainLen; t < totalLen; t++) meanTest += signal[t];
+        meanTest /= (totalLen - trainLen);
+        for (let t = trainLen; t < totalLen; t++) {
+          mse += (prediction[t] - signal[t]) ** 2;
+          variance += (signal[t] - meanTest) ** 2;
+        }
+        const nrmse = Math.sqrt(mse / Math.max(variance, 1e-10));
+
+        trainResult = { signal: Array.from(signal), prediction: Array.from(prediction), trainLen, totalLen };
+        drawDemo();
+
+        document.getElementById('demo-nrmse').textContent = nrmse.toFixed(4);
+        document.getElementById('demo-status').textContent = nrmse < 0.1 ? 'Excellent fit!' : nrmse < 0.3 ? 'Good fit' : nrmse < 0.6 ? 'Moderate fit' : 'Poor fit — try different params';
+      }, 50);
+    };
+
+    // Slider display updates
+    document.getElementById('demo-size').addEventListener('input', function() {
+      document.getElementById('demo-size-val').textContent = this.value;
+    });
+    document.getElementById('demo-sr').addEventListener('input', function() {
+      document.getElementById('demo-sr-val').textContent = (this.value / 100).toFixed(2);
+    });
+    document.getElementById('demo-is').addEventListener('input', function() {
+      document.getElementById('demo-is-val').textContent = (this.value / 100).toFixed(2);
+    });
+  })();
+
+  </script>
+</body>
+</html>

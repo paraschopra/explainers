@@ -1,0 +1,2438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>When the Whole Bosses the Parts Around — Top-Down Causation Explained</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS DESIGN SYSTEM
+       ============================================ */
+
+    :root {
+      --text-color: #2d2d2d;
+      --border-color: #D3D3D3;
+      --link-color: #E84545;
+      --brand-color: #FF6B6B;
+      --brand-secondary: #4ECDC4;
+      --brand-tertiary: #45B7D1;
+      --accent-color: #FFE66D;
+      --background-color: #FAF9F7;
+      --widget-background-color: #F5F5F5;
+      --font-serif: "Newsreader", Georgia, serif;
+      --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 19px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      margin: 0;
+      padding: 20px;
+      font-optical-sizing: auto;
+    }
+
+    @media (min-width: 700px) {
+      html { font-size: 21px; }
+      body { line-height: 1.4; padding: 32px; }
+    }
+
+    /* Layout */
+    .page-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    article {
+      max-width: 790px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      article { padding: 0 45px; }
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    nav a {
+      color: var(--text-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--brand-color);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+      border: 8px solid white;
+      border-radius: 40px;
+      padding: 60px 40px;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    @media (min-width: 700px) {
+      .hero {
+        padding: 80px 60px;
+        min-height: 380px;
+      }
+    }
+
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 700;
+      color: white;
+      line-height: 0.94;
+      margin: 0 0 12px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 700px) {
+      .hero h1 { font-size: 64px; }
+    }
+
+    @media (min-width: 900px) {
+      .hero h1 { font-size: 70px; }
+    }
+
+    .hero h2 {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      margin: 0;
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 700px) {
+      .hero h2 { font-size: 26px; }
+    }
+
+    /* Hero SVG animation */
+    .hero-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    /* Intro paragraph */
+    .intro {
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: #424242;
+      max-width: 650px;
+      margin: 0 auto 48px;
+      padding: 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      .intro { padding: 0 45px; }
+    }
+
+    /* Links */
+    a {
+      color: var(--link-color);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #C23030;
+    }
+
+    /* Headings */
+    h2 {
+      font-family: var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      color: var(--text-color);
+      margin: 80px 0 0 0;
+      padding-bottom: 12px;
+      position: relative;
+    }
+
+    @media (min-width: 700px) {
+      h2 { font-size: 40px; }
+    }
+
+    @media (min-width: 900px) {
+      h2 { font-size: 50px; }
+    }
+
+    h2::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 1px;
+      background: var(--border-color);
+      margin-top: 16px;
+    }
+
+    .hero h2::after {
+      display: none;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin: 80px 0 24px;
+    }
+
+    .section-ordinal {
+      font-family: var(--font-sans);
+      font-size: 40px;
+      font-weight: 700;
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--text-color);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    @media (min-width: 700px) {
+      .section-ordinal { font-size: 50px; }
+    }
+
+    .section-heading h2 {
+      margin: 0;
+    }
+
+    .section-heading h2::after {
+      width: 100%;
+    }
+
+    h3 {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-color);
+      margin: 48px 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      h3 { font-size: 30px; }
+    }
+
+    /* Paragraphs */
+    p {
+      margin: 0 0 16px;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Emphasis */
+    em { font-style: italic; }
+    strong { font-weight: 700; }
+
+    /* Table of Contents */
+    .toc {
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 24px 0;
+      margin: 0 auto 48px;
+      max-width: 790px;
+    }
+
+    .toc h4 {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 16px;
+      color: #808080;
+    }
+
+    .toc ol {
+      list-style: none;
+      padding: 0;
+      counter-reset: toc-counter;
+    }
+
+    .toc li {
+      counter-increment: toc-counter;
+      margin-bottom: 6px;
+      font-family: var(--font-sans);
+      font-size: 16px;
+    }
+
+    .toc li::before {
+      content: counter(toc-counter, upper-roman) ".";
+      display: inline-block;
+      width: 40px;
+      color: #808080;
+      font-size: 14px;
+    }
+
+    .toc a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--link-color);
+    }
+
+    /* Figures & Captions */
+    figure {
+      margin: 40px 0;
+      padding: 0;
+    }
+
+    figure img,
+    figure svg,
+    figure .interactive-widget {
+      border-radius: 20px;
+      display: block;
+      max-width: 100%;
+    }
+
+    figcaption {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    /* Interactive Widgets */
+    .interactive-widget {
+      background: var(--widget-background-color);
+      border-radius: 20px;
+      padding: 24px;
+      margin: 32px 0;
+      overflow: hidden;
+    }
+
+    .widget-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #808080;
+      margin-bottom: 4px;
+    }
+
+    .widget-value {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    /* Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-color);
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-color);
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Buttons */
+    button {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 2px solid var(--brand-color);
+      background: white;
+      color: var(--brand-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--brand-color);
+      color: white;
+    }
+
+    button.active {
+      background: var(--brand-color);
+      color: white;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      margin: 32px 0;
+    }
+
+    thead th {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.8;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-weight: 600;
+    }
+
+    /* Sidenotes */
+    .sidenote {
+      background: rgba(255, 107, 107, 0.06);
+      border-left: 3px solid var(--brand-color);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 24px 0;
+      font-size: 0.92rem;
+    }
+
+    .sidenote-title {
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--brand-color);
+      margin-bottom: 6px;
+    }
+
+    /* Footnotes */
+    sup a {
+      font-size: 0.75em;
+      color: var(--link-color);
+      text-decoration: none;
+    }
+
+    .footnotes {
+      border-top: 1px solid var(--border-color);
+      margin-top: 48px;
+      padding-top: 24px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    /* Footer */
+    footer {
+      background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+      border: 8px solid white;
+      border-radius: 40px;
+      padding: 60px 40px;
+      margin-top: 80px;
+      color: white;
+      text-align: center;
+      min-height: 200px;
+    }
+
+    footer a {
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* SVG responsive defaults */
+    .diagram-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      min-height: 200px;
+    }
+
+    /* Ensure SVG text is readable */
+    .diagram-svg text {
+      font-family: var(--font-sans);
+    }
+
+    /* Canvas responsive */
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--background-color); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    /* Selection */
+    ::selection {
+      background: rgba(255, 107, 107, 0.2);
+    }
+
+    /* Code inline */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--widget-background-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Subscript styling */
+    sub {
+      font-size: 0.75em;
+    }
+  </style>
+</head>
+<body>
+
+<a href="../index.html" style="position:sticky;top:0;z-index:9999;display:block;padding:10px 20px;font-family:'Figtree',system-ui,sans-serif;font-size:14px;color:#888;text-decoration:none;background:rgba(250,249,247,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">&#8592; All Explainers</a>
+
+  <div class="page-wrapper">
+    <nav>
+      <span style="font-style: italic; font-family: var(--font-serif);">explainer</span>
+      <a href="#contents">Contents</a>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero">
+      <svg class="hero-animation" viewBox="0 0 1400 400" preserveAspectRatio="xMidYMid slice">
+        <!-- Particles that drift and then snap into hexagonal pattern -->
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Hexagonal grid lines (faint) -->
+        <g opacity="0.2">
+          <circle cx="200" cy="120" r="40" fill="none" stroke="white" stroke-width="1">
+            <animate attributeName="r" values="0;40;40;0" dur="8s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;0.4;0.4;0" dur="8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="340" cy="120" r="40" fill="none" stroke="white" stroke-width="1">
+            <animate attributeName="r" values="0;40;40;0" dur="8s" begin="0.3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;0.4;0.4;0" dur="8s" begin="0.3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="270" cy="240" r="40" fill="none" stroke="white" stroke-width="1">
+            <animate attributeName="r" values="0;40;40;0" dur="8s" begin="0.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;0.4;0.4;0" dur="8s" begin="0.6s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="700" cy="100" r="50" fill="none" stroke="white" stroke-width="1">
+            <animate attributeName="r" values="0;50;50;0" dur="9s" begin="1s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;0.3;0.3;0" dur="9s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="850" cy="200" r="45" fill="none" stroke="white" stroke-width="1">
+            <animate attributeName="r" values="0;45;45;0" dur="7s" begin="0.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;0.35;0.35;0" dur="7s" begin="0.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="1100" cy="150" r="35" fill="none" stroke="white" stroke-width="1">
+            <animate attributeName="r" values="0;35;35;0" dur="6s" begin="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;0.3;0.3;0" dur="6s" begin="1.5s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <!-- Floating particles -->
+        <g opacity="0.4">
+          <circle cx="150" cy="80" r="3" fill="white">
+            <animate attributeName="cy" values="80;100;80" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="200" r="4" fill="white">
+            <animate attributeName="cy" values="200;180;200" dur="4s" begin="0.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="600" cy="150" r="3" fill="white">
+            <animate attributeName="cx" values="600;620;600" dur="5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="900" cy="250" r="5" fill="white">
+            <animate attributeName="cy" values="250;230;250" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="1050" cy="100" r="3" fill="white">
+            <animate attributeName="cy" values="100;120;100" dur="4.5s" begin="0.7s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="1250" cy="300" r="4" fill="white">
+            <animate attributeName="cx" values="1250;1230;1250" dur="6s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Connecting lines between some particles -->
+          <line x1="150" y1="80" x2="400" y2="200" stroke="white" stroke-width="0.5" opacity="0.3">
+            <animate attributeName="opacity" values="0.1;0.4;0.1" dur="4s" repeatCount="indefinite"/>
+          </line>
+          <line x1="600" y1="150" x2="900" y2="250" stroke="white" stroke-width="0.5" opacity="0.3">
+            <animate attributeName="opacity" values="0.1;0.4;0.1" dur="5s" begin="1s" repeatCount="indefinite"/>
+          </line>
+          <line x1="400" y1="200" x2="600" y2="150" stroke="white" stroke-width="0.5" opacity="0.3">
+            <animate attributeName="opacity" values="0.1;0.4;0.1" dur="3.5s" begin="0.5s" repeatCount="indefinite"/>
+          </line>
+        </g>
+        <!-- Upward arrows (bottom-up) and downward arrows (top-down) -->
+        <g opacity="0.25">
+          <path d="M500,350 L500,280" stroke="white" stroke-width="2" fill="none">
+            <animate attributeName="opacity" values="0;0.6;0" dur="3s" repeatCount="indefinite"/>
+          </path>
+          <polygon points="495,280 505,280 500,270" fill="white">
+            <animate attributeName="opacity" values="0;0.6;0" dur="3s" repeatCount="indefinite"/>
+          </polygon>
+          <path d="M520,50 L520,120" stroke="white" stroke-width="2" fill="none">
+            <animate attributeName="opacity" values="0;0.6;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+          </path>
+          <polygon points="515,120 525,120 520,130" fill="white">
+            <animate attributeName="opacity" values="0;0.6;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+          </polygon>
+        </g>
+      </svg>
+      <h1>When the whole bosses the parts around</h1>
+      <h2>Top-down causation — and why the universe isn't just particles all the way down.</h2>
+    </header>
+
+    <!-- INTRO -->
+    <p class="intro">
+      You're made of atoms. But atoms don't decide to go for a walk. Something strange is happening in the universe: bigger things push smaller things around. Your body tells your genes what to do. Traffic jams control cars. The shape of a river channel tells each water molecule where to flow. This is top-down causation — and once you see it, you can't unsee it.
+    </p>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc" id="contents">
+      <h4>Contents</h4>
+      <ol>
+        <li><a href="#reductionists-dream">The reductionist's dream</a></li>
+        <li><a href="#what-goes-up">What goes up must come... down?</a></li>
+        <li><a href="#hexagons">The hexagons that organize themselves</a></li>
+        <li><a href="#heart">Your heart doesn't need a conductor</a></li>
+        <li><a href="#traffic-jam">The traffic jam that isn't anywhere</a></li>
+        <li><a href="#genes">Why your genes don't run the show</a></li>
+        <li><a href="#kims-challenge">Kim's challenge</a></li>
+        <li><a href="#causal-emergence">When the macro has more to say</a></li>
+        <li><a href="#in-the-wild">Top-down causation in the wild</a></li>
+        <li><a href="#bigger-picture">The universe has more floors than we thought</a></li>
+      </ol>
+    </div>
+
+    <article>
+
+      <!-- ============================================
+           SECTION I: THE REDUCTIONIST'S DREAM
+           ============================================ -->
+      <section id="reductionists-dream">
+        <div class="section-heading">
+          <span class="section-ordinal">I.</span>
+          <h2>The reductionist's dream</h2>
+        </div>
+
+        <p>There's a seductive idea at the heart of modern science — an idea so powerful it almost feels like common sense. It goes like this:</p>
+
+        <p><strong>Everything is made of smaller things. Understand the smaller things, and you understand everything.</strong></p>
+
+        <p>Societies are made of people. People are made of cells. Cells are made of molecules. Molecules are made of atoms. Atoms are made of quarks. Find the bottom level, understand its laws, and in principle you've explained the entire universe. This is <em>reductionism</em>, and it has been spectacularly successful. Particle physics, molecular biology, neuroscience — all built on the bet that the way to understand something is to take it apart.</p>
+
+        <p>But in 1972, the physicist Philip Anderson — who would go on to win the Nobel Prize in 1977 for work on condensed matter — dropped a bomb on this worldview. His paper was called <em>"More Is Different"</em>, and the title was the argument.</p>
+
+        <p>Anderson's point was surgical: <strong>the ability to reduce everything to simple fundamental laws does not imply the ability to start from those laws and reconstruct the universe.</strong> Knowing the laws of particle physics doesn't make you a chemist. Knowing the laws of chemistry doesn't make you a biologist. At every level of complexity, genuinely new properties appear — properties that are, at minimum, extraordinarily difficult to predict from the level below, and may in some cases be impossible to derive even in principle.</p>
+
+        <p>Think about it. Water molecules are tiny, bouncy things that obey quantum mechanics. But <em>wetness</em> — the thing that makes water feel like water — is a property of trillions of molecules interacting. No single H₂O molecule is wet. You can stare at the Schrödinger equation for a water molecule all day long and never derive "sloshy."</p>
+
+        <p>Click on the levels below and notice something: at each level, there are properties that simply <em>don't exist</em> at the level below.</p>
+
+        <figure>
+          <div class="interactive-widget" id="levels-widget">
+            <div style="text-align: center; margin-bottom: 16px;">
+              <span class="widget-label">THE LEVELS OF REALITY</span>
+              <div style="font-family: var(--font-sans); font-size: 13px; color: #999; margin-top: 4px;">Click a level to see what's new</div>
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 700 500" preserveAspectRatio="xMidYMid meet" id="levels-svg" style="min-height: 280px;">
+              <!-- Tower blocks - clickable -->
+            </svg>
+          </div>
+          <figcaption>Each level of organization hosts properties that don't exist at the level below. Temperature is meaningless for a single particle. Life is meaningless for a single molecule. Meaning is meaningless for a single neuron.</figcaption>
+        </figure>
+
+        <p>This isn't just a claim about our ignorance — that we <em>haven't yet figured out</em> how to derive wetness from quantum mechanics. It's deeper than that. Anderson was saying the levels are <em>real</em>. Chemistry is not "merely" applied physics. Biology is not "merely" applied chemistry. Each level has its own laws, its own causal structure, its own explanatory power.</p>
+
+        <p>But if the levels are real — if what happens at one level can't be fully explained by what happens below — then a natural question arises: can the higher levels push back <em>down</em>?</p>
+
+        <p>Can the whole tell the parts what to do?</p>
+      </section>
+
+      <!-- ============================================
+           SECTION II: WHAT GOES UP MUST COME... DOWN?
+           ============================================ -->
+      <section id="what-goes-up">
+        <div class="section-heading">
+          <span class="section-ordinal">II.</span>
+          <h2>What goes up must come... down?</h2>
+        </div>
+
+        <p>In the standard scientific worldview, causation flows <em>upward</em>. Particles interact to form atoms. Atoms bond to form molecules. Molecules assemble into cells. Cells cooperate to form organisms. At each step, the parts build the whole. This is <em>bottom-up causation</em>, and nobody disputes that it's real.</p>
+
+        <p><strong>Top-down causation</strong> is the claim that the reverse also happens: the whole constrains, shapes, and channels the behavior of the parts. The macro level reaches down and tells the micro level what to do — not by violating physical laws, but by selecting among the possibilities those laws permit.</p>
+
+        <p>The term "downward causation" was coined in 1974 by the philosopher Donald Campbell. Around the same time, the Nobel Prize-winning neuroscientist Roger Sperry was arguing that consciousness — a macro-level property of the brain — could causally influence individual neurons. As he put it, mental states are <em>"like an eddy channeling water molecules"</em> — the pattern constrains the particles without breaking any laws of physics.</p>
+
+        <p>Here's the key distinction:</p>
+
+        <figure>
+          <div class="interactive-widget" id="causation-arrows-widget">
+            <svg class="diagram-svg" viewBox="0 0 700 380" preserveAspectRatio="xMidYMid meet" id="arrows-svg" style="min-height: 260px;">
+              <!-- Left side: bottom-up -->
+              <text x="175" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#FF6B6B">BOTTOM-UP</text>
+              <text x="175" y="48" text-anchor="middle" font-size="13" fill="#999">Parts build the whole</text>
+
+              <!-- Right side: top-down -->
+              <text x="525" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#4ECDC4">TOP-DOWN</text>
+              <text x="525" y="48" text-anchor="middle" font-size="13" fill="#999">Whole constrains the parts</text>
+
+              <!-- Left column: bottom-up boxes -->
+              <rect x="75" y="280" width="200" height="44" rx="10" fill="#FF6B6B" opacity="0.15" stroke="#FF6B6B" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="307" text-anchor="middle" font-size="15" fill="#2d2d2d">Particles</text>
+
+              <rect x="95" y="200" width="160" height="44" rx="10" fill="#FF6B6B" opacity="0.2" stroke="#FF6B6B" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="227" text-anchor="middle" font-size="15" fill="#2d2d2d">Molecules</text>
+
+              <rect x="110" y="120" width="130" height="44" rx="10" fill="#FF6B6B" opacity="0.3" stroke="#FF6B6B" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="147" text-anchor="middle" font-size="15" fill="#2d2d2d">Cells</text>
+
+              <rect x="125" y="65" width="100" height="44" rx="10" fill="#FF6B6B" opacity="0.5" stroke="#FF6B6B" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="92" text-anchor="middle" font-size="15" fill="#2d2d2d">Organism</text>
+
+              <!-- Bottom-up arrows (animated) -->
+              <g id="bu-arrows">
+                <line x1="175" y1="278" x2="175" y2="248" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                </line>
+                <polygon points="170,250 180,250 175,242" fill="#FF6B6B">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                </polygon>
+
+                <line x1="175" y1="198" x2="175" y2="168" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+                </line>
+                <polygon points="170,170 180,170 175,162" fill="#FF6B6B">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+                </polygon>
+
+                <line x1="175" y1="118" x2="175" y2="113" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                </line>
+                <polygon points="170,115 180,115 175,107" fill="#FF6B6B">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                </polygon>
+              </g>
+
+              <!-- Right column: top-down boxes -->
+              <rect x="475" y="65" width="100" height="44" rx="10" fill="#4ECDC4" opacity="0.5" stroke="#4ECDC4" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="525" y="92" text-anchor="middle" font-size="15" fill="#2d2d2d">Organism</text>
+
+              <rect x="460" y="120" width="130" height="44" rx="10" fill="#4ECDC4" opacity="0.3" stroke="#4ECDC4" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="525" y="147" text-anchor="middle" font-size="15" fill="#2d2d2d">Cells</text>
+
+              <rect x="445" y="200" width="160" height="44" rx="10" fill="#4ECDC4" opacity="0.2" stroke="#4ECDC4" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="525" y="227" text-anchor="middle" font-size="15" fill="#2d2d2d">Molecules</text>
+
+              <rect x="425" y="280" width="200" height="44" rx="10" fill="#4ECDC4" opacity="0.15" stroke="#4ECDC4" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="525" y="307" text-anchor="middle" font-size="15" fill="#2d2d2d">Particles</text>
+
+              <!-- Top-down arrows (animated) -->
+              <g id="td-arrows">
+                <line x1="525" y1="111" x2="525" y2="118" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                </line>
+                <polygon points="520,116 530,116 525,124" fill="#4ECDC4">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+                </polygon>
+
+                <line x1="525" y1="166" x2="525" y2="198" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+                </line>
+                <polygon points="520,196 530,196 525,204" fill="#4ECDC4">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+                </polygon>
+
+                <line x1="525" y1="246" x2="525" y2="278" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                </line>
+                <polygon points="520,276 530,276 525,284" fill="#4ECDC4">
+                  <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                </polygon>
+              </g>
+
+              <!-- Divider -->
+              <line x1="350" y1="60" x2="350" y2="330" stroke="#D3D3D3" stroke-width="1" stroke-dasharray="4,4" vector-effect="non-scaling-stroke"/>
+
+              <!-- Labels at bottom -->
+              <text x="175" y="348" text-anchor="middle" font-size="14" fill="#FF6B6B" font-weight="500">Construction</text>
+              <text x="175" y="366" text-anchor="middle" font-size="13" fill="#999">Nobody disputes this</text>
+
+              <text x="525" y="348" text-anchor="middle" font-size="14" fill="#4ECDC4" font-weight="500">Constraint</text>
+              <text x="525" y="366" text-anchor="middle" font-size="13" fill="#999">This is the controversy</text>
+            </svg>
+          </div>
+          <figcaption>Bottom-up causation builds the whole from parts. Top-down causation constrains the parts from the whole. Both happen simultaneously — that's what makes the universe interesting.</figcaption>
+        </figure>
+
+        <p>(We should note: some philosophers vigorously deny that top-down causation is real. The strongest objection — Kim's causal exclusion argument — says that if physics explains everything, there's no room for macro-level causes. We'll address this head-on in Section VII. For now, let's build our intuition with examples.)
+
+        <p>It's crucial to understand what top-down causation is <em>not</em>. It's not magic. It's not some spooky force that violates the laws of physics. The particles still obey quantum mechanics. The molecules still follow chemistry. But the <em>context</em> — the larger structure they're embedded in — determines which of the many physically possible behaviors actually occurs.</p>
+
+        <p>Think of a ball rolling down a hill. Physics determines that the ball rolls downhill. But the <em>shape of the hill</em> — a higher-level structure — determines <em>which path</em> the ball takes. The hill doesn't violate gravity. It constrains where gravity can take you.</p>
+
+        <p>This distinction — between <em>forces</em> and <em>constraints</em> — turns out to be the key to resolving the whole debate. We'll return to it. But first, let's look at some examples that will make your jaw drop.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">A note on terminology</div>
+          <p style="margin: 0;">Philosophers distinguish between <em>strong</em> and <em>weak</em> emergence. Weak emergence: higher-level properties arise from lower-level interactions but are in principle deducible (just computationally hard). Strong emergence: higher-level properties are <em>irreducible</em> — you can't derive them even with perfect knowledge of the lower level. Top-down causation is closely linked to strong emergence, though you don't have to commit to strong emergence to accept that constraints are real causes. Most working scientists operate in the middle ground.</p>
+        </div>
+      </section>
+
+      <!-- ============================================
+           SECTION III: THE HEXAGONS THAT ORGANIZE THEMSELVES
+           ============================================ -->
+      <section id="hexagons">
+        <div class="section-heading">
+          <span class="section-ordinal">III.</span>
+          <h2>The hexagons that organize themselves</h2>
+        </div>
+
+        <p>Let's start with the simplest, most beautiful example of top-down causation in physics — one so clean that even the most stubborn reductionist has to pause and think.</p>
+
+        <p>Take a thin layer of fluid — oil, say — and heat it gently from below while keeping the top cool. At first, heat moves upward by simple conduction: fast-vibrating molecules bump into slower ones, passing energy along. The fluid is motionless. If you could watch individual molecules, you'd see random thermal jiggling — no coordination, no pattern.</p>
+
+        <p>Now turn up the heat. Increase the temperature difference between bottom and top. At a critical threshold — when the <em>Rayleigh number</em> exceeds a critical value — something spectacular happens.</p>
+
+        <p><strong>The random molecular chaos spontaneously organizes into beautiful, hexagonal convection cells.</strong></p>
+
+        <p>Warm fluid rises in the center of each cell. Cool fluid sinks at the edges. The molecules, which moments ago were jiggling randomly, are now marching in coordinated circular patterns — millions of them, in lockstep. Nobody told them to do this. No blueprint was provided. The pattern just... appears.</p>
+
+        <p>These are called <em>Bénard cells</em>, and they are the textbook example of self-organization. But here's the part that matters for us:</p>
+
+        <p><strong>Once the hexagonal pattern forms, it constrains every individual molecule's behavior.</strong></p>
+
+        <p>A molecule in the center of a cell <em>must</em> rise. A molecule at the edge <em>must</em> sink. Before the pattern formed, that molecule could have gone in any direction. Now it can't. The macro-level pattern — which emerged from molecular interactions — has become a <em>cause</em> that acts back on the molecules.</p>
+
+        <p>Try it yourself. Drag the slider to increase the temperature gradient and watch what happens to the particles:</p>
+
+        <figure>
+          <div class="interactive-widget" id="benard-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">BÉNARD CELL SIMULATOR</span>
+            </div>
+            <div style="margin-bottom: 12px; max-width: 400px; margin-left: auto; margin-right: auto;">
+              <div class="widget-label">TEMPERATURE GRADIENT: <span id="temp-val">Low</span></div>
+              <input type="range" id="temp-slider" min="0" max="100" value="20" step="1">
+            </div>
+            <canvas id="benard-canvas" width="700" height="350" style="width: 100%; border-radius: 12px; background: #1a1a2e; aspect-ratio: 2/1;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #FF6B6B; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Warm (rising)</span></div>
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #45B7D1; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Cool (sinking)</span></div>
+            </div>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">STATE: </span>
+              <span class="widget-value" id="benard-state">Random thermal motion</span>
+            </div>
+          </div>
+          <figcaption>Below the critical threshold, particles move randomly (bottom-up only). Above it, a hexagonal convection pattern emerges and constrains each particle's trajectory (top-down causation in action). The macro pattern is both caused by and causes micro behavior.</figcaption>
+        </figure>
+
+        <p>There's a subtle but profound point here. If you repeat this experiment, you'll get hexagonal cells — but the exact <em>position</em> of each cell is unpredictable. A cell that rotates clockwise in one trial might rotate counterclockwise in the next. The laws of molecular physics, while deterministic in principle, are exquisitely sensitive to microscopic fluctuations — so tiny that the exact pattern is effectively unpredictable. This is called <em>spontaneous symmetry breaking</em>, and it means the macro-level pattern is selected by fluctuations too small to track, making it practically impossible to predict from the micro state alone.</p>
+
+        <p>But once the pattern forms? It's stable. It's persistent. And it causally constrains every molecule within it. The whole has become the boss of the parts.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Why this is different from "just physics"</div>
+          <p style="margin: 0;">A reductionist might say: "The molecules are still just following Newton's laws (or their quantum equivalent). There's no 'extra' force from the hexagonal pattern." And they're right — no extra force is added. But the <em>pattern</em> establishes boundary conditions that constrain which solutions to Newton's laws are actually realized. The pattern is a <em>constraint</em>, not a force. And as the philosopher Michael Polanyi argued, constraints are real causes. A bridge constrains traffic without adding any energy to the cars.</p>
+        </div>
+      </section>
+
+      <!-- ============================================
+           SECTION IV: YOUR HEART DOESN'T NEED A CONDUCTOR
+           ============================================ -->
+      <section id="heart">
+        <div class="section-heading">
+          <span class="section-ordinal">IV.</span>
+          <h2>Your heart doesn't need a conductor</h2>
+        </div>
+
+        <p>In 1960, a young Oxford physiologist named Denis Noble did something remarkable: he built one of the first mathematical models of cardiac electrical activity — specifically, of Purkinje fiber action potentials. What he discovered would quietly undermine one of biology's most persistent assumptions.</p>
+
+        <p>The assumption went like this: somewhere in the heart, there must be a "pacemaker gene" — a single molecular component that generates the beat. Find the gene, understand the rhythm. Classic reductionism.</p>
+
+        <p><strong>Noble showed there is no such gene.</strong> The rhythm couldn't be localized to any single molecular component.</p>
+
+        <p>The heartbeat is an <em>emergent property</em> of multiple interlocking feedback loops between ion channels, membrane potentials, and cellular signaling pathways. No single channel produces the rhythm. Instead, the rhythm arises from the <em>system</em> — and the system constrains each channel's behavior.</p>
+
+        <p>Here's one of the most striking findings: one ion channel (the "funny current," or I<sub>f</sub>) plays a major role in driving the pacemaker depolarization. You'd think blocking it would dramatically alter the rhythm. But when you block it with a drug called ivabradine, the heart rate slows only modestly. Why? Because the other channels — which were being shaped by the system's dynamics — compensate, shifting the rhythm source. The system is robust because the whole constrains the parts, not the other way around.</p>
+
+        <p>Toggle the ion channels below and watch what happens to the rhythm:</p>
+
+        <figure>
+          <div class="interactive-widget" id="heart-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">THE ORCHESTRA WITHOUT A CONDUCTOR</span>
+            </div>
+            <canvas id="heart-canvas" width="700" height="280" style="width: 100%; border-radius: 12px; background: #1a1a2e; aspect-ratio: 5/2;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+              <button id="ch-if" class="active" onclick="toggleChannel('if')">I<sub>f</sub> Channel</button>
+              <button id="ch-ica" class="active" onclick="toggleChannel('ica')">I<sub>Ca</sub> Channel</button>
+              <button id="ch-ik" class="active" onclick="toggleChannel('ik')">I<sub>K</sub> Channel</button>
+              <button id="ch-ina" class="active" onclick="toggleChannel('ina')">I<sub>Na</sub> Channel</button>
+            </div>
+            <div style="text-align: center; margin-top: 12px;">
+              <span class="widget-label">HEART RATE: </span>
+              <span class="widget-value" id="heart-rate">72 bpm</span>
+              <span class="widget-label" style="margin-left: 16px;">CHANNELS ACTIVE: </span>
+              <span class="widget-value" id="channels-active">4/4</span>
+            </div>
+          </div>
+          <figcaption>Each ion channel contributes to the heartbeat, but no single channel is "the pacemaker." Block one and the others compensate — the rhythm persists because it's a system-level property, not a component-level one. This is top-down causation: the system's rhythm constrains how each channel behaves.</figcaption>
+        </figure>
+
+        <p>Noble's work led him to formulate what he calls the <em>Principle of Biological Relativity</em>: <strong>there is no privileged level of causality in biological systems.</strong> Causation flows both upward and downward simultaneously. Genes influence organisms, but organisms also influence genes — by determining which genes are expressed, when, and where.</p>
+
+        <p>This might sound like a minor philosophical point, but it has real implications. The popular interpretation of the "Central Dogma" — that information flows one-way, from DNA to RNA to protein, with the genome as the master controller — is misleading. (Crick's original Dogma is actually about <em>sequence</em> information transfer, not about control.) Noble's argument is that the cell tells the genome what to do at least as much as the genome tells the cell.</p>
+
+        <p>Which brings us to a truly mind-bending example of top-down causation: your own DNA.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION V: THE TRAFFIC JAM THAT ISN'T ANYWHERE
+           ============================================ -->
+      <section id="traffic-jam">
+        <div class="section-heading">
+          <span class="section-ordinal">V.</span>
+          <h2>The traffic jam that isn't anywhere</h2>
+        </div>
+
+        <p>Before we get to genes, let's take a detour through something you've experienced firsthand — and probably cursed at.</p>
+
+        <p>You're driving on a highway. Traffic is flowing. Then, for no apparent reason, everyone slows to a crawl. You inch forward for ten minutes. Then, just as mysteriously, traffic opens up again. There was no accident. No construction. No disabled vehicle. So what happened?</p>
+
+        <p>You drove through a <em>phantom traffic jam</em> — and it's one of the clearest examples of top-down causation in everyday life.</p>
+
+        <p>Here's how it works. When road density is low, each driver acts independently. Speed is determined by individual choices — bottom-up causation. But when density crosses a critical threshold, a tiny perturbation (someone tapping their brakes slightly) creates a backward-propagating wave. The driver behind brakes a bit harder. The driver behind them brakes even harder. A jam crystallizes out of nothing.</p>
+
+        <p>And here's the philosophical punchline: <strong>the jam is not located in any particular car.</strong> It's a higher-level entity. It moves <em>backward</em> through traffic while all the cars move <em>forward</em>. Cars enter the jam at the front and leave it at the back. The jam persists even though its constituent cars are constantly changing — like a wave that propagates through water while the water molecules stay roughly in place.</p>
+
+        <p>Once the jam exists, it <em>causes</em> individual drivers to slow down. No driver chose to stop. The macro-level pattern — the jam — constrains micro-level behavior — each driver's speed. Top-down causation, plain as day.</p>
+
+        <p>Adjust the density slider and watch jams spontaneously emerge:</p>
+
+        <figure>
+          <div class="interactive-widget" id="traffic-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">TRAFFIC FLOW SIMULATOR</span>
+            </div>
+            <div style="margin-bottom: 12px; max-width: 400px; margin-left: auto; margin-right: auto;">
+              <div class="widget-label">CAR DENSITY: <span id="density-val">Low</span></div>
+              <input type="range" id="density-slider" min="10" max="90" value="25" step="1">
+            </div>
+            <canvas id="traffic-canvas" width="700" height="200" style="width: 100%; border-radius: 12px; background: #1a1a2e; aspect-ratio: 7/2;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #4ECDC4; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Moving freely</span></div>
+              <div><span style="display: inline-block; width: 12px; height: 12px; background: #FF6B6B; border-radius: 50%; margin-right: 4px;"></span><span class="widget-label">Stuck in jam</span></div>
+              <div><span style="display: inline-block; width: 20px; height: 12px; background: rgba(255,107,107,0.2); border-radius: 3px; margin-right: 4px;"></span><span class="widget-label">Jam zone</span></div>
+            </div>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">JAMS DETECTED: </span>
+              <span class="widget-value" id="jam-count">0</span>
+              <span class="widget-label" style="margin-left: 16px;">AVG SPEED: </span>
+              <span class="widget-value" id="avg-speed">—</span>
+            </div>
+          </div>
+          <figcaption>At low density, all cars flow freely (bottom-up only). Above a critical density, phantom jams spontaneously emerge and propagate backward — constraining each individual driver's behavior. The jams are macro-level entities with their own causal powers.</figcaption>
+        </figure>
+
+        <p>The same logic applies to Conway's Game of Life — the famous cellular automaton where simple local rules (each cell lives or dies based on its neighbors) produce emergent structures like <em>gliders</em>: patterns of five cells that move diagonally across the grid every four timesteps. A glider is a higher-level entity. It persists, it moves, it carries information. When two gliders collide, the outcome depends on the gliders' properties (speed, direction), not on the individual cells that make them up. The glider has causal powers that the individual cells don't.</p>
+
+        <p>In fact, the Game of Life is <em>Turing complete</em> — it can simulate any computation. But this computational universality is entirely a macro-level property. You'd never discover it by staring at the rules for individual cells. The whole is not just more than the sum of its parts — it's categorically <em>different</em>.</p>
+
+      </section>
+
+      <!-- ============================================
+           SECTION VI: WHY YOUR GENES DON'T RUN THE SHOW
+           ============================================ -->
+      <section id="genes">
+        <div class="section-heading">
+          <span class="section-ordinal">VI.</span>
+          <h2>Why your genes don't run the show</h2>
+        </div>
+
+        <p>Here's a fact that should stop you in your tracks:</p>
+
+        <p><strong>Nearly every cell in your body contains the same DNA.</strong></p>
+
+        <p>Your neurons and your liver cells, your skin cells and your white blood cells — with few exceptions (like red blood cells, which lose their nuclei), they all carry the same ~22,000 protein-coding genes, the same 2 meters of DNA coiled up in their nuclei. Yet a neuron and a liver cell are so different that, under a microscope, you'd hardly believe they share a genome.</p>
+
+        <p>How is this possible? Because <strong>which genes are active is determined not by the genes themselves, but by the cell's context</strong> — signals from neighboring cells, hormones from distant organs, physical forces from the tissue environment, and the organism's developmental history. Only about one-third to one-half of your genes are active in any given cell at any given time. The rest are silenced.</p>
+
+        <p>This is gene regulation in the broadest sense — with <em>epigenetics</em> (heritable chemical modifications to DNA and histones) as one key mechanism. The term literally means "above the genes," and the phenomenon is top-down causation writ large. The organism tells the genes what to do, not the other way around.</p>
+
+        <figure>
+          <div class="interactive-widget" id="gene-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">SAME DNA, DIFFERENT CELLS</span>
+              <div style="font-family: var(--font-sans); font-size: 13px; color: #999; margin-top: 4px;">Click a cell type to see which genes are activated</div>
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet" id="gene-svg" style="min-height: 280px;">
+              <!-- DNA strand in center -->
+              <text x="350" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#2d2d2d">Identical DNA</text>
+              <!-- DNA helix representation -->
+              <g id="dna-strand" transform="translate(200, 40)">
+                <path d="M0,20 Q50,-10 100,20 Q150,50 200,20 Q250,-10 300,20" stroke="#FF6B6B" stroke-width="3" fill="none" vector-effect="non-scaling-stroke"/>
+                <path d="M0,20 Q50,50 100,20 Q150,-10 200,20 Q250,50 300,20" stroke="#4ECDC4" stroke-width="3" fill="none" vector-effect="non-scaling-stroke"/>
+                <!-- Gene markers -->
+                <rect x="30" y="12" width="16" height="16" rx="3" fill="#FF6B6B" opacity="0.6" id="gene-a"/>
+                <rect x="80" y="12" width="16" height="16" rx="3" fill="#4ECDC4" opacity="0.6" id="gene-b"/>
+                <rect x="130" y="12" width="16" height="16" rx="3" fill="#FFD93D" opacity="0.6" id="gene-c"/>
+                <rect x="180" y="12" width="16" height="16" rx="3" fill="#45B7D1" opacity="0.6" id="gene-d"/>
+                <rect x="230" y="12" width="16" height="16" rx="3" fill="#FF8E72" opacity="0.6" id="gene-e"/>
+                <rect x="260" y="12" width="16" height="16" rx="3" fill="#6BCB77" opacity="0.6" id="gene-f"/>
+              </g>
+
+              <!-- Downward arrows -->
+              <text x="350" y="95" text-anchor="middle" font-size="20" fill="#aaa">▼</text>
+              <text x="350" y="115" text-anchor="middle" font-size="14" fill="#999">Context determines expression</text>
+
+              <!-- Cell type buttons -->
+              <g id="cell-neuron" style="cursor: pointer;" class="cell-type-btn" data-type="neuron">
+                <rect x="40" y="150" width="130" height="90" rx="15" fill="#6C5CE7" opacity="0.15" stroke="#6C5CE7" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                <text x="105" y="185" text-anchor="middle" font-size="28">🧠</text>
+                <text x="105" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#2d2d2d">Neuron</text>
+                <text x="105" y="232" text-anchor="middle" font-size="12" fill="#999">Fires signals</text>
+              </g>
+              <g id="cell-muscle" style="cursor: pointer;" class="cell-type-btn" data-type="muscle">
+                <rect x="200" y="150" width="130" height="90" rx="15" fill="#FF6B6B" opacity="0.15" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                <text x="265" y="185" text-anchor="middle" font-size="28">💪</text>
+                <text x="265" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#2d2d2d">Muscle Cell</text>
+                <text x="265" y="232" text-anchor="middle" font-size="12" fill="#999">Contracts</text>
+              </g>
+              <g id="cell-liver" style="cursor: pointer;" class="cell-type-btn" data-type="liver">
+                <rect x="370" y="150" width="130" height="90" rx="15" fill="#00B894" opacity="0.15" stroke="#00B894" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                <text x="435" y="185" text-anchor="middle" font-size="28">🧫</text>
+                <text x="435" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#2d2d2d">Liver Cell</text>
+                <text x="435" y="232" text-anchor="middle" font-size="12" fill="#999">Detoxifies</text>
+              </g>
+              <g id="cell-immune" style="cursor: pointer;" class="cell-type-btn" data-type="immune">
+                <rect x="540" y="150" width="130" height="90" rx="15" fill="#FFD93D" opacity="0.15" stroke="#FFD93D" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                <text x="605" y="185" text-anchor="middle" font-size="28">🛡️</text>
+                <text x="605" y="215" text-anchor="middle" font-size="14" font-weight="600" fill="#2d2d2d">Immune Cell</text>
+                <text x="605" y="232" text-anchor="middle" font-size="12" fill="#999">Defends</text>
+              </g>
+
+              <!-- Gene expression panel (appears on click) -->
+              <g id="gene-expression" opacity="0">
+                <rect x="80" y="270" width="540" height="140" rx="12" fill="white" stroke="#D3D3D3" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <text x="350" y="295" text-anchor="middle" font-size="14" font-weight="600" fill="#2d2d2d" id="expr-title">Gene Expression Pattern</text>
+                <!-- Gene bars will be drawn by JS -->
+                <g id="expr-bars"></g>
+              </g>
+            </svg>
+          </div>
+          <figcaption>Every cell has the same DNA, but different cell types activate different genes. The cell's context — signals from the organism — determines which genes are "on." This is top-down causation from organism to genome.</figcaption>
+        </figure>
+
+        <p>Consider the most dramatic demonstration of this: the <em>nuclear transfer experiment</em>. Take the nucleus from a fully differentiated frog cell and inject it into an egg cell whose own nucleus has been removed. What can happen? The egg cell's environment <em>reprograms</em> the donor nucleus, and — in successful cases — a tadpole develops. (The success rate is low, but the fact that it works at all is the point.) The DNA didn't change. The context changed. And the context — a macro-level entity — told the genes what to do.</p>
+
+        <p>This is why the "selfish gene" metaphor, for all its rhetorical power, is misleading. Genes are not autonomous agents running a program. They're more like keys on a piano — capable of producing any note, but the <em>tune</em> is determined by the player. And the player is the organism: the cell, the tissue, the body, the environment.</p>
+
+        <p>The brain is perhaps the ultimate example. It contains roughly 86 billion neurons with perhaps 100 trillion synaptic connections. The human genome has about 22,000 protein-coding genes. You cannot specify 10<sup>14</sup> connections with 22,000 genes. The detailed wiring of your brain is <em>not</em> in your DNA — it's determined by activity-dependent processes, by experience, by the organism's interaction with its environment. The genome provides the general plan; the organism provides the specifics. Top-down, all the way.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Identical twins, different lives</div>
+          <p style="margin: 0;">Identical twins start with virtually the same DNA. Yet over time they can develop different diseases, different personalities, even different physical appearances. What changes? Their <em>epigenomes</em> — the pattern of chemical modifications that influence gene expression. Diet, stress, toxins, experiences — all reach down from the organism and environment level to modify which genes are active. There's also evidence in some organisms (and increasingly in mammals) that certain epigenetic modifications can be transmitted across generations, though the extent of transgenerational epigenetic inheritance in humans remains an active area of research.</p>
+        </div>
+      </section>
+
+      <!-- ============================================
+           SECTION VII: KIM'S CHALLENGE
+           ============================================ -->
+      <section id="kims-challenge">
+        <div class="section-heading">
+          <span class="section-ordinal">VII.</span>
+          <h2>Kim's challenge</h2>
+        </div>
+
+        <p>At this point, a sharp-eyed philosopher raises their hand. The sharpest of them all was Jaegwon Kim, whose <em>causal exclusion argument</em> remains the single most powerful objection to top-down causation. It goes like this:</p>
+
+        <p><strong>Premise 1</strong>: Every physical event that has a cause has a <em>sufficient</em> physical cause. (This is the "causal closure of physics" — physics doesn't leave gaps for non-physical causes to fill.)</p>
+
+        <p><strong>Premise 2</strong>: Physical effects are not systematically overdetermined — they don't have two independent sufficient causes at once.</p>
+
+        <p><strong>Conclusion</strong>: If the micro-level physics is sufficient to explain everything, there's no room for macro-level causes. Higher-level descriptions — organisms, traffic jams, heartbeats — may be useful <em>summaries</em>, but they're not real causes. The atoms are doing all the work.</p>
+
+        <p>This is an uncomfortable argument. It's logically tight. And it seems to demolish everything we've been building. If every electron in your brain is fully determined by physics, how can your <em>decision</em> to raise your arm be a real cause?</p>
+
+        <p>But there's a devastating counter-move, and it turns on a single word: <em>constraint</em>.</p>
+
+        <h3>Constraints are not forces</h3>
+
+        <p>Kim's argument assumes that causation means adding a force. If physics provides all the forces, there's nothing left for macro-level causes to do. But what if macro-level causes don't work by adding forces? What if they work by <em>removing possibilities</em>?</p>
+
+        <p>This is exactly what Michael Polanyi argued in his concept of <em>dual control</em>. Machines and organisms are under two kinds of control simultaneously. Physics determines what's <em>possible</em>. The higher-level structure determines what <em>actually happens</em> from among those possibilities.</p>
+
+        <p>Play with the visualizer below to get an intuition for this:</p>
+
+        <figure>
+          <div class="interactive-widget" id="constraint-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">THE CONSTRAINT VISUALIZER</span>
+              <div style="font-family: var(--font-sans); font-size: 13px; color: #999; margin-top: 4px;">Click buttons to add or remove constraints</div>
+            </div>
+            <canvas id="constraint-canvas" width="700" height="350" style="width: 100%; border-radius: 12px; background: #1a1a2e; aspect-ratio: 2/1;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+              <button id="cst-none" class="active" onclick="setConstraint('none')">No constraint</button>
+              <button id="cst-funnel" onclick="setConstraint('funnel')">Funnel</button>
+              <button id="cst-maze" onclick="setConstraint('maze')">Maze</button>
+              <button id="cst-attractor" onclick="setConstraint('attractor')">Attractor</button>
+            </div>
+            <div style="text-align: center; margin-top: 12px;">
+              <span class="widget-label">PHYSICS: </span>
+              <span class="widget-value" id="cst-physics">Gravity (unchanged)</span>
+              <span class="widget-label" style="margin-left: 16px;">CONSTRAINT: </span>
+              <span class="widget-value" id="cst-type">None — ball rolls freely</span>
+            </div>
+          </div>
+          <figcaption>The ball always obeys gravity (bottom-up physics). But constraints — funnels, walls, basins — determine which of gravity's many possible outcomes actually occur. No new force is added. Possibilities are removed. That's how top-down causation works.</figcaption>
+        </figure>
+
+        <p>Consider a bridge. Physics allows a car to travel in any direction. The bridge constrains it to one specific path — across the river. The bridge doesn't exert a new type of force. It constrains which of the forces already in play actually matter. And the bridge is a higher-level structure — you can't understand it one atom at a time. Its causal power lies in its <em>shape</em>, its macro-level geometry.</p>
+
+        <p>This is the constraint-based response to Kim: higher levels don't <em>add</em> forces to the causal picture. They set <em>boundary conditions</em> that constrain which lower-level behaviors are actualized. A crystal lattice constrains how electrons move within it. The shape of a cell constrains which genes are expressed. The structure of a society constrains how individuals behave. None of these add forces. All of them are real causes.</p>
+
+        <p>As the philosopher Alicia Juarrero put it: <em>"Thinking of causes as dynamical constraints makes bottom-up and top-down causal relations suddenly tractable."</em></p>
+
+        <p>But is there a way to make this more rigorous? Can we <em>measure</em> whether the macro level is genuinely causally important, or whether it's just a convenient summary? Remarkably, yes.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VIII: WHEN THE MACRO HAS MORE TO SAY
+           ============================================ -->
+      <section id="causal-emergence">
+        <div class="section-heading">
+          <span class="section-ordinal">VIII.</span>
+          <h2>When the macro has more to say</h2>
+        </div>
+
+        <p>In 2013, the neuroscientist Erik Hoel did something nobody had done before: he created a <em>quantitative measure</em> of when higher-level descriptions are causally superior to lower-level ones. He called it <em>causal emergence</em>, and it's become one of the most discussed ideas in complexity science.</p>
+
+        <p>The key concept is <em>Effective Information</em> (EI) — a measure of how much causal power a description has. It works by asking a simple question, inspired by randomized controlled trials:</p>
+
+        <p><strong>"If I intervened on this system by setting a variable to a random state, how precisely could I predict what happens next?"</strong></p>
+
+        <p>EI depends on two properties:</p>
+
+        <ul>
+          <li><strong>Determinism</strong>: Do causes reliably lead to specific effects? (High determinism = knowing the cause tells you the effect.)</li>
+          <li><strong>Degeneracy</strong>: Do different causes lead to the same effect? (Low degeneracy = each cause produces a unique effect.)</li>
+        </ul>
+
+        <p>High EI = high determinism + low degeneracy = strong causal structure. The surprise?</p>
+
+        <p><strong>Sometimes the macro level has <em>higher</em> EI than the micro level.</strong></p>
+
+        <p>How is this possible? Consider a noisy micro-level system — say, a network of neurons where each neuron fires unreliably. At the micro level, the same cause (same initial state) can lead to many different effects (high noise). And different causes can lead to the same effect (high degeneracy). The micro-level EI is low — the causal structure is weak.</p>
+
+        <p>But now coarse-grain: group neurons into regions, and look at the macro-level dynamics. The noise averages out. The macro transitions become more deterministic (less noise) and less degenerate (different macro-states lead to different outcomes). The macro EI is <em>higher</em> than the micro EI.</p>
+
+        <p>This is causal emergence. The macro description isn't just a convenient summary — it carries <em>more causal information</em> than the micro description. The whole literally has more to say than the parts.</p>
+
+        <figure>
+          <div class="interactive-widget" id="ei-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">CAUSAL EMERGENCE CALCULATOR</span>
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet" id="ei-svg" style="min-height: 300px;">
+              <!-- Arrow markers -->
+              <defs>
+                <marker id="arrowR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                  <path d="M0,0 L8,3 L0,6" fill="#FF6B6B"/>
+                </marker>
+                <marker id="arrowT" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                  <path d="M0,0 L8,3 L0,6" fill="#4ECDC4"/>
+                </marker>
+              </defs>
+
+              <!-- Micro level -->
+              <text x="175" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#FF6B6B">MICRO LEVEL</text>
+
+              <!-- 3 micro states -->
+              <circle cx="100" cy="100" r="28" fill="#FF6B6B" opacity="0.2" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="100" y="105" text-anchor="middle" font-size="14" fill="#2d2d2d">A</text>
+              <circle cx="175" cy="100" r="28" fill="#FF6B6B" opacity="0.2" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="105" text-anchor="middle" font-size="14" fill="#2d2d2d">B</text>
+              <circle cx="250" cy="100" r="28" fill="#FF6B6B" opacity="0.2" stroke="#FF6B6B" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="250" y="105" text-anchor="middle" font-size="14" fill="#2d2d2d">C</text>
+
+              <!-- Micro transitions (noisy) -->
+              <g opacity="0.4">
+                <path d="M100,130 Q100,170 100,205" stroke="#FF6B6B" stroke-width="1.5" fill="none" vector-effect="non-scaling-stroke" marker-end="url(#arrowR)"/>
+                <path d="M110,128 Q140,170 170,205" stroke="#FF6B6B" stroke-width="1" fill="none" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+                <path d="M175,130 Q175,170 175,205" stroke="#FF6B6B" stroke-width="1.5" fill="none" vector-effect="non-scaling-stroke" marker-end="url(#arrowR)"/>
+                <path d="M185,128 Q215,170 240,205" stroke="#FF6B6B" stroke-width="1" fill="none" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+                <path d="M250,130 Q250,170 250,205" stroke="#FF6B6B" stroke-width="1" fill="none" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+                <path d="M240,128 Q215,170 180,205" stroke="#FF6B6B" stroke-width="1.5" fill="none" vector-effect="non-scaling-stroke" marker-end="url(#arrowR)"/>
+              </g>
+
+              <!-- Micro output states -->
+              <circle cx="100" cy="235" r="28" fill="#FF6B6B" opacity="0.15" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+              <text x="100" y="240" text-anchor="middle" font-size="14" fill="#999">A'</text>
+              <circle cx="175" cy="235" r="28" fill="#FF6B6B" opacity="0.15" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="240" text-anchor="middle" font-size="14" fill="#999">B'</text>
+              <circle cx="250" cy="235" r="28" fill="#FF6B6B" opacity="0.15" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+              <text x="250" y="240" text-anchor="middle" font-size="14" fill="#999">C'</text>
+
+              <text x="175" y="295" text-anchor="middle" font-size="13" fill="#999">Noisy: A sometimes → A', sometimes → B'</text>
+              <text x="175" y="313" text-anchor="middle" font-size="13" fill="#999">Degenerate: both B and C → B'</text>
+
+              <!-- EI score micro -->
+              <rect x="95" y="335" width="160" height="36" rx="8" fill="#FF6B6B" opacity="0.15" stroke="#FF6B6B" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+              <text x="175" y="358" text-anchor="middle" font-size="15" font-weight="600" fill="#FF6B6B">EI = 0.58 bits</text>
+
+              <!-- Divider -->
+              <line x1="350" y1="20" x2="350" y2="390" stroke="#D3D3D3" stroke-width="1" stroke-dasharray="4,4" vector-effect="non-scaling-stroke"/>
+
+              <!-- Macro level -->
+              <text x="525" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#4ECDC4">MACRO LEVEL</text>
+              <text x="525" y="48" text-anchor="middle" font-size="12" fill="#999">(coarse-grained: B+C → β)</text>
+
+              <!-- 2 macro states -->
+              <circle cx="475" cy="100" r="35" fill="#4ECDC4" opacity="0.2" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="475" y="106" text-anchor="middle" font-size="17" font-weight="600" fill="#2d2d2d">α</text>
+              <circle cx="575" cy="100" r="35" fill="#4ECDC4" opacity="0.2" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="575" y="106" text-anchor="middle" font-size="17" font-weight="600" fill="#2d2d2d">β</text>
+
+              <!-- Macro transitions (clean) -->
+              <g opacity="0.7">
+                <path d="M475,137 Q475,170 475,200" stroke="#4ECDC4" stroke-width="2.5" fill="none" vector-effect="non-scaling-stroke" marker-end="url(#arrowT)"/>
+                <path d="M575,137 Q575,170 575,200" stroke="#4ECDC4" stroke-width="2.5" fill="none" vector-effect="non-scaling-stroke" marker-end="url(#arrowT)"/>
+              </g>
+
+              <!-- Macro output states -->
+              <circle cx="475" cy="235" r="35" fill="#4ECDC4" opacity="0.15" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="475" y="241" text-anchor="middle" font-size="17" font-weight="600" fill="#666">α'</text>
+              <circle cx="575" cy="235" r="35" fill="#4ECDC4" opacity="0.15" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="575" y="241" text-anchor="middle" font-size="17" font-weight="600" fill="#666">β'</text>
+
+              <text x="525" y="295" text-anchor="middle" font-size="13" fill="#999">Deterministic: α always → α'</text>
+              <text x="525" y="313" text-anchor="middle" font-size="13" fill="#999">Non-degenerate: α → α', β → β'</text>
+
+              <!-- EI score macro -->
+              <rect x="445" y="335" width="160" height="36" rx="8" fill="#4ECDC4" opacity="0.15" stroke="#4ECDC4" stroke-width="2" vector-effect="non-scaling-stroke"/>
+              <text x="525" y="358" text-anchor="middle" font-size="15" font-weight="600" fill="#4ECDC4">EI = 1.00 bits</text>
+
+              <!-- Winner label -->
+              <text x="525" y="408" text-anchor="middle" font-size="14" font-weight="600" fill="#4ECDC4">⬆ MACRO WINS — Causal Emergence!</text>
+            </svg>
+          </div>
+          <figcaption>At the micro level, transitions are noisy and degenerate — multiple states map to the same output. When we coarse-grain (group B and C into β), the macro level becomes deterministic and non-degenerate. The macro has higher Effective Information — it's causally superior, not just a convenient summary.</figcaption>
+        </figure>
+
+        <p>Hoel's punchline is beautiful: <em>"Macroscales are basically encodings that add error correction to the causal relationships of a system."</em> Just as error-correcting codes in information theory add redundancy to make messages more reliable, macro-level descriptions "smooth out" micro-level noise to reveal cleaner causal structure.</p>
+
+        <p>In 2025, Hoel and Abel Jansma published <em>Causal Emergence 2.0</em>, extending the framework in a crucial way. CE 2.0 treats different scales of a system like slices of a higher-dimensional object and introduces a <em>causal apportioning schema</em> — calculating each scale's unique causal contribution. This directly addresses Kim's exclusion argument: it's not that macro and micro causes are competing for the same causal slot. Each level makes a <em>distinct</em> contribution. Some systems are "top-heavy" (most causation at the macro level), some are "bottom-heavy," and the most complex systems spread their causation across many levels.</p>
+
+        <p>Even more remarkably, a 2025 paper on <em>"Consilience in Causation"</em> examined over a dozen independently developed measures of causation — from philosophy, statistics, psychology, and computer science — and found that causal emergence appears in <em>all of them</em>. It's not an artifact of one particular measure. It's a robust, cross-disciplinary phenomenon.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The interventionist twist</div>
+          <p style="margin: 0;">What makes Hoel's approach so powerful is that it's grounded in <em>interventionism</em> — the idea (from philosophers like James Woodward and Judea Pearl) that causation means "what would happen if you intervened." EI asks: if I set a variable to a random state (maximum entropy intervention), how much information does that give me about the effect? This is directly analogous to a randomized controlled trial. When the macro level answers this question more informatively than the micro level, the macro has greater causal power — period.</p>
+        </div>
+      </section>
+
+      <!-- ============================================
+           SECTION IX: TOP-DOWN CAUSATION IN THE WILD
+           ============================================ -->
+      <section id="in-the-wild">
+        <div class="section-heading">
+          <span class="section-ordinal">IX.</span>
+          <h2>Top-down causation in the wild</h2>
+        </div>
+
+        <p>Once you have the concept, you start seeing it everywhere. Here's a tour of top-down causation across domains — from fundamental physics to human civilization.</p>
+
+        <h3>In physics</h3>
+
+        <p>An electron in free space behaves one way. The <em>same</em> electron embedded in a crystal lattice behaves completely differently — it develops an effective mass that can be different from its actual mass, it moves in bands rather than freely, and it can even pair up with another electron (Cooper pairs) to create <em>superconductivity</em>. The crystal — a macro-level structure — constrains the electron's behavior. Nobel laureate Robert Laughlin argued that superconductivity is best understood as an emergent collective phenomenon — one that resists straightforward derivation from single-particle physics.</p>
+
+        <h3>In evolution</h3>
+
+        <p>Natural selection is top-down causation from the environment to the genome. The ecological niche (a macro-level entity) determines which genetic variations survive. The most stunning evidence? <strong>Convergent evolution.</strong> Dolphins and bats independently evolved echolocation — and a 2013 study found extensive convergent molecular changes across many genes in both lineages. Two completely different organisms, separated by tens of millions of years of evolution, arrived at strikingly similar genetic solutions because the same macro-level selection pressure (navigating with sound) reached down and shaped their genomes.</p>
+
+        <h3>In neuroscience</h3>
+
+        <p>The brain is a symphony of top-down causation. Higher cortical areas generate <em>alpha and beta oscillations</em> that reach down to constrain and sculpt neural spiking in lower areas. The prefrontal cortex sends top-down signals that bias selection in early visual areas — powerfully shaping what you <em>see</em> based on what you expect. When you decide to raise your arm, a mental event causes billions of neurons to fire in a coordinated pattern. As Sperry argued, the mental state is like an eddy channeling water molecules — the pattern constrains the parts.</p>
+
+        <h3>In society</h3>
+
+        <p>Laws, institutions, markets, and cultural norms are macro-level structures that constrain individual behavior. Money has value only because a macro-level consensus says it does — yet this macro-level agreement causally constrains every individual's economic behavior. As George Ellis puts it: <em>"Plans for a jumbo jet aircraft result in billions of atoms being deployed to create the aircraft in accordance with those plans."</em> The plan — an abstract, macro-level entity — causes physical atoms to arrange themselves in a specific pattern. Type 5 top-down causation in action.</p>
+
+        <p>Ellis identified five distinct types of top-down causation, each with different mechanisms:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Mechanism</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1. Algorithmic</td>
+              <td>System structure channels lower-level processes</td>
+              <td>Software directing transistors; DNA constraining protein assembly</td>
+            </tr>
+            <tr>
+              <td>2. Feedback control</td>
+              <td>Pre-set goals guide system via error correction</td>
+              <td>Thermostat maintaining temperature; blood sugar regulation</td>
+            </tr>
+            <tr>
+              <td>3. Adaptive selection</td>
+              <td>Environment selects among variants based on fitness</td>
+              <td>Natural selection; immune system adapting to pathogens</td>
+            </tr>
+            <tr>
+              <td>4. Adaptive learning</td>
+              <td>Feedback systems with changeable goals, learning from experience</td>
+              <td>Pavlovian conditioning; Bayesian brain updating predictions</td>
+            </tr>
+            <tr>
+              <td>5. Intelligent design</td>
+              <td>Symbolic representation enables abstract planning</td>
+              <td>Engineering an aircraft; writing a constitution</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>Notice how each type is <em>more</em> powerful than the last. Type 1 is simple structural constraint. Type 5 involves abstract symbolic thought that can reshape the physical world. Each type requires the existence of the previous types — you need adaptive selection (Type 3) before adaptive learning (Type 4), and both before intelligent design (Type 5). The hierarchy of top-down causation mirrors the hierarchy of complexity itself.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION X: THE UNIVERSE HAS MORE FLOORS
+           ============================================ -->
+      <section id="bigger-picture">
+        <div class="section-heading">
+          <span class="section-ordinal">X.</span>
+          <h2>The universe has more floors than we thought</h2>
+        </div>
+
+        <p>Let's step back and take in the view.</p>
+
+        <p>The universe is not a flat, single-story building where everything happens at the ground floor of particle physics. It's a skyscraper — each floor is a genuine level of organization with its own causal structure, its own laws, its own explanatory power. And crucially, the floors don't just sit passively on top of each other. They <em>interact</em>. The upper floors constrain what happens on the lower ones, just as the lower floors support the upper ones.</p>
+
+        <p>This is what Denis Noble means by the Principle of Biological Relativity. There is no privileged level. Atoms aren't more "real" than cells. Cells aren't more "real" than organisms. Each level contributes unique causal information to the story of the universe.</p>
+
+        <p>Why does this matter? Because the answer changes how we think about almost everything:</p>
+
+        <p><strong>For medicine:</strong> If genes don't run the show — if the organism constrains gene expression through epigenetics and systems-level dynamics — then treating disease gene-by-gene is attacking the wrong level. Systems biology, which models multi-scale interactions, may offer deeper insights for complex diseases like cancer, diabetes, and mental illness than purely gene-centric approaches.</p>
+
+        <p><strong>For AI:</strong> If deep neural networks have genuinely emergent macro-level structure — if higher layers carry causal information that lower layers don't — then understanding AI interpretability requires multi-scale analysis. You can't understand what a language model "knows" by looking at individual neurons. The knowledge lives at higher levels of abstraction, and those levels are causally real.</p>
+
+        <p><strong>For consciousness:</strong> If top-down causation is real, then consciousness — a macro-level property of the brain — can genuinely influence physical events. Your decisions, your thoughts, your intentions are not epiphenomenal shadows cast by underlying neural activity. They are causes in their own right. This doesn't solve the hard problem of consciousness, but it weakens one of the most common objections to taking consciousness seriously as a causal agent.</p>
+
+        <p><strong>For philosophy:</strong> The universe is not "nothing but" particles. It is particles <em>and</em> atoms <em>and</em> molecules <em>and</em> cells <em>and</em> organisms <em>and</em> minds <em>and</em> societies — each level genuinely real, each level causally potent, each level interacting with the others in both directions.</p>
+
+        <p>Philip Anderson had it right in 1972. More <em>is</em> different. But now, half a century later, we can go further. We can <em>measure</em> how much more different it is. We can quantify causal emergence. We can identify which levels of description carry the most causal power. We can build mathematical frameworks that treat upward and downward causation as two sides of the same coin.</p>
+
+        <p>The constructionist dream — that knowing the parts lets you predict the whole — was always a dream. You can take a clock apart and understand every gear. But knowing every gear doesn't tell you what <em>time</em> is. You can sequence a genome and identify every gene. But knowing every gene doesn't tell you what <em>life</em> is. You can record every neuron in a brain. But knowing every neuron doesn't tell you what <em>consciousness</em> is.</p>
+
+        <p>Next time someone says "it's all just physics," you can smile and remind them: physics is what happens when the higher levels aren't paying attention. When they <em>are</em> paying attention — when the whole starts bossing the parts around — that's when it gets interesting.</p>
+      </section>
+
+      <!-- ============================================
+           FURTHER RESOURCES
+           ============================================ -->
+      <section id="resources" style="margin-top: 60px;">
+        <h3>Further resources</h3>
+        <ul>
+          <li>Philip Anderson, <em>"More Is Different"</em> (Science, 1972) — The foundational paper arguing that reductionism ≠ constructionism.</li>
+          <li>George Ellis, <em>How Can Physics Underlie the Mind?</em> (Springer, 2016) — The most comprehensive case for top-down causation in physics.</li>
+          <li>Denis Noble, <em>The Music of Life</em> (2006) — A physiologist's challenge to genetic determinism.</li>
+          <li>Erik Hoel, <em>"Quantifying Causal Emergence Shows That Macro Can Beat Micro"</em> (PNAS, 2013) — The original causal emergence paper.</li>
+          <li>Erik Hoel & Abel Jansma, <em>"Causal Emergence 2.0"</em> (2025) — The updated framework with scale as dimension.</li>
+          <li>Alicia Juarrero, <em>Context Changes Everything</em> (MIT Press, 2023) — A constraint-based framework for downward causation.</li>
+          <li>Roger Sperry's 1981 Nobel Lecture — His argument for consciousness as a macro-causal agent.</li>
+        </ul>
+      </section>
+
+    </article>
+
+    <!-- FOOTER -->
+    <footer>
+      <p style="font-family: var(--font-serif); font-size: 1.3rem; font-weight: 600; margin-bottom: 8px;">
+        The whole is not just more than the sum of its parts.<br>It's the boss of them.
+      </p>
+      <p style="font-family: var(--font-sans); font-size: 0.85rem; opacity: 0.7; margin-top: 24px;">
+        An explainer on top-down causation.
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    // ============================================
+    // SECTION I: Levels Tower Interactive
+    // ============================================
+    (function() {
+      const levels = [
+        { name: 'Quarks & Leptons', color: '#FF6B6B', emoji: '⚛️',
+          desc: 'Spin, charge, mass. No concept of "bond," "temperature," or "alive." Just quantum fields oscillating.' },
+        { name: 'Atoms', color: '#FF8E72', emoji: '🔵',
+          desc: 'Electron shells, chemical bonding. NEW: valence, electronegativity, periodic table. None of these exist at the quark level.' },
+        { name: 'Molecules', color: '#FFA07A', emoji: '🧪',
+          desc: 'Shape, chirality, reaction rates. NEW: a water molecule has geometry. A protein folds. These are invisible to atomic physics alone.' },
+        { name: 'Cells', color: '#FFD93D', emoji: '🦠',
+          desc: 'Metabolism, reproduction, homeostasis. NEW: a cell is alive. No molecule is alive. The transition from chemistry to biology happens here.' },
+        { name: 'Organisms', color: '#6BCB77', emoji: '🧬',
+          desc: 'Behavior, perception, goals. NEW: an organism can want things. It can learn. No cell "wants" anything on its own.' },
+        { name: 'Societies', color: '#4ECDC4', emoji: '🏛️',
+          desc: 'Laws, culture, markets, language. NEW: money has value only because everyone agrees it does. No individual creates a market.' },
+      ];
+
+      const svg = document.getElementById('levels-svg');
+      const blockH = 52;
+      const gap = 8;
+      const startY = 10;
+      const centerX = 350;
+      const baseWidth = 580;
+      const widthStep = 50;
+
+      // Description box
+      const descGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      descGroup.setAttribute('id', 'level-desc');
+      descGroup.setAttribute('opacity', '0');
+      svg.appendChild(descGroup);
+
+      levels.forEach((level, i) => {
+        const idx = levels.length - 1 - i; // Invert so quarks at bottom
+        const y = startY + idx * (blockH + gap);
+        const w = baseWidth - i * widthStep;
+        const x = centerX - w / 2;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.style.cursor = 'pointer';
+        g.setAttribute('data-level', i);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', blockH);
+        rect.setAttribute('rx', '12');
+        rect.setAttribute('fill', level.color);
+        rect.setAttribute('opacity', '0.85');
+        rect.setAttribute('vector-effect', 'non-scaling-stroke');
+        g.appendChild(rect);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', centerX);
+        text.setAttribute('y', y + blockH / 2 + 6);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '16');
+        text.setAttribute('font-weight', '600');
+        text.setAttribute('fill', 'white');
+        text.textContent = level.emoji + ' ' + level.name;
+        g.appendChild(text);
+
+        g.addEventListener('click', () => showLevelDesc(i, x, y + blockH + 4));
+        g.addEventListener('mouseenter', () => { rect.setAttribute('opacity', '1'); });
+        g.addEventListener('mouseleave', () => { rect.setAttribute('opacity', '0.85'); });
+
+        svg.appendChild(g);
+      });
+
+      // Upward arrows between levels
+      for (let i = 0; i < levels.length - 1; i++) {
+        const idx = levels.length - 1 - i;
+        const y = startY + idx * (blockH + gap) - gap / 2;
+        const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        arrow.setAttribute('x', centerX + baseWidth / 2 - i * widthStep / 2 + 20);
+        arrow.setAttribute('y', y + 4);
+        arrow.setAttribute('text-anchor', 'middle');
+        arrow.setAttribute('font-size', '14');
+        arrow.setAttribute('fill', '#aaa');
+        arrow.textContent = '▲';
+        svg.appendChild(arrow);
+      }
+
+      let activeDesc = null;
+
+      function showLevelDesc(levelIdx, x, y) {
+        const dg = document.getElementById('level-desc');
+        dg.innerHTML = '';
+
+        if (activeDesc === levelIdx) {
+          dg.setAttribute('opacity', '0');
+          activeDesc = null;
+          return;
+        }
+        activeDesc = levelIdx;
+
+        // Position description below the whole tower
+        const descY = startY + levels.length * (blockH + gap) + 10;
+        const descW = 580;
+        const descX = centerX - descW / 2;
+
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('x', descX);
+        bg.setAttribute('y', descY);
+        bg.setAttribute('width', descW);
+        bg.setAttribute('height', 60);
+        bg.setAttribute('rx', '10');
+        bg.setAttribute('fill', levels[levelIdx].color);
+        bg.setAttribute('opacity', '0.12');
+        dg.appendChild(bg);
+
+        const lines = wrapText(levels[levelIdx].desc, 60);
+        bg.setAttribute('height', Math.max(60, lines.length * 20 + 20));
+
+        lines.forEach((line, li) => {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', descX + 14);
+          t.setAttribute('y', descY + 22 + li * 20);
+          t.setAttribute('font-size', '14');
+          t.setAttribute('fill', '#2d2d2d');
+          t.textContent = line;
+          dg.appendChild(t);
+        });
+
+        dg.setAttribute('opacity', '1');
+      }
+
+      function wrapText(text, maxChars) {
+        const words = text.split(' ');
+        const lines = [];
+        let line = '';
+        words.forEach(w => {
+          if ((line + ' ' + w).trim().length > maxChars) {
+            lines.push(line.trim());
+            line = w;
+          } else {
+            line = line ? line + ' ' + w : w;
+          }
+        });
+        if (line) lines.push(line.trim());
+        return lines;
+      }
+    })();
+
+    // ============================================
+    // SECTION III: Bénard Cell Simulator
+    // ============================================
+    (function() {
+      const canvas = document.getElementById('benard-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const slider = document.getElementById('temp-slider');
+      const tempVal = document.getElementById('temp-val');
+      const stateLabel = document.getElementById('benard-state');
+
+      const W = canvas.width;
+      const H = canvas.height;
+      const numParticles = 200;
+      const particles = [];
+      const criticalThreshold = 45;
+
+      // Hexagonal cell centers
+      const cellRadius = 70;
+      const cellCenters = [];
+      const hexRows = 3;
+      const hexCols = 6;
+      for (let r = 0; r < hexRows; r++) {
+        for (let c = 0; c < hexCols; c++) {
+          const x = c * cellRadius * 1.73 + (r % 2) * cellRadius * 0.866 + cellRadius;
+          const y = r * cellRadius * 1.5 + cellRadius + 20;
+          if (x < W + cellRadius && y < H + cellRadius) {
+            cellCenters.push({ x, y });
+          }
+        }
+      }
+
+      // Initialize particles
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          temp: Math.random() // 0 = cold, 1 = hot
+        });
+      }
+
+      function findNearestCell(px, py) {
+        let minDist = Infinity;
+        let nearest = null;
+        cellCenters.forEach(c => {
+          const d = Math.hypot(px - c.x, py - c.y);
+          if (d < minDist) { minDist = d; nearest = c; }
+        });
+        return { center: nearest, dist: minDist };
+      }
+
+      function update() {
+        const gradient = parseInt(slider.value);
+        const organized = gradient > criticalThreshold;
+        const organizeStrength = organized ? (gradient - criticalThreshold) / (100 - criticalThreshold) : 0;
+
+        // Update label
+        if (gradient < 20) {
+          tempVal.textContent = 'Low';
+          stateLabel.textContent = 'Random thermal motion';
+        } else if (gradient < criticalThreshold) {
+          tempVal.textContent = 'Medium';
+          stateLabel.textContent = 'Increasing agitation...';
+        } else if (gradient < 70) {
+          tempVal.textContent = 'High';
+          stateLabel.textContent = 'Convection cells forming!';
+        } else {
+          tempVal.textContent = 'Very high';
+          stateLabel.textContent = 'Stable hexagonal convection';
+        }
+
+        particles.forEach(p => {
+          if (organized) {
+            // Find nearest cell center
+            const { center, dist } = findNearestCell(p.x, p.y);
+            if (center) {
+              const dx = p.x - center.x;
+              const dy = p.y - center.y;
+              const angle = Math.atan2(dy, dx);
+              const normDist = Math.min(dist / cellRadius, 1);
+
+              // Circular flow: tangential velocity + radial component based on "height"
+              // Near center: rise (warm). Near edge: sink (cool).
+              const tangentialSpeed = 1.5 * organizeStrength * normDist;
+              const radialSpeed = (normDist < 0.4 ? -0.5 : 0.3) * organizeStrength;
+
+              const targetVx = -Math.sin(angle) * tangentialSpeed + Math.cos(angle) * radialSpeed;
+              const targetVy = Math.cos(angle) * tangentialSpeed + Math.sin(angle) * radialSpeed;
+
+              p.vx += (targetVx - p.vx) * 0.05 * organizeStrength;
+              p.vy += (targetVy - p.vy) * 0.05 * organizeStrength;
+
+              // Temperature based on position relative to cell center
+              p.temp += ((normDist < 0.4 ? 1 : 0) - p.temp) * 0.03 * organizeStrength;
+            }
+          }
+
+          // Random thermal noise (stronger when less organized)
+          const noiseStrength = 0.3 * (1 - organizeStrength * 0.8);
+          p.vx += (Math.random() - 0.5) * noiseStrength;
+          p.vy += (Math.random() - 0.5) * noiseStrength;
+
+          // Damping
+          p.vx *= 0.98;
+          p.vy *= 0.98;
+
+          // Move
+          p.x += p.vx;
+          p.y += p.vy;
+
+          // Wrap
+          if (p.x < 0) p.x += W;
+          if (p.x > W) p.x -= W;
+          if (p.y < 0) p.y += H;
+          if (p.y > H) p.y -= H;
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        const gradient = parseInt(slider.value);
+        const organized = gradient > criticalThreshold;
+        const organizeStrength = organized ? (gradient - criticalThreshold) / (100 - criticalThreshold) : 0;
+
+        // Draw faint hexagonal cell boundaries when organized
+        if (organized) {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * organizeStrength})`;
+          ctx.lineWidth = 1;
+          cellCenters.forEach(c => {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const angle = Math.PI / 3 * i - Math.PI / 6;
+              const hx = c.x + cellRadius * Math.cos(angle);
+              const hy = c.y + cellRadius * Math.sin(angle);
+              if (i === 0) ctx.moveTo(hx, hy);
+              else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          });
+        }
+
+        // Draw heat gradient at bottom
+        const grd = ctx.createLinearGradient(0, H - 20, 0, H);
+        grd.addColorStop(0, `rgba(255, 107, 107, ${0.1 + gradient * 0.005})`);
+        grd.addColorStop(1, `rgba(255, 107, 107, ${0.3 + gradient * 0.005})`);
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, H - 20, W, 20);
+
+        // Draw particles
+        particles.forEach(p => {
+          const r = 3 + p.temp * 2;
+          const red = Math.round(69 + p.temp * 186);
+          const green = Math.round(183 - p.temp * 76);
+          const blue = Math.round(209 - p.temp * 102);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, 0.8)`;
+          ctx.fill();
+        });
+
+        // Labels
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '13px Figtree, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('HOT (bottom)', 10, H - 5);
+        ctx.fillText('COOL (top)', 10, 18);
+      }
+
+      function animate() {
+        update();
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+
+    // ============================================
+    // SECTION IV: Heart Rhythm Simulator
+    // ============================================
+    (function() {
+      const canvas = document.getElementById('heart-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+
+      const channels = {
+        if: { active: true, color: '#FF6B6B', label: 'If', phase: 0, amp: 0.35, freq: 1.0 },
+        ica: { active: true, color: '#4ECDC4', label: 'ICa', phase: 0.25, amp: 0.25, freq: 1.0 },
+        ik: { active: true, color: '#45B7D1', label: 'IK', phase: 0.5, amp: 0.2, freq: 1.0 },
+        ina: { active: true, color: '#FFD93D', label: 'INa', phase: 0.75, amp: 0.15, freq: 1.0 }
+      };
+
+      let time = 0;
+      const history = [];
+      const maxHistory = 400;
+
+      window.toggleChannel = function(ch) {
+        channels[ch].active = !channels[ch].active;
+        const btn = document.getElementById('ch-' + ch);
+        btn.classList.toggle('active');
+        updateChannelDisplay();
+      };
+
+      function updateChannelDisplay() {
+        const active = Object.values(channels).filter(c => c.active).length;
+        document.getElementById('channels-active').textContent = active + '/4';
+      }
+
+      function getHeartSignal(t) {
+        let signal = 0;
+        let totalWeight = 0;
+        Object.values(channels).forEach(ch => {
+          if (ch.active) {
+            // Each channel contributes a periodic component
+            const phase = t * ch.freq * 0.08 + ch.phase * Math.PI * 2;
+            // Create a heartbeat-like waveform
+            const beat = Math.exp(-Math.pow((Math.sin(phase) - 1), 2) * 3) * ch.amp;
+            signal += beat;
+            totalWeight += ch.amp;
+          }
+        });
+        // Normalize and add baseline
+        if (totalWeight > 0) {
+          signal = signal / totalWeight;
+        }
+        return signal;
+      }
+
+      function getHeartRate() {
+        const active = Object.values(channels).filter(c => c.active).length;
+        if (active === 0) return 0;
+        // Base rate modulated by number of active channels
+        const base = 72;
+        const variation = {4: 0, 3: -8, 2: -15, 1: -25};
+        return Math.max(0, base + (variation[active] || 0));
+      }
+
+      function draw() {
+        time += 1;
+        const signal = getHeartSignal(time);
+        history.push(signal);
+        if (history.length > maxHistory) history.shift();
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw grid lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        for (let y = 0; y < H; y += 40) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+
+        // Draw individual channel traces (faint)
+        Object.values(channels).forEach(ch => {
+          if (!ch.active) return;
+          ctx.strokeStyle = ch.color + '40';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < history.length; i++) {
+            const x = (i / maxHistory) * W;
+            const phase = (time - history.length + i) * ch.freq * 0.08 + ch.phase * Math.PI * 2;
+            const val = Math.exp(-Math.pow((Math.sin(phase) - 1), 2) * 3) * ch.amp;
+            const y = H * 0.5 - val * H * 0.8;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        });
+
+        // Draw combined signal
+        const activeCount = Object.values(channels).filter(c => c.active).length;
+        if (activeCount > 0) {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          for (let i = 0; i < history.length; i++) {
+            const x = (i / maxHistory) * W;
+            const y = H * 0.5 - history[i] * H * 0.8;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+
+        // Draw "flatline" if no channels active
+        if (activeCount === 0) {
+          ctx.strokeStyle = '#FF6B6B';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, H * 0.5);
+          ctx.lineTo(W, H * 0.5);
+          ctx.stroke();
+          ctx.fillStyle = '#FF6B6B';
+          ctx.font = '16px Figtree, system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('FLATLINE — No rhythm without any channels', W / 2, H * 0.5 - 20);
+        }
+
+        // Labels
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.font = '12px Figtree, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('COMBINED RHYTHM', 10, 20);
+
+        // Update heart rate
+        const hr = getHeartRate();
+        document.getElementById('heart-rate').textContent = hr > 0 ? hr + ' bpm' : 'FLATLINE';
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    })();
+
+    // ============================================
+    // SECTION V: Traffic Flow Simulator
+    // ============================================
+    (function() {
+      const canvas = document.getElementById('traffic-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const slider = document.getElementById('density-slider');
+      const densityVal = document.getElementById('density-val');
+      const W = canvas.width;
+      const H = canvas.height;
+      const laneY = [60, 100, 140];
+      const numLanes = 3;
+
+      let cars = [];
+      let lastDensity = -1;
+
+      function initCars(density) {
+        cars = [];
+        const numCars = Math.round(density * 0.4 * numLanes);
+        for (let i = 0; i < numCars; i++) {
+          const lane = i % numLanes;
+          cars.push({
+            x: (i / numCars) * W + (Math.random() - 0.5) * 30,
+            lane: lane,
+            speed: 2.0 + Math.random() * 1.5,
+            maxSpeed: 2.0 + Math.random() * 1.5,
+            width: 18 + Math.random() * 6,
+            jammed: false
+          });
+        }
+        // Sort by x in each lane
+        cars.sort((a, b) => a.x - b.x);
+      }
+
+      function update() {
+        const density = parseInt(slider.value);
+        if (Math.abs(density - lastDensity) > 8) {
+          initCars(density);
+          lastDensity = density;
+        }
+
+        // Update label
+        if (density < 30) { densityVal.textContent = 'Low'; }
+        else if (density < 55) { densityVal.textContent = 'Medium'; }
+        else if (density < 75) { densityVal.textContent = 'High'; }
+        else { densityVal.textContent = 'Very high'; }
+
+        // Simple car-following model
+        const jamThreshold = 28;
+        let jamZones = [];
+
+        // Group by lane
+        const lanes = [[], [], []];
+        cars.forEach(c => lanes[c.lane].push(c));
+        lanes.forEach(lane => lane.sort((a, b) => a.x - b.x));
+
+        lanes.forEach(lane => {
+          for (let i = 0; i < lane.length; i++) {
+            const car = lane[i];
+            const next = lane[(i + 1) % lane.length];
+
+            let gap;
+            if (next.x > car.x) {
+              gap = next.x - car.x - car.width;
+            } else {
+              gap = (W - car.x) + next.x - car.width;
+            }
+
+            // If gap is too small, slow down
+            if (gap < jamThreshold) {
+              car.speed = Math.max(0.2, car.speed * 0.96 - 0.03);
+              car.jammed = true;
+            } else {
+              car.speed = Math.min(car.maxSpeed, car.speed + 0.08);
+              car.jammed = car.speed < car.maxSpeed * 0.35;
+            }
+
+            car.x += car.speed;
+            if (car.x > W) car.x -= W;
+          }
+        });
+
+        // Count jams
+        let jamCount = 0;
+        let inJam = false;
+        let totalSpeed = 0;
+        cars.forEach(c => {
+          totalSpeed += c.speed;
+          if (c.jammed && !inJam) { jamCount++; inJam = true; }
+          if (!c.jammed) inJam = false;
+        });
+
+        document.getElementById('jam-count').textContent = jamCount;
+        document.getElementById('avg-speed').textContent = cars.length > 0 ?
+          (totalSpeed / cars.length * 30).toFixed(0) + ' mph' : '—';
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw road
+        ctx.fillStyle = '#2a2a4a';
+        ctx.fillRect(0, 40, W, 130);
+
+        // Lane markings
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([15, 10]);
+        ctx.beginPath();
+        ctx.moveTo(0, 80); ctx.lineTo(W, 80);
+        ctx.moveTo(0, 120); ctx.lineTo(W, 120);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Road edges
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 40); ctx.lineTo(W, 40);
+        ctx.moveTo(0, 170); ctx.lineTo(W, 170);
+        ctx.stroke();
+
+        // Draw jam zones (highlight dense areas)
+        const binSize = 50;
+        const bins = new Array(Math.ceil(W / binSize)).fill(0);
+        cars.forEach(c => {
+          const bin = Math.floor(c.x / binSize);
+          if (bin >= 0 && bin < bins.length) bins[bin]++;
+        });
+        bins.forEach((count, i) => {
+          if (count > 4) {
+            ctx.fillStyle = `rgba(255, 107, 107, ${Math.min(0.3, count * 0.05)})`;
+            ctx.fillRect(i * binSize, 40, binSize, 130);
+          }
+        });
+
+        // Draw cars
+        cars.forEach(c => {
+          const y = laneY[c.lane] - 8;
+          const color = c.jammed ? '#FF6B6B' : '#4ECDC4';
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.roundRect(c.x - c.width / 2, y, c.width, 16, 4);
+          ctx.fill();
+
+          // Headlights
+          ctx.fillStyle = c.jammed ? '#ff9999' : '#aaffee';
+          ctx.beginPath();
+          ctx.arc(c.x + c.width / 2 - 2, y + 4, 2, 0, Math.PI * 2);
+          ctx.arc(c.x + c.width / 2 - 2, y + 12, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Direction arrow
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.font = '14px Figtree, system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('→ direction of travel', W - 10, 30);
+      }
+
+      function animate() {
+        update();
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      initCars(25);
+      animate();
+    })();
+
+    // ============================================
+    // SECTION VI: Gene Expression Interactive
+    // ============================================
+    (function() {
+      const genePatterns = {
+        neuron: {
+          title: 'Neuron — Gene Expression',
+          genes: [
+            { name: 'Ion channels', level: 0.95, color: '#6C5CE7' },
+            { name: 'Neurofilaments', level: 0.85, color: '#6C5CE7' },
+            { name: 'Myosin', level: 0.05, color: '#ccc' },
+            { name: 'Albumin', level: 0.02, color: '#ccc' },
+            { name: 'Synaptogenesis', level: 0.9, color: '#6C5CE7' },
+            { name: 'Antibodies', level: 0.01, color: '#ccc' }
+          ]
+        },
+        muscle: {
+          title: 'Muscle Cell — Gene Expression',
+          genes: [
+            { name: 'Ion channels', level: 0.4, color: '#FF6B6B' },
+            { name: 'Neurofilaments', level: 0.02, color: '#ccc' },
+            { name: 'Myosin', level: 0.95, color: '#FF6B6B' },
+            { name: 'Albumin', level: 0.05, color: '#ccc' },
+            { name: 'Synaptogenesis', level: 0.01, color: '#ccc' },
+            { name: 'Antibodies', level: 0.01, color: '#ccc' }
+          ]
+        },
+        liver: {
+          title: 'Liver Cell — Gene Expression',
+          genes: [
+            { name: 'Ion channels', level: 0.15, color: '#ccc' },
+            { name: 'Neurofilaments', level: 0.01, color: '#ccc' },
+            { name: 'Myosin', level: 0.05, color: '#ccc' },
+            { name: 'Albumin', level: 0.92, color: '#00B894' },
+            { name: 'Synaptogenesis', level: 0.01, color: '#ccc' },
+            { name: 'Antibodies', level: 0.03, color: '#ccc' }
+          ]
+        },
+        immune: {
+          title: 'Immune Cell — Gene Expression',
+          genes: [
+            { name: 'Ion channels', level: 0.1, color: '#ccc' },
+            { name: 'Neurofilaments', level: 0.01, color: '#ccc' },
+            { name: 'Myosin', level: 0.15, color: '#ccc' },
+            { name: 'Albumin', level: 0.08, color: '#ccc' },
+            { name: 'Synaptogenesis', level: 0.01, color: '#ccc' },
+            { name: 'Antibodies', level: 0.95, color: '#FFD93D' }
+          ]
+        }
+      };
+
+      document.querySelectorAll('.cell-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const type = this.getAttribute('data-type');
+          showGeneExpression(type);
+        });
+      });
+
+      function showGeneExpression(type) {
+        const pattern = genePatterns[type];
+        if (!pattern) return;
+
+        const exprGroup = document.getElementById('gene-expression');
+        exprGroup.setAttribute('opacity', '1');
+
+        const title = document.getElementById('expr-title');
+        title.textContent = pattern.title;
+
+        const bars = document.getElementById('expr-bars');
+        bars.innerHTML = '';
+
+        const barX = 100;
+        const barW = 400;
+        const startY = 305;
+
+        pattern.genes.forEach((gene, i) => {
+          const y = startY + i * 16;
+
+          // Label
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', barX - 5);
+          label.setAttribute('y', y + 10);
+          label.setAttribute('text-anchor', 'end');
+          label.setAttribute('font-size', '11');
+          label.setAttribute('fill', '#666');
+          label.textContent = gene.name;
+          bars.appendChild(label);
+
+          // Background bar
+          const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          bg.setAttribute('x', barX);
+          bg.setAttribute('y', y);
+          bg.setAttribute('width', barW);
+          bg.setAttribute('height', '12');
+          bg.setAttribute('rx', '3');
+          bg.setAttribute('fill', '#eee');
+          bars.appendChild(bg);
+
+          // Active bar
+          const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          bar.setAttribute('x', barX);
+          bar.setAttribute('y', y);
+          bar.setAttribute('width', barW * gene.level);
+          bar.setAttribute('height', '12');
+          bar.setAttribute('rx', '3');
+          bar.setAttribute('fill', gene.color);
+          bar.setAttribute('opacity', '0.8');
+          bars.appendChild(bar);
+
+          // Percentage
+          const pct = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          pct.setAttribute('x', barX + barW + 10);
+          pct.setAttribute('y', y + 10);
+          pct.setAttribute('font-size', '11');
+          pct.setAttribute('fill', '#666');
+          pct.textContent = Math.round(gene.level * 100) + '%';
+          bars.appendChild(pct);
+        });
+
+        // Highlight selected cell
+        document.querySelectorAll('.cell-type-btn rect').forEach(r => {
+          r.setAttribute('stroke-width', '2');
+        });
+        const selectedRect = document.querySelector(`[data-type="${type}"] rect`);
+        if (selectedRect) selectedRect.setAttribute('stroke-width', '4');
+      }
+    })();
+
+    // ============================================
+    // SECTION VII: Constraint Visualizer
+    // ============================================
+    (function() {
+      const canvas = document.getElementById('constraint-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+
+      let currentConstraint = 'none';
+      let ball = { x: 350, y: 50, vx: 1.5, vy: 0, r: 10 };
+      const gravity = 0.15;
+      const friction = 0.995;
+      const bounce = 0.7;
+
+      // Constraint geometry
+      const constraints = {
+        none: { walls: [], label: 'None — ball rolls freely' },
+        funnel: {
+          walls: [
+            // Funnel shape
+            { x1: 100, y1: 50, x2: 280, y2: 200 },
+            { x1: 600, y1: 50, x2: 420, y2: 200 },
+            // Bottom channel
+            { x1: 280, y1: 200, x2: 280, y2: 320 },
+            { x1: 420, y1: 200, x2: 420, y2: 320 },
+          ],
+          label: 'Funnel — channels ball to one path'
+        },
+        maze: {
+          walls: [
+            // Maze walls
+            { x1: 200, y1: 0, x2: 200, y2: 120 },
+            { x1: 200, y1: 120, x2: 350, y2: 120 },
+            { x1: 500, y1: 0, x2: 500, y2: 180 },
+            { x1: 350, y1: 180, x2: 500, y2: 180 },
+            { x1: 200, y1: 250, x2: 450, y2: 250 },
+            { x1: 450, y1: 250, x2: 450, y2: 350 },
+          ],
+          label: 'Maze — forces specific route'
+        },
+        attractor: {
+          wells: [
+            { x: 250, y: 280, r: 80, strength: 0.08 },
+            { x: 500, y: 260, r: 60, strength: 0.06 },
+          ],
+          label: 'Attractor — pulls ball to basin'
+        }
+      };
+
+      window.setConstraint = function(type) {
+        currentConstraint = type;
+        // Reset ball
+        ball = { x: 100 + Math.random() * 500, y: 40, vx: (Math.random() - 0.5) * 4, vy: 0, r: 10 };
+        // Update buttons
+        ['none', 'funnel', 'maze', 'attractor'].forEach(t => {
+          document.getElementById('cst-' + t).classList.toggle('active', t === type);
+        });
+        document.getElementById('cst-type').textContent = constraints[type].label;
+      };
+
+      function lineIntersect(bx, by, br, x1, y1, x2, y2) {
+        const dx = x2 - x1, dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        const nx = -dy / len, ny = dx / len;
+        const t = ((bx - x1) * (y2 - y1) - (by - y1) * (x2 - x1)) / (dx * (y2 - y1) - dy * (x2 - x1) || 1);
+
+        // Project ball center onto line segment
+        const px = ((bx - x1) * dx + (by - y1) * dy) / (len * len);
+        if (px < 0 || px > 1) return null;
+
+        const closestX = x1 + px * dx;
+        const closestY = y1 + px * dy;
+        const dist = Math.hypot(bx - closestX, by - closestY);
+
+        if (dist < br) {
+          return { nx, ny, overlap: br - dist };
+        }
+        return null;
+      }
+
+      function update() {
+        // Gravity
+        ball.vy += gravity;
+
+        // Attractor wells
+        if (currentConstraint === 'attractor' && constraints.attractor.wells) {
+          constraints.attractor.wells.forEach(well => {
+            const dx = well.x - ball.x;
+            const dy = well.y - ball.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < well.r * 2) {
+              ball.vx += (dx / dist) * well.strength;
+              ball.vy += (dy / dist) * well.strength;
+            }
+          });
+        }
+
+        // Apply velocity
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        // Friction
+        ball.vx *= friction;
+        ball.vy *= friction;
+
+        // Wall collisions
+        const c = constraints[currentConstraint];
+        if (c.walls) {
+          c.walls.forEach(w => {
+            const hit = lineIntersect(ball.x, ball.y, ball.r, w.x1, w.y1, w.x2, w.y2);
+            if (hit) {
+              ball.x += hit.nx * hit.overlap;
+              ball.y += hit.ny * hit.overlap;
+              const dot = ball.vx * hit.nx + ball.vy * hit.ny;
+              ball.vx -= 2 * dot * hit.nx * bounce;
+              ball.vy -= 2 * dot * hit.ny * bounce;
+            }
+          });
+        }
+
+        // Floor
+        if (ball.y > H - ball.r) {
+          ball.y = H - ball.r;
+          ball.vy = -ball.vy * bounce;
+          ball.vx *= 0.98;
+        }
+        // Walls
+        if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx) * bounce; }
+        if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx) * bounce; }
+        // Ceiling
+        if (ball.y < ball.r) { ball.y = ball.r; ball.vy = Math.abs(ball.vy) * bounce; }
+
+        // Re-drop ball if it stops for too long at bottom
+        if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05 && ball.y > H - 20) {
+          setTimeout(() => {
+            ball.x = 100 + Math.random() * 500;
+            ball.y = 30;
+            ball.vx = (Math.random() - 0.5) * 3;
+            ball.vy = 0;
+          }, 1500);
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw gravity arrow
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.font = '13px Figtree, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('gravity ↓', 10, 20);
+
+        const c = constraints[currentConstraint];
+
+        // Draw walls
+        if (c.walls) {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.lineWidth = 3;
+          ctx.lineCap = 'round';
+          c.walls.forEach(w => {
+            ctx.beginPath();
+            ctx.moveTo(w.x1, w.y1);
+            ctx.lineTo(w.x2, w.y2);
+            ctx.stroke();
+          });
+        }
+
+        // Draw attractor wells
+        if (c.wells) {
+          c.wells.forEach(well => {
+            const grd = ctx.createRadialGradient(well.x, well.y, 0, well.x, well.y, well.r);
+            grd.addColorStop(0, 'rgba(78, 205, 196, 0.3)');
+            grd.addColorStop(1, 'rgba(78, 205, 196, 0)');
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(well.x, well.y, well.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Concentric rings
+            for (let r = 20; r < well.r; r += 20) {
+              ctx.strokeStyle = `rgba(78, 205, 196, ${0.15 * (1 - r / well.r)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.arc(well.x, well.y, r, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+          });
+        }
+
+        // Draw ball trail
+        ctx.fillStyle = 'rgba(255, 107, 107, 0.1)';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r + 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw ball
+        const grd = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 2, ball.x, ball.y, ball.r);
+        grd.addColorStop(0, '#FF8E8E');
+        grd.addColorStop(1, '#FF6B6B');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ball shine
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(ball.x - 3, ball.y - 3, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Floor line
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, H - 1);
+        ctx.lineTo(W, H - 1);
+        ctx.stroke();
+      }
+
+      function animate() {
+        update();
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+  </script>
+</body>
+</html>
