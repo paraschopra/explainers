@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Unreasonable Effectiveness of Randomness — Johnson–Lindenstrauss Lemma Explained</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS DESIGN SYSTEM
+       Based on explainers.blog style guide
+       ============================================ */
+
+    :root {
+      --text-color: #2d2d2d;
+      --border-color: #D3D3D3;
+      --link-color: #4834D4;
+      --brand-color: #4834D4;
+      --brand-secondary: #00B894;
+      --brand-tertiary: #FD79A8;
+      --background-color: #FAF9F7;
+      --widget-background-color: #F5F5F5;
+      --font-serif: "Newsreader", Georgia, serif;
+      --font-sans: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 19px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      margin: 0;
+      padding: 20px;
+      font-optical-sizing: auto;
+    }
+
+    @media (min-width: 700px) {
+      html { font-size: 21px; }
+      body { line-height: 1.4; padding: 32px; }
+    }
+
+    /* Layout */
+    .page-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    article {
+      max-width: 790px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      article { padding: 0 45px; }
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    nav a {
+      color: var(--text-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--brand-color);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #4834D4 0%, #0984E3 50%, #00B894 100%);
+      border: 8px solid white;
+      border-radius: 40px;
+      padding: 60px 40px;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    @media (min-width: 700px) {
+      .hero {
+        padding: 80px 60px;
+        min-height: 380px;
+      }
+    }
+
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 700;
+      color: white;
+      line-height: 0.94;
+      margin: 0 0 12px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 700px) {
+      .hero h1 { font-size: 64px; }
+    }
+
+    @media (min-width: 900px) {
+      .hero h1 { font-size: 70px; }
+    }
+
+    .hero h2 {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      margin: 0;
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h2::after {
+      display: none;
+    }
+
+    @media (min-width: 700px) {
+      .hero h2 { font-size: 26px; }
+    }
+
+    /* Hero SVG animation */
+    .hero-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    /* Intro paragraph */
+    .intro {
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: #424242;
+      max-width: 650px;
+      margin: 0 auto 48px;
+      padding: 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      .intro { padding: 0 45px; }
+    }
+
+    /* Links */
+    a {
+      color: var(--link-color);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #3622B2;
+    }
+
+    /* Headings */
+    h2 {
+      font-family: var(--font-sans);
+      font-size: 30px;
+      font-weight: 500;
+      color: var(--text-color);
+      margin: 80px 0 0 0;
+      padding-bottom: 12px;
+      position: relative;
+    }
+
+    @media (min-width: 700px) {
+      h2 { font-size: 40px; }
+    }
+
+    @media (min-width: 900px) {
+      h2 { font-size: 50px; }
+    }
+
+    h2::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 1px;
+      background: var(--border-color);
+      margin-top: 16px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin: 80px 0 24px;
+    }
+
+    .section-ordinal {
+      font-family: var(--font-sans);
+      font-size: 40px;
+      font-weight: 700;
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--text-color);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    @media (min-width: 700px) {
+      .section-ordinal { font-size: 50px; }
+    }
+
+    .section-heading h2 {
+      margin: 0;
+    }
+
+    .section-heading h2::after {
+      width: 100%;
+    }
+
+    h3 {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-color);
+      margin: 48px 0 16px;
+    }
+
+    @media (min-width: 700px) {
+      h3 { font-size: 30px; }
+    }
+
+    /* Paragraphs */
+    p {
+      margin: 0 0 16px;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Table of Contents */
+    .toc {
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 24px 0;
+      margin: 0 auto 48px;
+      max-width: 790px;
+    }
+
+    .toc h4 {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 16px;
+      color: #808080;
+    }
+
+    .toc ol {
+      list-style: none;
+      padding: 0;
+      counter-reset: toc-counter;
+    }
+
+    .toc li {
+      counter-increment: toc-counter;
+      margin-bottom: 6px;
+      font-family: var(--font-sans);
+      font-size: 16px;
+    }
+
+    .toc li::before {
+      content: counter(toc-counter, upper-roman) ".";
+      display: inline-block;
+      width: 44px;
+      color: #808080;
+      font-size: 14px;
+    }
+
+    .toc a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--link-color);
+    }
+
+    /* Figures & Captions */
+    figure {
+      margin: 40px 0;
+      padding: 0;
+    }
+
+    figure img,
+    figure svg,
+    figure .interactive-widget {
+      border-radius: 20px;
+      display: block;
+      max-width: 100%;
+    }
+
+    figcaption {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    /* Interactive Widgets */
+    .interactive-widget {
+      background: var(--widget-background-color);
+      border-radius: 20px;
+      padding: 24px;
+      margin: 32px 0;
+      overflow: hidden;
+    }
+
+    .widget-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #808080;
+      margin-bottom: 4px;
+    }
+
+    .widget-value {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    /* Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-color);
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-color);
+      cursor: pointer;
+      border: 3px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Buttons */
+    button {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 2px solid var(--brand-color);
+      background: white;
+      color: var(--brand-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: var(--brand-color);
+      color: white;
+    }
+
+    button.active {
+      background: var(--brand-color);
+      color: white;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      margin: 32px 0;
+    }
+
+    thead th {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      opacity: 0.8;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-weight: 600;
+    }
+
+    /* Sidenotes */
+    .sidenote {
+      background: rgba(72, 52, 212, 0.06);
+      border-left: 3px solid var(--brand-color);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 24px 0;
+      font-size: 0.92rem;
+    }
+
+    .sidenote-title {
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--brand-color);
+      margin-bottom: 6px;
+    }
+
+    /* Math blocks */
+    .math-block {
+      background: var(--widget-background-color);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 24px 0;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    /* Footnotes */
+    sup a {
+      font-size: 0.75em;
+      color: var(--link-color);
+      text-decoration: none;
+    }
+
+    .footnotes {
+      border-top: 1px solid var(--border-color);
+      margin-top: 48px;
+      padding-top: 24px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    /* Footer */
+    footer {
+      background: linear-gradient(135deg, #4834D4, #0984E3);
+      border: 8px solid white;
+      border-radius: 40px;
+      padding: 60px 40px;
+      margin-top: 80px;
+      color: white;
+      text-align: center;
+      min-height: 200px;
+    }
+
+    footer a {
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* SVG responsive defaults */
+    .diagram-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .diagram-svg text {
+      font-family: var(--font-sans);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--background-color); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    /* Selection */
+    ::selection {
+      background: rgba(72, 52, 212, 0.2);
+    }
+
+    /* Code inline */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--widget-background-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Canvas responsive */
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <nav style="position:sticky;top:0;z-index:9999;background:rgba(250,249,247,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:10px 20px;margin:-20px -20px 0;font-family:var(--font-sans);font-size:14px;font-weight:600;">
+    <a href="../index.html" style="color:#888;text-decoration:none;">&#8592; All Explainers</a>
+  </nav>
+  <div class="page-wrapper">
+
+    <!-- HERO SECTION -->
+    <header class="hero">
+      <svg class="hero-animation" viewBox="0 0 1400 400" preserveAspectRatio="xMidYMid slice">
+        <!-- Animated random dots that "project" downward -->
+        <defs>
+          <linearGradient id="proj-line" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="white" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Scattered dots representing high-dimensional points -->
+        <g id="hero-dots">
+          <circle cx="120" cy="80" r="3" fill="white" opacity="0.6">
+            <animate attributeName="cy" values="80;280;80" dur="6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6;0.2;0.6" dur="6s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="250" cy="120" r="4" fill="white" opacity="0.5">
+            <animate attributeName="cy" values="120;280;120" dur="6s" begin="0.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.5;0.2;0.5" dur="6s" begin="0.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="60" r="3" fill="white" opacity="0.7">
+            <animate attributeName="cy" values="60;280;60" dur="6s" begin="1s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.7;0.2;0.7" dur="6s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="550" cy="150" r="5" fill="white" opacity="0.4">
+            <animate attributeName="cy" values="150;280;150" dur="6s" begin="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.4;0.2;0.4" dur="6s" begin="1.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="700" cy="90" r="3" fill="white" opacity="0.6">
+            <animate attributeName="cy" values="90;280;90" dur="6s" begin="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6;0.2;0.6" dur="6s" begin="2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="850" cy="130" r="4" fill="white" opacity="0.5">
+            <animate attributeName="cy" values="130;280;130" dur="6s" begin="0.8s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.5;0.2;0.5" dur="6s" begin="0.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="1000" cy="70" r="3" fill="white" opacity="0.6">
+            <animate attributeName="cy" values="70;280;70" dur="6s" begin="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6;0.2;0.6" dur="6s" begin="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="1150" cy="110" r="4" fill="white" opacity="0.5">
+            <animate attributeName="cy" values="110;280;110" dur="6s" begin="1.2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.5;0.2;0.5" dur="6s" begin="1.2s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="1300" cy="95" r="3" fill="white" opacity="0.4">
+            <animate attributeName="cy" values="95;280;95" dur="6s" begin="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.4;0.2;0.4" dur="6s" begin="3s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Projection target line -->
+          <line x1="0" y1="280" x2="1400" y2="280" stroke="white" stroke-width="1" stroke-dasharray="8,8" opacity="0.3">
+            <animate attributeName="opacity" values="0.1;0.4;0.1" dur="6s" repeatCount="indefinite"/>
+          </line>
+        </g>
+      </svg>
+      <h1>The Unreasonable Effectiveness of Randomness</h1>
+      <h2>How random projections tame the chaos of high dimensions — the Johnson–Lindenstrauss Lemma</h2>
+    </header>
+
+    <!-- INTRO -->
+    <p class="intro">
+      You have a million data points living in ten thousand dimensions. Processing them is a nightmare — everything is far from everything, your algorithms grind to a halt, and your spatial intuition is useless. What if you could squash all those dimensions down to just a few hundred — using a <em>completely random</em> matrix — and barely lose any information? This is what the Johnson–Lindenstrauss lemma guarantees. But understanding why it works requires confronting the deeply counterintuitive geometry of high-dimensional space. Buckle up — your 3D brain is about to get a serious upgrade.
+    </p>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc" id="contents">
+      <h4>Contents</h4>
+      <ol>
+        <li><a href="#curse">The curse of dimensionality</a></li>
+        <li><a href="#weird-spaces">High-dimensional spaces are weird</a></li>
+        <li><a href="#distance-concentration">Everyone is equally far apart</a></li>
+        <li><a href="#near-orthogonality">Near-orthogonality: the blessing</a></li>
+        <li><a href="#jl-lemma">Random projections preserve structure</a></li>
+        <li><a href="#why-jl-works">Why does JL work?</a></li>
+        <li><a href="#applications">Applications that changed computing</a></li>
+        <li><a href="#build-your-own">Building your own random projection</a></li>
+        <li><a href="#bigger-picture">The bigger picture</a></li>
+      </ol>
+    </div>
+
+    <article>
+
+      <!-- ============================================
+           SECTION I: THE CURSE OF DIMENSIONALITY
+           ============================================ -->
+      <section id="curse">
+        <div class="section-heading">
+          <span class="section-ordinal">I.</span>
+          <h2>The curse of dimensionality</h2>
+        </div>
+
+        <p>In three dimensions, your brain is a geometry genius. You can catch a ball, parallel park a car, and instinctively understand that a room has corners, edges, and a center. But the moment we step into higher dimensions, this intuition doesn't just get worse — it becomes <em>actively misleading</em>.</p>
+
+        <p>Consider a simple question: how many data points do you need to "fill" a space? In 1D, ten evenly-spaced points give you reasonable coverage of the unit interval. In 2D, you'd need 10 × 10 = 100 points to cover a grid at the same resolution. In 3D, that's 1,000 points. See the pattern?</p>
+
+        <p>In <em>d</em> dimensions, you need 10<sup>d</sup> points. For d = 100 — a modest number in machine learning — that's 10<sup>100</sup> points. That's more than the number of atoms in the observable universe. <strong>Your data will never, ever fill a high-dimensional space.</strong> It will always be an infinitesimally sparse dust.</p>
+
+        <p>This is what Richard Bellman called the <em>curse of dimensionality</em> in 1961, and it has consequences that feel genuinely bizarre:</p>
+
+        <ul>
+          <li><strong>Almost all the volume is in the corners.</strong> A high-dimensional unit cube has 2<sup>d</sup> corners. As d grows, the fraction of the cube's volume that's "near the center" vanishes. In 100D, over 99.99% of the cube's volume is in the outer shell, far from the center.</li>
+          <li><strong>Distance contrast vanishes.</strong> For random points, the ratio of the farthest distance to the nearest distance converges to 1 as d → ∞. The nearest neighbor is barely closer than the farthest point. Your nearest-neighbor algorithms are in trouble.</li>
+          <li><strong>The unit ball shrinks to nothing.</strong> The volume of a unit ball in d dimensions goes to zero as d increases. The ball occupies a vanishing fraction of the cube that contains it. The geometry you learned in school is lying to you.</li>
+        </ul>
+
+        <p>This sounds devastating. If high-dimensional spaces are so hostile, how can machine learning work at all? How can we do <em>anything</em> useful with data in thousands of dimensions?</p>
+
+        <p>The answer is one of the most beautiful surprises in mathematics: <strong>the same weirdness that creates the curse also creates a hidden blessing.</strong> The very concentration phenomena that make high-dimensional spaces seem pathological are <em>exactly</em> what makes random projections work. To see why, we need to confront just how strange these spaces really are.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION II: HIGH-DIMENSIONAL SPACES ARE WEIRD
+           ============================================ -->
+      <section id="weird-spaces">
+        <div class="section-heading">
+          <span class="section-ordinal">II.</span>
+          <h2>High-dimensional spaces are weird</h2>
+        </div>
+
+        <p>Let's start with something concrete. What's the volume of a unit ball (a sphere of radius 1) in <em>d</em> dimensions?</p>
+
+        <p>In 1D it's just the interval [−1, 1], so the "volume" (length) is 2. In 2D it's a circle with area π ≈ 3.14. In 3D it's a sphere with volume 4π/3 ≈ 4.19. So far, the volume is increasing. Intuition says: more dimensions, more room, more volume. Right?</p>
+
+        <p><em>Wrong.</em></p>
+
+        <p>The volume peaks around d = 5 and then plummets. By d = 20, it's about 0.026. By d = 100, it's so small that floating-point arithmetic can't even represent it — it rounds to zero. The unit ball in high dimensions is, for all practical purposes, <em>empty</em>.</p>
+
+        <p>See it for yourself:</p>
+
+        <figure>
+          <div class="interactive-widget" id="volume-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">UNIT BALL VOLUME EXPLORER</span>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <div class="widget-label">DIMENSION: <span id="vol-dim-val">3</span></div>
+              <input type="range" id="vol-dim-slider" min="1" max="60" value="3" step="1">
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 700 320" preserveAspectRatio="xMidYMid meet" id="volume-svg">
+            </svg>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">VOLUME = </span>
+              <span class="widget-value" id="vol-value">4.189</span>
+              <span class="widget-label" style="margin-left: 16px;">FORMULA: </span>
+              <span class="widget-value" id="vol-formula">π<sup>d/2</sup> / Γ(d/2 + 1)</span>
+            </div>
+          </div>
+          <figcaption>The volume of a unit ball in d dimensions. It peaks near d = 5 and then collapses toward zero. By d = 20, the ball occupies a negligible fraction of the enclosing cube.</figcaption>
+        </figure>
+
+        <p>But here's where it gets really wild. It's not just that the ball is small — it's that almost all of what remains is <em>concentrated in a thin shell near the surface</em>.</p>
+
+        <h3>The thin shell phenomenon</h3>
+
+        <p>Think about peeling an orange. In 3D, the skin is a small fraction of the total volume — most of the orange is "inside." But in high dimensions, this relationship inverts dramatically. Almost <em>all</em> the volume of a high-dimensional ball is packed into a microscopically thin layer near the boundary.</p>
+
+        <p>Specifically, the fraction of volume between radius (1 − ε) and radius 1 is:</p>
+
+        <div class="math-block">
+          1 − (1 − ε)<sup>d</sup>
+        </div>
+
+        <p>For d = 100 and ε = 0.05 (a shell that's just 5% of the radius thick), this gives 1 − 0.95<sup>100</sup> ≈ 0.994. That means <strong>99.4% of the volume is in the outermost 5% of the radius</strong>. The "interior" of the ball is essentially a vacuum.</p>
+
+        <p>Play with the numbers yourself:</p>
+
+        <figure>
+          <div class="interactive-widget" id="shell-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">SHELL CONCENTRATION DEMO</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">DIMENSION d: <span id="shell-dim-val">3</span></div>
+                <input type="range" id="shell-dim-slider" min="2" max="200" value="3" step="1">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">SHELL THICKNESS ε: <span id="shell-eps-val">0.10</span></div>
+                <input type="range" id="shell-eps-slider" min="1" max="50" value="10" step="1">
+              </div>
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 700 300" preserveAspectRatio="xMidYMid meet" id="shell-svg">
+            </svg>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">VOLUME IN SHELL: </span>
+              <span class="widget-value" id="shell-fraction" style="font-size: 18px; color: #4834D4; font-weight: 700;">27.1%</span>
+            </div>
+          </div>
+          <figcaption>Cross-section of a unit ball showing the thin shell (colored) vs. interior (gray). Increase the dimension and watch the interior shrink to nothing. In high dimensions, essentially all the volume lives near the surface.</figcaption>
+        </figure>
+
+        <p>This is the <em>concentration of measure</em> phenomenon, and it's not just a curiosity — it's the foundational reason why random projections work. When you randomly project a high-dimensional vector, its length doesn't change much, because the vector's "mass" was already concentrated in a thin shell of predictable radius. For the uniform ball, the shell capturing most of the volume has thickness ~O(1/d) relative to the radius. For Gaussian vectors (which are used in JL proofs), the relative thickness is ~O(1/√d). Either way: the higher the dimension, the tighter the concentration.</p>
+
+        <p>The uniform ball gives us geometric intuition, but Gaussians are even more convenient analytically — and they're the distribution actually used in JL proofs. The same shell concentration shows up there too:</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The Gaussian Annulus Theorem</div>
+          <p style="margin: 0;">Here's a precise statement: if you sample a random vector x from a d-dimensional standard Gaussian, its length concentrates tightly around √d. For absolute deviation t: P(| ||x|| − √d | > t) ≤ 2·exp(−c·t²). Equivalently, in relative terms: P(| ||x||/√d − 1 | > δ) ≤ 2·exp(−c·δ²·d). The vector lives on a thin shell of radius ≈ √d with relative thickness ≈ 1/√d. This is the Gaussian version of shell concentration, and it's the engine behind the JL lemma.</p>
+        </div>
+
+        <p>So in high dimensions, the unit ball is essentially a thin, hollow shell. But this weirdness goes even deeper. Let's look at what happens to <em>distances</em>.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION III: EVERYONE IS EQUALLY FAR APART
+           ============================================ -->
+      <section id="distance-concentration">
+        <div class="section-heading">
+          <span class="section-ordinal">III.</span>
+          <h2>Everyone is equally far apart</h2>
+        </div>
+
+        <p>Here's a thought experiment. Take two random vectors in ℝ<sup>d</sup>, where each coordinate is drawn independently from a standard Gaussian (mean 0, variance 1). What's the distance between them?</p>
+
+        <p>The difference vector also has Gaussian coordinates — each coordinate of (x − y) is N(0, 2), since it's the difference of two independent N(0,1) values. The squared distance ||x − y||² is therefore a scaled chi-squared: 2·χ²<sub>d</sub>, with mean 2d and variance 8d. The expected distance is approximately √(2d).</p>
+
+        <p>That's not surprising. What <em>is</em> surprising is what happens to the <em>variability</em> of this distance as d grows. The relative standard deviation of the distance scales as:</p>
+
+        <div class="math-block">
+          std(||x − y||) / E[||x − y||] ≈ 1/√(2d)
+        </div>
+
+        <p>In d = 10,000, the relative variation is less than 1%. <strong>All pairwise distances are essentially the same.</strong> Every point is approximately the same distance from every other point. It's as if all your data points are sitting on the vertices of a regular simplex.</p>
+
+        <p>Watch this concentration happen in real time:</p>
+
+        <figure>
+          <div class="interactive-widget" id="distance-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">PAIRWISE DISTANCE CONCENTRATION</span>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <div class="widget-label">DIMENSION d: <span id="dist-dim-val">3</span></div>
+              <input type="range" id="dist-dim-slider" min="2" max="1000" value="3" step="1">
+            </div>
+            <canvas id="dist-canvas" width="700" height="300" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div>
+                <span class="widget-label">MEAN: </span>
+                <span class="widget-value" id="dist-mean">—</span>
+              </div>
+              <div>
+                <span class="widget-label">STD DEV: </span>
+                <span class="widget-value" id="dist-std">—</span>
+              </div>
+              <div>
+                <span class="widget-label">REL. VARIATION: </span>
+                <span class="widget-value" id="dist-relvar">—</span>
+              </div>
+            </div>
+          </div>
+          <figcaption>Histogram of pairwise distances between 50 random Gaussian vectors in d dimensions. As d increases, the histogram narrows dramatically — all distances converge to the same value √(2d). By d = 1000, the relative variation is just ~3%.</figcaption>
+        </figure>
+
+        <p>At first glance, this seems catastrophic. If everything is the same distance from everything else, how can nearest-neighbor search work? How can you cluster data? How can you tell <em>anything</em> apart?</p>
+
+        <p>But look more carefully. The distances are concentrating, yes — but they're not becoming <em>identical</em>. The small remaining variations are exactly the meaningful structure in your data. And here's the critical insight: <strong>these small relative differences are precisely what random projections preserve.</strong></p>
+
+        <p>The JL lemma doesn't promise to preserve absolute distances. It preserves <em>ratios</em> of distances, up to a factor of (1 ± ε). And because distances in high dimensions are already concentrated, those ratios are the only thing that matters.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The blessing in the curse</div>
+          <p style="margin: 0;">Distance concentration is often presented as a problem (the "curse"), but it's actually the mechanism that makes dimensionality reduction possible. If distances in high-d were wildly spread out, a random projection would inevitably distort some of them badly. But because they're all similar in magnitude, a random projection can preserve their relative structure with just a few dimensions. The concentration is not the disease — it's the cure.</p>
+        </div>
+
+        <p>But concentration of distances isn't the only remarkable property of high-dimensional spaces. There's something even more striking about <em>directions</em>.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION IV: NEAR-ORTHOGONALITY
+           ============================================ -->
+      <section id="near-orthogonality">
+        <div class="section-heading">
+          <span class="section-ordinal">IV.</span>
+          <h2>Near-orthogonality: the blessing</h2>
+        </div>
+
+        <p>Quick quiz: in 3D, what's the maximum number of mutually orthogonal vectors? Three — the x, y, and z axes. In d dimensions, it's exactly d. No more, no less. This feels like an iron constraint: the number of "independent directions" is capped by the number of dimensions.</p>
+
+        <p>But here's where high dimensions perform a magic trick. What if we relax "orthogonal" to "almost orthogonal"? What if we only require that the cosine of the angle between any two vectors is at most ε — say, at most 0.1?</p>
+
+        <p><strong>Then the number of near-orthogonal vectors explodes exponentially.</strong></p>
+
+        <p>In d dimensions, there exist sets of exp(Θ(d·ε²)) unit vectors that are pairwise ε-orthogonal — meaning |cos θ| ≤ ε for every pair. A typical bound gives roughly exp(½·d·ε²). For d = 100 and ε = 0.3, this is about e<sup>4.5</sup> ≈ 90 vectors — already close to the 100 exactly orthogonal directions. For d = 1000 with the same ε, it's e<sup>45</sup> ≈ 3.5 × 10<sup>19</sup> — a number so large it makes the number of grains of sand on Earth look like a rounding error.</p>
+
+        <p>Think about what this means. In 1000 dimensions, you can find <em>astronomically</em> many directions that are all "almost perpendicular" to each other. High-dimensional spaces are not cramped — they're unfathomably spacious. There's room for exponentially many nearly independent directions, even though only d of them are perfectly independent.</p>
+
+        <figure>
+          <div class="interactive-widget" id="orthogonal-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">NEAR-ORTHOGONAL VECTOR PACKING</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">DIMENSION d: <span id="orth-dim-val">100</span></div>
+                <input type="range" id="orth-dim-slider" min="3" max="500" value="100" step="1">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">TOLERANCE ε: <span id="orth-eps-val">0.30</span></div>
+                <input type="range" id="orth-eps-slider" min="5" max="60" value="30" step="1">
+              </div>
+            </div>
+            <svg class="diagram-svg" viewBox="0 0 700 340" preserveAspectRatio="xMidYMid meet" id="orth-svg">
+            </svg>
+            <div style="text-align: center; margin-top: 8px;">
+              <span class="widget-label">EXACT ORTHOGONAL: </span>
+              <span class="widget-value" id="orth-exact" style="color: #FD79A8;">—</span>
+              <span class="widget-label" style="margin-left: 16px;">ε-NEAR ORTHOGONAL: </span>
+              <span class="widget-value" id="orth-approx" style="color: #00B894;">—</span>
+            </div>
+          </div>
+          <figcaption>The number of mutually ε-orthogonal vectors grows <em>exponentially</em> with dimension d, while the number of exactly orthogonal vectors grows linearly. Even a small tolerance (ε = 0.3) unlocks a staggering amount of "room" in high-dimensional space.</figcaption>
+        </figure>
+
+        <p>Why does this work? It's intimately connected to the concentration of inner products. If you pick two random unit vectors in d dimensions, their inner product (cosine of the angle between them) is approximately Gaussian with mean 0 and standard deviation 1/√d. So for large d, two random vectors are <em>automatically</em> nearly orthogonal with high probability.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Inner product concentration</div>
+          <p style="margin: 0;">For two random unit vectors u, v in ℝ<sup>d</sup>, the inner product ⟨u,v⟩ has mean 0 and standard deviation ≈ 1/√d. This means P(|⟨u,v⟩| > ε) ≤ 2·exp(−d·ε²/2) for small ε. In d = 1000, the probability that two random unit vectors have |cos θ| > 0.1 is less than e<sup>−5</sup> ≈ 0.007. Random directions in high dimensions are almost always nearly perpendicular.</p>
+        </div>
+
+        <p>This is the hidden superpower of high-dimensional spaces. Yes, all distances are roughly equal (the curse). But the space has so many nearly-independent directions that you can embed exponentially many distinct structures in it (the blessing). And this is <em>exactly</em> why a random projection down to a much lower-dimensional space can preserve the essential structure of your data.</p>
+
+        <p>Now we're ready for the main event: the Johnson–Lindenstrauss lemma itself.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION V: RANDOM PROJECTIONS PRESERVE STRUCTURE
+           ============================================ -->
+      <section id="jl-lemma">
+        <div class="section-heading">
+          <span class="section-ordinal">V.</span>
+          <h2>Random projections preserve structure</h2>
+        </div>
+
+        <p>In 1984, William Johnson and Joram Lindenstrauss proved something remarkable. Here's the theorem, stated informally:</p>
+
+        <div class="math-block" style="text-align: left; font-family: var(--font-serif); font-size: 1rem;">
+          <strong>Johnson–Lindenstrauss Lemma.</strong> For any set of n points in ℝ<sup>d</sup> and any ε ∈ (0, 1), there exists a linear map f : ℝ<sup>d</sup> → ℝ<sup>k</sup> with k = O(log(n) / ε²) such that for every pair of points u, v:
+          <br><br>
+          <span style="font-family: var(--font-mono); display: block; text-align: center;">(1 − ε) · ||u − v||² ≤ ||f(u) − f(v)||² ≤ (1 + ε) · ||u − v||²</span>
+        </div>
+
+        <p>Read that again. Let it sink in. Here's what it says:</p>
+
+        <ul>
+          <li><strong>You can project n points from <em>any</em> number of dimensions</strong> down to just k = O(log(n) / ε²) dimensions.</li>
+          <li><strong>All pairwise distances are preserved</strong> within a factor of (1 ± ε).</li>
+          <li><strong>k doesn't depend on d at all.</strong> Whether your data lives in 100 dimensions or 100 million dimensions, the target dimension is the same — it depends only on how many points you have and how much distortion you can tolerate.</li>
+        </ul>
+
+        <p>Let's put numbers to it. Suppose you have n = 1,000,000 points and you want ε = 0.1 (10% distortion). Then:</p>
+
+        <div class="math-block">
+          k ≈ 8 · ln(1,000,000) / 0.01 ≈ 8 · 13.8 / 0.01 ≈ <strong>11,053</strong>
+        </div>
+
+        <p>A million points — regardless of their original dimension — can be faithfully represented in about 11,000 dimensions. If you're willing to accept ε = 0.3 (30% distortion), that drops to about 1,228 dimensions.</p>
+
+        <p>And here's the kicker: <strong>a random Gaussian matrix works.</strong> Generate a k × d matrix where each entry is drawn independently from N(0, 1/k), multiply your data by it, and with high probability (typically at least 1 − 1/n), all pairwise distances are preserved within (1 ± ε). No optimization. No training. No clever construction. Just <em>randomness</em>.</p>
+
+        <p>See it in action:</p>
+
+        <figure>
+          <div class="interactive-widget" id="projection-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">RANDOM PROJECTION — DISTANCE PRESERVATION</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">ORIGINAL DIMENSION d: <span id="proj-d-val">50</span></div>
+                <input type="range" id="proj-d-slider" min="10" max="200" value="50" step="5">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">TARGET DIMENSION k: <span id="proj-k-val">25</span></div>
+                <input type="range" id="proj-k-slider" min="2" max="100" value="25" step="1">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
+              <button id="proj-reproject-btn" onclick="reproject()">New random projection</button>
+            </div>
+            <canvas id="proj-canvas" width="700" height="400" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div>
+                <span class="widget-label">MAX DISTORTION: </span>
+                <span class="widget-value" id="proj-max-dist">—</span>
+              </div>
+              <div>
+                <span class="widget-label">AVG DISTORTION: </span>
+                <span class="widget-value" id="proj-avg-dist">—</span>
+              </div>
+              <div>
+                <span class="widget-label">POINTS: </span>
+                <span class="widget-value">30</span>
+              </div>
+            </div>
+          </div>
+          <figcaption>Each dot represents a pair of points. The x-axis is the original distance, the y-axis is the projected distance (scaled). Perfect preservation would place all dots on the diagonal (white dashed line). The pink band shows the (1 ± ε) tolerance. Increase k to see the dots tighten around the diagonal.</figcaption>
+        </figure>
+
+        <p>Notice something wonderful: as you increase k (the target dimension), the dots cluster more tightly around the diagonal — the projection becomes more faithful. But even at surprisingly low k, the worst-case distortion is modest. A random 10-dimensional projection of 50-dimensional data typically distorts distances by less than 50%. Push k to 40 or 50, and the distortion drops below 15%.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Why the theorem says "there exists" but random works</div>
+          <p style="margin: 0;">The original JL lemma is existential — it says a good projection <em>exists</em>. But the probabilistic proof actually shows that a random Gaussian projection works with probability at least 1 − δ, for k = O(log(n/δ) / ε²). The constant depends on the failure probability δ — a common practical bound is k ≥ 8·ln(n)/ε², though the exact constant varies by proof technique.</p>
+        </div>
+
+        <p>This result is astounding because the projection matrix knows <em>nothing</em> about your data. It's the same random matrix whether you're projecting images, text embeddings, genome sequences, or stock prices. The geometry of high-dimensional space — the very concentration phenomena we explored in earlier sections — guarantees that it works. (An important caveat: JL guarantees preservation for a <em>fixed finite set</em> of n points, not uniformly for all of ℝ<sup>d</sup>. The projection is chosen obliviously, but the dimension bound depends on how many points you need to preserve.)</p>
+
+        <p>But <em>why</em> does it work? Let's dig into the proof intuition.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VI: WHY DOES JL WORK?
+           ============================================ -->
+      <section id="why-jl-works">
+        <div class="section-heading">
+          <span class="section-ordinal">VI.</span>
+          <h2>Why does JL work?</h2>
+        </div>
+
+        <p>The proof of the JL lemma has two key ingredients, and both connect directly to the intuitions we've built.</p>
+
+        <h3>Ingredient 1: Projection length concentrates</h3>
+
+        <p>Fix a single vector v in ℝ<sup>d</sup>. Now project it using a random k × d matrix A (with entries drawn from N(0, 1/k)). The projected vector is Av, and its squared length is:</p>
+
+        <div class="math-block">
+          ||Av||² = Σ<sub>i=1</sub><sup>k</sup> (row_i · v)²
+        </div>
+
+        <p>Each term (row_i · v) is the dot product of v with a random Gaussian vector. Since v is fixed and the row is random, this dot product is a Gaussian with mean 0 and variance ||v||²/k. So each term (row_i · v)² has expected value ||v||²/k.</p>
+
+        <p>Summing k such terms, the expected squared length is:</p>
+
+        <div class="math-block">
+          E[||Av||²] = k · (||v||²/k) = ||v||²
+        </div>
+
+        <p>The expected projected length equals the original length! And here comes the concentration: since ||Av||² is a sum of k independent sub-exponential random variables, it concentrates tightly around its mean. Specifically:</p>
+
+        <div class="math-block">
+          P(| ||Av||² − ||v||² | > ε · ||v||²) ≤ 2 · exp(−c · k · ε²)
+        </div>
+
+        <p>This is <em>shell concentration in disguise</em>. The projected length lives on a thin shell around its expected value, and the shell gets thinner as k increases. This is exactly what we saw with the Gaussian Annulus Theorem — the length of a sum of independent random things concentrates around its expected value.</p>
+
+        <figure>
+          <div class="interactive-widget" id="projlen-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">PROJECTION LENGTH CONCENTRATION</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">ORIGINAL DIMENSION d: <span id="plen-d-val">50</span></div>
+                <input type="range" id="plen-d-slider" min="10" max="500" value="50" step="5">
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <div class="widget-label">TARGET DIMENSION k: <span id="plen-k-val">30</span></div>
+                <input type="range" id="plen-k-slider" min="2" max="100" value="30" step="1">
+              </div>
+            </div>
+            <canvas id="projlen-canvas" width="700" height="300" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div>
+                <span class="widget-label">THEORETICAL ||v||²: </span>
+                <span class="widget-value" id="plen-theory">—</span>
+              </div>
+              <div>
+                <span class="widget-label">OBSERVED MEAN: </span>
+                <span class="widget-value" id="plen-observed">—</span>
+              </div>
+              <div>
+                <span class="widget-label">STD / MEAN: </span>
+                <span class="widget-value" id="plen-spread">—</span>
+              </div>
+            </div>
+          </div>
+          <figcaption>We project the same fixed vector 500 times using different random matrices and plot the histogram of ||Av||². The pink dashed line is the true ||v||². Increase k to see the histogram narrow — the projected length concentrates tightly around its true value.</figcaption>
+        </figure>
+
+        <h3>Ingredient 2: Union bound over all pairs</h3>
+
+        <p>Ingredient 1 shows that a single vector's length is preserved with high probability. But we need <em>all</em> pairwise distances preserved simultaneously. For n points, there are n(n−1)/2 ≈ n² pairs.</p>
+
+        <p>Here's the trick: distance preservation for a pair (u, v) is the same as length preservation for the difference vector (u − v). So we need:</p>
+
+        <div class="math-block">
+          P(| ||A(u−v)||² − ||u−v||² | > ε · ||u−v||²) ≤ 2 · exp(−c · k · ε²)
+        </div>
+
+        <p>for all n²/2 pairs simultaneously. By the union bound:</p>
+
+        <div class="math-block">
+          P(any pair fails) ≤ n² · exp(−c · k · ε²)
+        </div>
+
+        <p>For this to be small, we need n² · exp(−c·k·ε²) < 1, which gives:</p>
+
+        <div class="math-block">
+          k > 2·ln(n) / (c·ε²) = O(log(n) / ε²)
+        </div>
+
+        <p>That's it. That's where the log(n) comes from — it's just the union bound over n² pairs. And that's why k doesn't depend on d — the concentration bound for a single projection depends only on k and ε, not on the original dimension.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">The two pillars</div>
+          <p style="margin: 0;">The JL lemma rests on two pillars: (1) <strong>concentration of measure</strong> — a single random projection preserves one vector's length with high probability, and (2) <strong>union bound</strong> — we can simultaneously preserve all O(n²) pairwise distances by choosing k large enough. The log(n) in the target dimension is the "price" of this simultaneous guarantee.</p>
+        </div>
+
+        <p>This proof structure reveals something deep: the JL lemma is fundamentally a statement about concentration of measure, dressed up as a dimensionality reduction result. Every piece of high-dimensional intuition we built — shell concentration, distance concentration, near-orthogonality — converges here.</p>
+
+        <p>Now that we understand <em>why</em> it works, let's look at what it's been used for.</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VII: APPLICATIONS
+           ============================================ -->
+      <section id="applications">
+        <div class="section-heading">
+          <span class="section-ordinal">VII.</span>
+          <h2>Applications that changed computing</h2>
+        </div>
+
+        <p>The JL lemma isn't just a pretty theorem — it's a workhorse. It's been quietly powering some of the most important algorithms in modern computing. Here are the greatest hits.</p>
+
+        <h3>Nearest-neighbor search and locality-sensitive hashing</h3>
+
+        <p>Finding the nearest neighbor to a query point in a large dataset is a fundamental problem. In high dimensions, exact algorithms are essentially no better than brute force — this is the curse of dimensionality striking again. But if you project your data down using a random projection, you can build efficient index structures in the reduced space.</p>
+
+        <p><strong>Locality-Sensitive Hashing (LSH)</strong> takes this further: it uses random projections to build hash functions where similar points are likely to hash to the same bucket. This enables approximate nearest-neighbor search in sub-linear time — a technique used by Spotify for song recommendations, Google for image search, and countless other applications.</p>
+
+        <h3>Streaming algorithms and sketching</h3>
+
+        <p>When data arrives in a continuous stream — network traffic, sensor readings, financial transactions — you can't store it all. Random projections let you <em>sketch</em> the stream: maintain a compact summary that preserves key properties.</p>
+
+        <p>The <strong>Count-Min Sketch</strong> and <strong>AMS Sketch</strong> use random projections to estimate frequencies, inner products, and norms of streaming data using memory that's logarithmic in the data size. This is JL in disguise: you're projecting a high-dimensional frequency vector into a much smaller space while preserving its approximate structure.</p>
+
+        <h3>Compressed sensing</h3>
+
+        <p>In 2006, Emmanuel Candès, Justin Romberg, Terence Tao, and David Donoho proved something revolutionary: if a signal is <em>sparse</em> (most of its coefficients are zero), you can recover it exactly from far fewer measurements than the signal's dimension. The measurement matrix? Random projections.</p>
+
+        <p>This builds on the same concentration phenomena, but with stronger structure. Random matrices satisfy the <em>Restricted Isometry Property</em> (RIP) with high probability — a condition stronger than JL that enables exact reconstruction via sparse recovery algorithms like L1 minimization. This has transformed MRI imaging (faster scans), radar (fewer sensors), and astronomical imaging.</p>
+
+        <h3>Speeding up machine learning</h3>
+
+        <p>Random projections have been used to speed up virtually every area of machine learning:</p>
+
+        <ul>
+          <li><strong>Kernel approximation:</strong> Rahimi and Recht's "Random Kitchen Sinks" (2007) use random features — a cousin of JL projections — to approximate kernel methods in linear time. This won a Test of Time award at NeurIPS.</li>
+          <li><strong>Dimensionality reduction as preprocessing:</strong> Before running expensive algorithms (clustering, classification, regression), project your data down with JL. The results are almost the same, but the runtime drops dramatically.</li>
+          <li><strong>Random feature maps in neural networks:</strong> The hidden layers of a randomly-initialized neural network act much like a JL projection. This partially explains why neural networks can be effective even before training — a connection to the reservoir computing idea.</li>
+        </ul>
+
+        <h3>Privacy-preserving computation</h3>
+
+        <p>Random projections can help with privacy by obfuscating individual data points while preserving aggregate properties (like distances and inner products). This isn't differential privacy by itself — additional noise calibration is needed for formal guarantees — but random projections provide a useful starting point for privacy-preserving data analysis.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>What JL preserves</th>
+              <th>Speedup</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Nearest neighbors (LSH)</td>
+              <td>Approximate distances</td>
+              <td>Sublinear query time</td>
+            </tr>
+            <tr>
+              <td>Streaming sketches</td>
+              <td>Norms, frequencies</td>
+              <td>O(log n) memory</td>
+            </tr>
+            <tr>
+              <td>Compressed sensing</td>
+              <td>Sparse signal structure</td>
+              <td>Fewer measurements</td>
+            </tr>
+            <tr>
+              <td>Kernel approximation</td>
+              <td>Kernel evaluations</td>
+              <td>Linear in n (vs n²)</td>
+            </tr>
+            <tr>
+              <td>ML preprocessing</td>
+              <td>Pairwise distances</td>
+              <td>Proportional to d reduction</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>The common thread: whenever you have high-dimensional data and need to process it efficiently, a random projection is often the first tool to reach for. It's fast, simple, data-oblivious, and backed by rock-solid theory.</p>
+
+        <p>So how do you actually build one?</p>
+      </section>
+
+      <!-- ============================================
+           SECTION VIII: BUILDING YOUR OWN
+           ============================================ -->
+      <section id="build-your-own">
+        <div class="section-heading">
+          <span class="section-ordinal">VIII.</span>
+          <h2>Building your own random projection</h2>
+        </div>
+
+        <p>If you want to use the JL lemma in practice, you need to choose a projection matrix. The theorem guarantees that a Gaussian random matrix works, but there are faster alternatives that work just as well.</p>
+
+        <h3>Option 1: Gaussian projection</h3>
+
+        <p>Each entry of the k × d matrix A is drawn from N(0, 1/k). This is the "textbook" construction — the one used in the proof. It's optimal in terms of distortion but has two drawbacks: generating k·d random Gaussian values is expensive, and the matrix-vector multiplication takes O(k·d) time.</p>
+
+        <h3>Option 2: Sparse random projection (Achlioptas, 2003)</h3>
+
+        <p>Dimitris Achlioptas showed that you can use a much sparser matrix. Each entry is independently set to +√(3/k) with probability 1/6, 0 with probability 2/3, and −√(3/k) with probability 1/6. Two-thirds of the entries are zero, making the projection about 3× faster. The √3 factor ensures the variance matches the Gaussian case (variance 1/k per entry).</p>
+
+        <h3>Option 3: The ±1 projection (Rademacher)</h3>
+
+        <p>Even simpler: each entry is +1/√k or −1/√k with equal probability. No zeros, no complicated distributions — just random sign flips. This is the fastest to generate and nearly as good as Gaussian in practice.</p>
+
+        <p>Compare them yourself:</p>
+
+        <figure>
+          <div class="interactive-widget" id="matrix-widget">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <span class="widget-label">PROJECTION MATRIX COMPARISON</span>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap;">
+              <button id="mat-btn-gaussian" class="active" onclick="setMatrixType('gaussian')">Gaussian</button>
+              <button id="mat-btn-sparse" onclick="setMatrixType('sparse')">Sparse (Achlioptas)</button>
+              <button id="mat-btn-rademacher" onclick="setMatrixType('rademacher')">±1 (Rademacher)</button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+              <div style="flex: 1; min-width: 200px;">
+                <canvas id="matrix-canvas" width="300" height="300" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+                <div style="text-align: center; margin-top: 4px;">
+                  <span class="widget-label" id="matrix-type-label">GAUSSIAN MATRIX (20×20 SHOWN)</span>
+                </div>
+              </div>
+              <div style="flex: 1; min-width: 200px;">
+                <canvas id="matrix-dist-canvas" width="400" height="300" style="width: 100%; border-radius: 12px; background: #1a1a2e;"></canvas>
+                <div style="text-align: center; margin-top: 4px;">
+                  <span class="widget-label">DISTORTION ON 30 TEST POINTS (d=50 → k=15)</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap;">
+              <div>
+                <span class="widget-label">MAX DISTORTION: </span>
+                <span class="widget-value" id="mat-max-dist">—</span>
+              </div>
+              <div>
+                <span class="widget-label">AVG DISTORTION: </span>
+                <span class="widget-value" id="mat-avg-dist">—</span>
+              </div>
+              <div>
+                <span class="widget-label">SPARSITY: </span>
+                <span class="widget-value" id="mat-sparsity">—</span>
+              </div>
+            </div>
+          </div>
+          <figcaption>The left panel shows a sample of the projection matrix (color = value). The right panel shows pairwise distance distortion for 30 test points projected from d=50 to k=15. All three matrix types achieve similar distortion — but the sparse and ±1 variants are faster to compute.</figcaption>
+        </figure>
+
+        <h3>Choosing the target dimension</h3>
+
+        <p>The practical formula is:</p>
+
+        <div class="math-block">
+          k ≥ C · ln(n) / ε²
+        </div>
+
+        <p>where C is a constant (typically between 4 and 12, depending on the desired failure probability and proof technique). In practice, C = 8 is a safe starting point. For n = 10,000 and ε = 0.1:</p>
+
+        <div class="math-block">
+          k ≥ 8 · ln(10,000) / 0.01 ≈ 8 · 9.2 / 0.01 ≈ <strong>737</strong>
+        </div>
+
+        <p>That said, the theoretical bound is often conservative. In practice, you can frequently get away with smaller k. A good strategy is to start with the formula, then experiment with smaller values and check the empirical distortion.</p>
+
+        <div class="sidenote">
+          <div class="sidenote-title">Practical tips</div>
+          <ul style="margin: 0; padding-left: 18px;">
+            <li>Use ±1 (Rademacher) projections unless you need theoretical guarantees — they're fastest and work great.</li>
+            <li>Always scale correctly: multiply by 1/√k so that lengths are preserved in expectation.</li>
+            <li>For very large d, consider structured random projections (like the Fast JL Transform using FFT) which reduce the O(kd) multiplication to O(d log d).</li>
+            <li>Test empirically: compute a few hundred pairwise distances before and after projection and check the distortion.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============================================
+           SECTION IX: THE BIGGER PICTURE
+           ============================================ -->
+      <section id="bigger-picture">
+        <div class="section-heading">
+          <span class="section-ordinal">IX.</span>
+          <h2>The bigger picture</h2>
+        </div>
+
+        <p>Let's zoom out. What have we really learned?</p>
+
+        <p>We started with the <em>curse</em> of dimensionality — the idea that high-dimensional spaces are inherently hostile. And they are, in some ways: data is sparse, distances concentrate, and your low-dimensional intuitions fail catastrophically.</p>
+
+        <p>But then we discovered the <em>blessing</em>. The same concentration phenomena that create the curse also create remarkable structure:</p>
+
+        <ul>
+          <li><strong>Shell concentration</strong> means that random vectors have predictable lengths, so projections preserve them.</li>
+          <li><strong>Distance concentration</strong> means that relative differences are what matter, and there aren't too many of those to preserve.</li>
+          <li><strong>Near-orthogonality</strong> means there's exponentially more "room" than the dimension count suggests, so random subspaces capture most of the structure.</li>
+        </ul>
+
+        <p>The JL lemma ties these together into a single, clean guarantee: <strong>random projections preserve pairwise distances, and you only need O(log n) dimensions to do it.</strong></p>
+
+        <p>This has profound implications beyond the specific applications we discussed:</p>
+
+        <p><strong>Why do neural networks work?</strong> A neural network maps inputs through layers of random-ish weights and nonlinearities into high-dimensional hidden representations, then applies a linear readout. This is eerily similar to a reservoir computer or a JL projection — the random intermediate representation spreads data into a high-dimensional space where linear separation becomes easy. The JL lemma suggests that random high-dimensional representations are generically useful, which partially explains why neural networks are so robust to architectural choices.</p>
+
+        <p><strong>Why does feature hashing work?</strong> The "hashing trick" (used in Vowpal Wabbit and scikit-learn) maps features to a fixed-size vector using a hash function. This is a deterministic random projection, and JL theory explains why it works: the hash function is sufficiently "random-looking" to preserve inner products.</p>
+
+        <p><strong>Is there a fundamental limit?</strong> Yes — and it's tight. Noga Alon proved that the O(log n / ε²) target dimension in the JL lemma is <em>optimal</em>. You cannot do better in general. Any linear map that preserves all pairwise distances within (1 ± ε) must have at least Ω(log n / ε²) dimensions. Randomness isn't just convenient — it's essentially achieving the theoretical minimum.</p>
+
+        <p>Perhaps the deepest lesson is philosophical. We tend to think of randomness as the enemy of structure — noise to be eliminated, chaos to be tamed. But the JL lemma reveals the opposite: <strong>randomness is a source of structure.</strong> A random projection isn't a lazy approximation; it's a mathematically optimal way to compress high-dimensional data. The geometry of high-dimensional spaces is so regular, so predictable in its concentration, that a random map is almost as good as the best possible map.</p>
+
+        <p>Next time someone tells you that high dimensions are a curse, remind them: it's also where the blessings hide.</p>
+      </section>
+
+      <!-- ============================================
+           FURTHER RESOURCES
+           ============================================ -->
+      <section id="resources" style="margin-top: 64px;">
+        <h3>Further reading</h3>
+        <ul>
+          <li>Sanjoy Dasgupta and Anupam Gupta, "An elementary proof of a theorem of Johnson and Lindenstrauss" (2003) — the clearest proof of the JL lemma.</li>
+          <li>Roman Vershynin, <em>High-Dimensional Probability</em> (2018) — the definitive textbook on concentration of measure and its applications.</li>
+          <li>Dimitris Achlioptas, "Database-friendly random projections" (2003) — the paper introducing sparse random projections.</li>
+          <li>Nir Ailon and Bernard Chazelle, "The Fast Johnson–Lindenstrauss Transform" (2009) — how to speed up JL projections using FFT.</li>
+          <li>Rahimi and Recht, "Random Features for Large-Scale Kernel Machines" (2007) — the Random Kitchen Sinks paper, connecting JL to kernel methods.</li>
+        </ul>
+      </section>
+
+      <!-- Footnotes -->
+      <div class="footnotes">
+        <p>This explainer was designed to build intuition about high-dimensional geometry and the JL lemma. For rigorous proofs, consult Vershynin's textbook or the Dasgupta-Gupta paper. Some interactive demos use simplified models for pedagogical clarity.</p>
+      </div>
+
+    </article>
+
+    <!-- FOOTER -->
+    <footer>
+      <h3 style="font-family: var(--font-serif); font-size: 28px; margin: 0 0 12px; color: white;">The Unreasonable Effectiveness of Randomness</h3>
+      <p style="opacity: 0.8; font-family: var(--font-sans); font-size: 15px; color: white;">An interactive explainer on the Johnson–Lindenstrauss lemma</p>
+    </footer>
+
+  </div>
+
+  <script>
+  // ============================================
+  // WIDGET 1: Hypersphere Volume Explorer
+  // ============================================
+  (function() {
+    // Log-gamma function (Stirling approximation + Lanczos for small values)
+    function lnGamma(z) {
+      if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+      z -= 1;
+      const g = 7;
+      const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+        771.32342877765313, -176.61502916214059, 12.507343278686905,
+        -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+      let x = c[0];
+      for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+      const t = z + g + 0.5;
+      return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+    }
+
+    function unitBallVolume(d) {
+      return Math.exp((d / 2) * Math.log(Math.PI) - lnGamma(d / 2 + 1));
+    }
+
+    // Precompute volumes for d=1..60
+    const volumes = [];
+    for (let d = 1; d <= 60; d++) {
+      volumes.push({ d: d, vol: unitBallVolume(d) });
+    }
+    const maxVol = Math.max(...volumes.map(v => v.vol));
+
+    const slider = document.getElementById('vol-dim-slider');
+    const dimVal = document.getElementById('vol-dim-val');
+    const volValue = document.getElementById('vol-value');
+    const svg = document.getElementById('volume-svg');
+
+    function drawVolumeSVG(highlightD) {
+      const pad = { top: 20, right: 30, bottom: 40, left: 70 };
+      const w = 700, h = 320;
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      let html = '';
+
+      // Axes
+      html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h - pad.bottom}" stroke="#ccc" stroke-width="1"/>`;
+      html += `<line x1="${pad.left}" y1="${h - pad.bottom}" x2="${w - pad.right}" y2="${h - pad.bottom}" stroke="#ccc" stroke-width="1"/>`;
+
+      // Y-axis label
+      html += `<text x="${pad.left + 2}" y="${pad.top - 8}" text-anchor="start" font-size="13" fill="#808080">Volume</text>`;
+      // X-axis label
+      html += `<text x="${w - pad.right}" y="${h - pad.bottom + 30}" text-anchor="end" font-size="13" fill="#808080">Dimension d</text>`;
+
+      // Y-axis ticks
+      const yTicks = [0, 1, 2, 3, 4, 5];
+      for (const tick of yTicks) {
+        if (tick > maxVol + 0.5) break;
+        const y = h - pad.bottom - (tick / (maxVol + 0.3)) * plotH;
+        html += `<line x1="${pad.left - 4}" y1="${y}" x2="${pad.left}" y2="${y}" stroke="#ccc" stroke-width="1"/>`;
+        html += `<text x="${pad.left - 8}" y="${y + 4}" text-anchor="end" font-size="12" fill="#808080">${tick}</text>`;
+        if (tick > 0) {
+          html += `<line x1="${pad.left}" y1="${y}" x2="${w - pad.right}" y2="${y}" stroke="#eee" stroke-width="0.5"/>`;
+        }
+      }
+
+      // X-axis ticks
+      for (let d = 10; d <= 60; d += 10) {
+        const x = pad.left + ((d - 1) / 59) * plotW;
+        html += `<line x1="${x}" y1="${h - pad.bottom}" x2="${x}" y2="${h - pad.bottom + 4}" stroke="#ccc" stroke-width="1"/>`;
+        html += `<text x="${x}" y="${h - pad.bottom + 18}" text-anchor="middle" font-size="12" fill="#808080">${d}</text>`;
+      }
+
+      // Bars
+      const barW = Math.max(2, plotW / 60 - 1);
+      for (let i = 0; i < volumes.length; i++) {
+        const d = volumes[i].d;
+        const vol = volumes[i].vol;
+        const x = pad.left + (i / 59) * plotW - barW / 2;
+        const barH = (vol / (maxVol + 0.3)) * plotH;
+        const y = h - pad.bottom - barH;
+        const isHighlight = d === highlightD;
+        const color = isHighlight ? '#4834D4' : (d <= highlightD ? 'rgba(72,52,212,0.3)' : 'rgba(72,52,212,0.15)');
+        html += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${color}" rx="1"/>`;
+        if (isHighlight && barH > 2) {
+          html += `<text x="${x + barW/2}" y="${y - 6}" text-anchor="middle" font-size="13" font-weight="600" fill="#4834D4">${vol < 0.001 ? vol.toExponential(1) : vol.toFixed(3)}</text>`;
+        }
+      }
+
+      svg.innerHTML = html;
+    }
+
+    slider.addEventListener('input', function() {
+      const d = parseInt(this.value);
+      dimVal.textContent = d;
+      const vol = unitBallVolume(d);
+      volValue.textContent = vol < 0.001 ? vol.toExponential(2) : vol.toFixed(3);
+      drawVolumeSVG(d);
+    });
+
+    drawVolumeSVG(3);
+  })();
+
+  // ============================================
+  // WIDGET 2: Shell Concentration Demo
+  // ============================================
+  (function() {
+    const dimSlider = document.getElementById('shell-dim-slider');
+    const epsSlider = document.getElementById('shell-eps-slider');
+    const dimVal = document.getElementById('shell-dim-val');
+    const epsVal = document.getElementById('shell-eps-val');
+    const fractionEl = document.getElementById('shell-fraction');
+    const svg = document.getElementById('shell-svg');
+
+    function shellFraction(d, eps) {
+      return 1 - Math.pow(1 - eps, d);
+    }
+
+    function drawShellSVG(d, eps) {
+      const w = 700, h = 300;
+      const cx = 260, cy = 150;
+      const outerR = 120;
+      const innerR = outerR * (1 - eps);
+      const frac = shellFraction(d, eps);
+
+      let html = '';
+
+      // Background circle (interior - gray)
+      html += `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="#e0e0e0" stroke="#ccc" stroke-width="1"/>`;
+
+      // Inner circle (interior, lighter)
+      if (innerR > 0) {
+        html += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#f5f5f5" stroke="#ddd" stroke-width="1" stroke-dasharray="4,4"/>`;
+      }
+
+      // Outer shell ring (colored based on fraction)
+      const shellColor = `rgba(72, 52, 212, ${0.3 + frac * 0.6})`;
+      html += `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="none" stroke="${shellColor}" stroke-width="${(outerR - innerR)}" style="paint-order: stroke"/>`;
+      // Re-draw properly as an annulus
+      // Use two circles with fill
+      html += `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="${shellColor}" stroke="none"/>`;
+      if (innerR > 1) {
+        html += `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#f5f5f5" stroke="none"/>`;
+      }
+      // Outer border
+      html += `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="none" stroke="rgba(72,52,212,0.5)" stroke-width="2"/>`;
+
+      // Labels
+      html += `<text x="${cx}" y="${cy - outerR - 12}" text-anchor="middle" font-size="14" fill="#808080">r = 1</text>`;
+      if (innerR > 20) {
+        html += `<text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="13" fill="#999">interior</text>`;
+        html += `<text x="${cx}" y="${cy + 20}" text-anchor="middle" font-size="11" fill="#bbb">${(100 * (1 - frac)).toFixed(1)}%</text>`;
+      }
+      // Shell label
+      const shellMidR = (outerR + innerR) / 2;
+      html += `<text x="${cx + shellMidR * 0.7 + 10}" y="${cy - shellMidR * 0.7 + 5}" text-anchor="start" font-size="13" font-weight="600" fill="#4834D4">shell</text>`;
+      html += `<text x="${cx + shellMidR * 0.7 + 10}" y="${cy - shellMidR * 0.7 + 20}" text-anchor="start" font-size="12" fill="#4834D4">${(100 * frac).toFixed(1)}%</text>`;
+
+      // Radius annotation
+      html += `<line x1="${cx}" y1="${cy}" x2="${cx + outerR}" y2="${cy}" stroke="#808080" stroke-width="1" stroke-dasharray="3,3"/>`;
+      html += `<line x1="${cx}" y1="${cy}" x2="${cx + innerR}" y2="${cy + 0.1}" stroke="#bbb" stroke-width="1"/>`;
+
+      // Right side: bar chart showing fraction
+      const barX = 480, barY = 40, barW = 50, barH = 220;
+      html += `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" fill="#e8e8e8" rx="6"/>`;
+      const fillH = barH * frac;
+      html += `<rect x="${barX}" y="${barY + barH - fillH}" width="${barW}" height="${fillH}" fill="#4834D4" rx="6"/>`;
+      // Cover top corners if not full
+      if (frac < 0.98) {
+        html += `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH - fillH}" fill="#e8e8e8" rx="6"/>`;
+        html += `<rect x="${barX}" y="${barY + barH - fillH}" width="${barW}" height="${fillH}" fill="#4834D4" rx="${fillH > 12 ? 6 : 0}"/>`;
+        // Fix bottom corners
+        html += `<rect x="${barX}" y="${barY + barH - 6}" width="${barW}" height="6" fill="#4834D4" rx="0"/>`;
+      }
+
+      html += `<text x="${barX + barW/2}" y="${barY - 8}" text-anchor="middle" font-size="12" fill="#808080">VOLUME</text>`;
+      html += `<text x="${barX + barW + 12}" y="${barY + barH - fillH + 5}" text-anchor="start" font-size="13" font-weight="600" fill="#4834D4">${(100 * frac).toFixed(1)}%</text>`;
+      html += `<text x="${barX + barW + 12}" y="${barY + barH - fillH + 20}" text-anchor="start" font-size="11" fill="#808080">in shell</text>`;
+
+      // Info text
+      html += `<text x="${barX + barW/2}" y="${barY + barH + 22}" text-anchor="middle" font-size="12" fill="#808080">d = ${d}</text>`;
+      html += `<text x="${barX + barW/2}" y="${barY + barH + 38}" text-anchor="middle" font-size="12" fill="#808080">ε = ${eps.toFixed(2)}</text>`;
+
+      svg.innerHTML = html;
+    }
+
+    function update() {
+      const d = parseInt(dimSlider.value);
+      const eps = parseInt(epsSlider.value) / 100;
+      dimVal.textContent = d;
+      epsVal.textContent = eps.toFixed(2);
+      const frac = shellFraction(d, eps);
+      fractionEl.textContent = (100 * frac).toFixed(1) + '%';
+      drawShellSVG(d, eps);
+    }
+
+    dimSlider.addEventListener('input', update);
+    epsSlider.addEventListener('input', update);
+    update();
+  })();
+  // ============================================
+  // WIDGET 3: Distance Concentration Histogram
+  // ============================================
+  (function() {
+    const slider = document.getElementById('dist-dim-slider');
+    const dimVal = document.getElementById('dist-dim-val');
+    const meanEl = document.getElementById('dist-mean');
+    const stdEl = document.getElementById('dist-std');
+    const relvarEl = document.getElementById('dist-relvar');
+    const canvas = document.getElementById('dist-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Seeded pseudo-random for reproducibility
+    let seed = 42;
+    function seededRandom() {
+      seed = (seed * 16807 + 0) % 2147483647;
+      return seed / 2147483647;
+    }
+
+    // Box-Muller transform
+    function gaussianRandom() {
+      let u1 = seededRandom();
+      let u2 = seededRandom();
+      return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    }
+
+    function computeDistances(d) {
+      seed = 42; // reset seed for consistency
+      const nPoints = 50;
+      const points = [];
+      for (let i = 0; i < nPoints; i++) {
+        const p = [];
+        for (let j = 0; j < d; j++) p.push(gaussianRandom());
+        points.push(p);
+      }
+      const distances = [];
+      for (let i = 0; i < nPoints; i++) {
+        for (let j = i + 1; j < nPoints; j++) {
+          let sumSq = 0;
+          for (let k = 0; k < d; k++) {
+            const diff = points[i][k] - points[j][k];
+            sumSq += diff * diff;
+          }
+          distances.push(Math.sqrt(sumSq));
+        }
+      }
+      return distances;
+    }
+
+    function drawHistogram(d) {
+      const dists = computeDistances(d);
+      const mean = dists.reduce((a, b) => a + b) / dists.length;
+      const variance = dists.reduce((a, b) => a + (b - mean) ** 2, 0) / dists.length;
+      const std = Math.sqrt(variance);
+
+      meanEl.textContent = mean.toFixed(2);
+      stdEl.textContent = std.toFixed(2);
+      relvarEl.textContent = (100 * std / mean).toFixed(1) + '%';
+
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Compute histogram bins
+      const minD = Math.min(...dists);
+      const maxD = Math.max(...dists);
+      const range = maxD - minD || 1;
+      const nBins = 40;
+      const binWidth = range / nBins;
+      const bins = new Array(nBins).fill(0);
+      for (const dist of dists) {
+        const bin = Math.min(nBins - 1, Math.floor((dist - minD) / binWidth));
+        bins[bin]++;
+      }
+      const maxBin = Math.max(...bins);
+
+      const pad = { top: 30, right: 30, bottom: 45, left: 55 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      // Axes
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, h - pad.bottom);
+      ctx.lineTo(w - pad.right, h - pad.bottom);
+      ctx.stroke();
+
+      // Bars
+      const barW = plotW / nBins;
+      for (let i = 0; i < nBins; i++) {
+        const barH = (bins[i] / maxBin) * plotH;
+        const x = pad.left + i * barW;
+        const y = h - pad.bottom - barH;
+        const gradient = ctx.createLinearGradient(x, y, x, h - pad.bottom);
+        gradient.addColorStop(0, 'rgba(72, 52, 212, 0.9)');
+        gradient.addColorStop(1, 'rgba(0, 184, 148, 0.9)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x + 1, y, barW - 2, barH);
+      }
+
+      // Mean line
+      const meanX = pad.left + ((mean - minD) / range) * plotW;
+      ctx.strokeStyle = '#FD79A8';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(meanX, pad.top);
+      ctx.lineTo(meanX, h - pad.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Mean label
+      ctx.fillStyle = '#FD79A8';
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`μ = ${mean.toFixed(1)}`, meanX, pad.top - 8);
+
+      // X-axis labels
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 4; i++) {
+        const val = minD + (range * i) / 4;
+        const x = pad.left + (i / 4) * plotW;
+        ctx.fillText(val.toFixed(1), x, h - pad.bottom + 18);
+      }
+
+      // X-axis title
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.fillText('Pairwise Distance', w / 2, h - 8);
+
+      // Y-axis title
+      ctx.save();
+      ctx.translate(14, h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('Count', 0, 0);
+      ctx.restore();
+
+      // Theoretical expected value line
+      const theoreticalMean = Math.sqrt(2 * d);
+      if (theoreticalMean >= minD && theoreticalMean <= maxD) {
+        const thX = pad.left + ((theoreticalMean - minD) / range) * plotW;
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(thX, pad.top + 20);
+        ctx.lineTo(thX, h - pad.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fillText(`√(2d) = ${theoreticalMean.toFixed(1)}`, thX, pad.top + 16);
+      }
+    }
+
+    slider.addEventListener('input', function() {
+      const d = parseInt(this.value);
+      dimVal.textContent = d;
+      drawHistogram(d);
+    });
+
+    drawHistogram(3);
+  })();
+
+  // ============================================
+  // WIDGET 4: Near-Orthogonal Vector Packing
+  // ============================================
+  (function() {
+    const dimSlider = document.getElementById('orth-dim-slider');
+    const epsSlider = document.getElementById('orth-eps-slider');
+    const dimVal = document.getElementById('orth-dim-val');
+    const epsVal = document.getElementById('orth-eps-val');
+    const exactEl = document.getElementById('orth-exact');
+    const approxEl = document.getElementById('orth-approx');
+    const svg = document.getElementById('orth-svg');
+
+    function drawOrthSVG(d, eps) {
+      const exact = d;
+      // Near-orthogonal packing: approximately exp(c * d * eps^2)
+      // Using c ≈ 0.5 (a common constant from covering number arguments)
+      const logApprox = 0.5 * d * eps * eps;
+      const approxNum = Math.exp(logApprox);
+
+      exactEl.textContent = exact.toLocaleString();
+      if (logApprox > 300) {
+        approxEl.textContent = 'e^' + logApprox.toFixed(0) + ' ≈ 10^' + (logApprox / Math.LN10).toFixed(0);
+      } else if (approxNum > 1e12) {
+        approxEl.textContent = approxNum.toExponential(1);
+      } else {
+        approxEl.textContent = Math.round(approxNum).toLocaleString();
+      }
+
+      const w = 700, h = 340;
+      const pad = { top: 30, right: 40, bottom: 50, left: 70 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      let html = '';
+
+      // Draw chart: log-scale comparison
+      // We'll show a bar chart with two bars, or better: a curve of log(packing) vs dimension
+
+      // Plot log(exact) = log(d) and log(approx) = 0.5 * d * eps^2 as curves
+      const maxD = Math.max(d, 50);
+      const steps = 100;
+
+      // Compute max Y
+      const maxLogApprox = 0.5 * maxD * eps * eps;
+      const maxLogExact = Math.log(maxD);
+      const maxY = Math.max(maxLogApprox, maxLogExact, 5);
+
+      // Axes
+      html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h - pad.bottom}" stroke="#ccc" stroke-width="1"/>`;
+      html += `<line x1="${pad.left}" y1="${h - pad.bottom}" x2="${w - pad.right}" y2="${h - pad.bottom}" stroke="#ccc" stroke-width="1"/>`;
+
+      // Y-axis label
+      html += `<text x="${pad.left - 8}" y="${pad.top - 10}" text-anchor="end" font-size="13" fill="#808080">log(count)</text>`;
+      // X-axis label
+      html += `<text x="${w - pad.right}" y="${h - pad.bottom + 35}" text-anchor="end" font-size="13" fill="#808080">Dimension d</text>`;
+
+      // Y ticks
+      const yStep = maxY > 50 ? Math.ceil(maxY / 5 / 10) * 10 : maxY > 10 ? Math.ceil(maxY / 5) : 1;
+      for (let y = 0; y <= maxY; y += yStep) {
+        const py = h - pad.bottom - (y / maxY) * plotH;
+        html += `<line x1="${pad.left - 4}" y1="${py}" x2="${pad.left}" y2="${py}" stroke="#ccc" stroke-width="1"/>`;
+        html += `<text x="${pad.left - 8}" y="${py + 4}" text-anchor="end" font-size="11" fill="#808080">${y.toFixed(0)}</text>`;
+        if (y > 0) html += `<line x1="${pad.left}" y1="${py}" x2="${w - pad.right}" y2="${py}" stroke="#eee" stroke-width="0.5"/>`;
+      }
+
+      // X ticks
+      const xStep = maxD > 200 ? 100 : maxD > 50 ? 25 : 10;
+      for (let x = 0; x <= maxD; x += xStep) {
+        if (x === 0) continue;
+        const px = pad.left + (x / maxD) * plotW;
+        html += `<line x1="${px}" y1="${h - pad.bottom}" x2="${px}" y2="${h - pad.bottom + 4}" stroke="#ccc" stroke-width="1"/>`;
+        html += `<text x="${px}" y="${h - pad.bottom + 18}" text-anchor="middle" font-size="11" fill="#808080">${x}</text>`;
+      }
+
+      // Linear curve: log(exact) = ln(d)
+      let pathExact = '';
+      for (let i = 1; i <= steps; i++) {
+        const dd = (i / steps) * maxD;
+        if (dd < 1) continue;
+        const y = Math.log(dd);
+        const px = pad.left + (dd / maxD) * plotW;
+        const py = h - pad.bottom - (y / maxY) * plotH;
+        pathExact += (pathExact ? ' L' : 'M') + `${px},${py}`;
+      }
+      html += `<path d="${pathExact}" fill="none" stroke="#FD79A8" stroke-width="2.5"/>`;
+
+      // Exponential curve: log(approx) = 0.5 * d * eps^2
+      let pathApprox = '';
+      for (let i = 0; i <= steps; i++) {
+        const dd = (i / steps) * maxD;
+        const y = 0.5 * dd * eps * eps;
+        const px = pad.left + (dd / maxD) * plotW;
+        const py = h - pad.bottom - (Math.min(y, maxY) / maxY) * plotH;
+        pathApprox += (i === 0 ? 'M' : ' L') + `${px},${py}`;
+      }
+      html += `<path d="${pathApprox}" fill="none" stroke="#00B894" stroke-width="2.5"/>`;
+
+      // Current dimension marker
+      const markerX = pad.left + (d / maxD) * plotW;
+      html += `<line x1="${markerX}" y1="${pad.top}" x2="${markerX}" y2="${h - pad.bottom}" stroke="#4834D4" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>`;
+
+      // Dots at current dimension
+      const exactY = h - pad.bottom - (Math.log(d) / maxY) * plotH;
+      const approxY = h - pad.bottom - (Math.min(0.5 * d * eps * eps, maxY) / maxY) * plotH;
+      html += `<circle cx="${markerX}" cy="${exactY}" r="5" fill="#FD79A8" stroke="white" stroke-width="2"/>`;
+      html += `<circle cx="${markerX}" cy="${approxY}" r="5" fill="#00B894" stroke="white" stroke-width="2"/>`;
+
+      // Legend
+      html += `<line x1="${pad.left + 10}" y1="${pad.top + 10}" x2="${pad.left + 30}" y2="${pad.top + 10}" stroke="#FD79A8" stroke-width="2.5"/>`;
+      html += `<text x="${pad.left + 35}" y="${pad.top + 14}" font-size="13" fill="#FD79A8">Exactly orthogonal: d</text>`;
+      html += `<line x1="${pad.left + 10}" y1="${pad.top + 28}" x2="${pad.left + 30}" y2="${pad.top + 28}" stroke="#00B894" stroke-width="2.5"/>`;
+      html += `<text x="${pad.left + 35}" y="${pad.top + 32}" font-size="13" fill="#00B894">ε-near orthogonal: exp(½dε²)</text>`;
+
+      svg.innerHTML = html;
+    }
+
+    function update() {
+      const d = parseInt(dimSlider.value);
+      const eps = parseInt(epsSlider.value) / 100;
+      dimVal.textContent = d;
+      epsVal.textContent = eps.toFixed(2);
+      drawOrthSVG(d, eps);
+    }
+
+    dimSlider.addEventListener('input', update);
+    epsSlider.addEventListener('input', update);
+    update();
+  })();
+
+  // ============================================
+  // WIDGET 5: Random Projection Distance Preservation
+  // ============================================
+  let projSeed = 123;
+  function projRandom() {
+    projSeed = (projSeed * 16807 + 0) % 2147483647;
+    return projSeed / 2147483647;
+  }
+  function projGaussian() {
+    const u1 = projRandom();
+    const u2 = projRandom();
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  }
+
+  function reproject() {
+    projSeed = Math.floor(Math.random() * 2147483647);
+    drawProjectionWidget();
+  }
+
+  function drawProjectionWidget() {
+    const d = parseInt(document.getElementById('proj-d-slider').value);
+    const k = parseInt(document.getElementById('proj-k-slider').value);
+    document.getElementById('proj-d-val').textContent = d;
+    document.getElementById('proj-k-val').textContent = k;
+
+    const canvas = document.getElementById('proj-canvas');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    // Generate points
+    const nPoints = 30;
+    const savedSeed = projSeed;
+    const dataSeed = 777;
+    // Generate data points with a fixed seed
+    let tmpSeed = dataSeed;
+    function dataRandom() {
+      tmpSeed = (tmpSeed * 16807) % 2147483647;
+      return tmpSeed / 2147483647;
+    }
+    function dataGaussian() {
+      return Math.sqrt(-2 * Math.log(dataRandom())) * Math.cos(2 * Math.PI * dataRandom());
+    }
+
+    const points = [];
+    for (let i = 0; i < nPoints; i++) {
+      const p = [];
+      for (let j = 0; j < d; j++) p.push(dataGaussian());
+      points.push(p);
+    }
+
+    // Generate projection matrix (k x d) with current projSeed
+    projSeed = savedSeed;
+    const A = [];
+    for (let i = 0; i < k; i++) {
+      const row = [];
+      for (let j = 0; j < d; j++) row.push(projGaussian() / Math.sqrt(k));
+      A.push(row);
+    }
+
+    // Project points
+    const projected = [];
+    for (const p of points) {
+      const q = [];
+      for (let i = 0; i < k; i++) {
+        let sum = 0;
+        for (let j = 0; j < d; j++) sum += A[i][j] * p[j];
+        q.push(sum);
+      }
+      projected.push(q);
+    }
+
+    // Compute pairwise distances
+    const pairs = [];
+    for (let i = 0; i < nPoints; i++) {
+      for (let j = i + 1; j < nPoints; j++) {
+        let origSq = 0, projSq = 0;
+        for (let dd = 0; dd < d; dd++) origSq += (points[i][dd] - points[j][dd]) ** 2;
+        for (let dd = 0; dd < k; dd++) projSq += (projected[i][dd] - projected[j][dd]) ** 2;
+        const origDist = Math.sqrt(origSq);
+        const projDist = Math.sqrt(projSq);
+        pairs.push({ orig: origDist, proj: projDist, distortion: Math.abs(projDist / origDist - 1) });
+      }
+    }
+
+    const maxDistortion = Math.max(...pairs.map(p => p.distortion));
+    const avgDistortion = pairs.reduce((a, p) => a + p.distortion, 0) / pairs.length;
+    document.getElementById('proj-max-dist').textContent = (100 * maxDistortion).toFixed(1) + '%';
+    document.getElementById('proj-avg-dist').textContent = (100 * avgDistortion).toFixed(1) + '%';
+
+    // Draw scatter plot
+    ctx.clearRect(0, 0, w, h);
+    const pad = { top: 30, right: 30, bottom: 45, left: 55 };
+    const plotW = w - pad.left - pad.right;
+    const plotH = h - pad.top - pad.bottom;
+
+    const maxOrig = Math.max(...pairs.map(p => p.orig));
+    const maxProj = Math.max(...pairs.map(p => p.proj));
+    const axisMax = Math.max(maxOrig, maxProj) * 1.1;
+
+    // Axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top);
+    ctx.lineTo(pad.left, h - pad.bottom);
+    ctx.lineTo(w - pad.right, h - pad.bottom);
+    ctx.stroke();
+
+    // Diagonal (perfect preservation)
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, h - pad.bottom);
+    ctx.lineTo(pad.left + plotW, h - pad.bottom - plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // ε bands (1±ε region, using ε = 0.3 as visual guide)
+    const eps = 0.3;
+    ctx.fillStyle = 'rgba(253, 121, 168, 0.08)';
+    ctx.beginPath();
+    ctx.moveTo(pad.left, h - pad.bottom);
+    // Upper bound: proj = (1+ε) * orig
+    const x1 = pad.left + plotW;
+    const y1Upper = h - pad.bottom - ((1 + eps) * axisMax / axisMax) * plotH;
+    const y1Lower = h - pad.bottom - ((1 - eps) * axisMax / axisMax) * plotH;
+    ctx.lineTo(x1, Math.max(pad.top, h - pad.bottom - (1 + eps) * plotH));
+    ctx.lineTo(x1, h - pad.bottom - (1 - eps) * plotH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Points
+    for (const p of pairs) {
+      const x = pad.left + (p.orig / axisMax) * plotW;
+      const y = h - pad.bottom - (p.proj / axisMax) * plotH;
+      const distortionColor = p.distortion < 0.1 ? 'rgba(0, 184, 148, 0.8)' :
+                               p.distortion < 0.3 ? 'rgba(72, 52, 212, 0.8)' :
+                               'rgba(253, 121, 168, 0.8)';
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = distortionColor;
+      ctx.fill();
+    }
+
+    // Axis labels
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Original Distance', w / 2, h - 8);
+    ctx.save();
+    ctx.translate(14, h / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Projected Distance', 0, 0);
+    ctx.restore();
+
+    // Color legend
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(0, 184, 148, 0.8)';
+    ctx.fillRect(w - 170, pad.top + 5, 8, 8);
+    ctx.fillText('< 10% distortion', w - 158, pad.top + 13);
+    ctx.fillStyle = 'rgba(72, 52, 212, 0.8)';
+    ctx.fillRect(w - 170, pad.top + 20, 8, 8);
+    ctx.fillText('10–30% distortion', w - 158, pad.top + 28);
+    ctx.fillStyle = 'rgba(253, 121, 168, 0.8)';
+    ctx.fillRect(w - 170, pad.top + 35, 8, 8);
+    ctx.fillText('> 30% distortion', w - 158, pad.top + 43);
+  }
+
+  document.getElementById('proj-d-slider').addEventListener('input', drawProjectionWidget);
+  document.getElementById('proj-k-slider').addEventListener('input', drawProjectionWidget);
+  drawProjectionWidget();
+
+  // ============================================
+  // WIDGET 6: Projection Length Concentration
+  // ============================================
+  (function() {
+    const dSlider = document.getElementById('plen-d-slider');
+    const kSlider = document.getElementById('plen-k-slider');
+    const dVal = document.getElementById('plen-d-val');
+    const kVal = document.getElementById('plen-k-val');
+    const theoryEl = document.getElementById('plen-theory');
+    const observedEl = document.getElementById('plen-observed');
+    const spreadEl = document.getElementById('plen-spread');
+    const canvas = document.getElementById('projlen-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let plSeed = 99;
+    function plRandom() {
+      plSeed = (plSeed * 16807) % 2147483647;
+      return plSeed / 2147483647;
+    }
+    function plGaussian() {
+      return Math.sqrt(-2 * Math.log(plRandom())) * Math.cos(2 * Math.PI * plRandom());
+    }
+
+    function draw() {
+      const d = parseInt(dSlider.value);
+      const k = parseInt(kSlider.value);
+      dVal.textContent = d;
+      kVal.textContent = k;
+
+      // Create a fixed vector v
+      plSeed = 42;
+      const v = [];
+      for (let i = 0; i < d; i++) v.push(plGaussian());
+      const vNormSq = v.reduce((a, b) => a + b * b, 0);
+
+      // Project 500 times with different random matrices
+      const projLengths = [];
+      plSeed = 1000;
+      for (let trial = 0; trial < 500; trial++) {
+        let projNormSq = 0;
+        for (let i = 0; i < k; i++) {
+          let dot = 0;
+          for (let j = 0; j < d; j++) dot += plGaussian() / Math.sqrt(k) * v[j];
+          projNormSq += dot * dot;
+        }
+        projLengths.push(projNormSq);
+      }
+
+      const mean = projLengths.reduce((a, b) => a + b) / projLengths.length;
+      const std = Math.sqrt(projLengths.reduce((a, b) => a + (b - mean) ** 2, 0) / projLengths.length);
+
+      theoryEl.textContent = vNormSq.toFixed(1);
+      observedEl.textContent = mean.toFixed(1);
+      spreadEl.textContent = (100 * std / mean).toFixed(1) + '%';
+
+      // Draw histogram
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const minV = Math.min(...projLengths);
+      const maxV = Math.max(...projLengths);
+      const range = maxV - minV || 1;
+      const nBins = 40;
+      const binW = range / nBins;
+      const bins = new Array(nBins).fill(0);
+      for (const pl of projLengths) {
+        const bin = Math.min(nBins - 1, Math.floor((pl - minV) / binW));
+        bins[bin]++;
+      }
+      const maxBin = Math.max(...bins);
+
+      const pad = { top: 30, right: 30, bottom: 45, left: 55 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      // Axes
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, h - pad.bottom);
+      ctx.lineTo(w - pad.right, h - pad.bottom);
+      ctx.stroke();
+
+      // Bars
+      const bW = plotW / nBins;
+      for (let i = 0; i < nBins; i++) {
+        const bH = (bins[i] / maxBin) * plotH;
+        const x = pad.left + i * bW;
+        const y = h - pad.bottom - bH;
+        ctx.fillStyle = 'rgba(0, 184, 148, 0.7)';
+        ctx.fillRect(x + 1, y, bW - 2, bH);
+      }
+
+      // True ||v||² line
+      if (vNormSq >= minV && vNormSq <= maxV) {
+        const trueX = pad.left + ((vNormSq - minV) / range) * plotW;
+        ctx.strokeStyle = '#FD79A8';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(trueX, pad.top);
+        ctx.lineTo(trueX, h - pad.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#FD79A8';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`||v||² = ${vNormSq.toFixed(1)}`, trueX, pad.top - 8);
+      }
+
+      // Mean line
+      const meanX = pad.left + ((mean - minV) / range) * plotW;
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(meanX, pad.top + 20);
+      ctx.lineTo(meanX, h - pad.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Axis labels
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('||Av||² (projected squared length)', w / 2, h - 8);
+
+      // X ticks
+      for (let i = 0; i <= 4; i++) {
+        const val = minV + (range * i) / 4;
+        const x = pad.left + (i / 4) * plotW;
+        ctx.fillText(val.toFixed(0), x, h - pad.bottom + 18);
+      }
+    }
+
+    dSlider.addEventListener('input', draw);
+    kSlider.addEventListener('input', draw);
+    draw();
+  })();
+
+  // ============================================
+  // WIDGET 7: Projection Matrix Comparison
+  // ============================================
+  let currentMatType = 'gaussian';
+
+  function setMatrixType(type) {
+    currentMatType = type;
+    document.querySelectorAll('#matrix-widget button').forEach(b => b.classList.remove('active'));
+    document.getElementById('mat-btn-' + type).classList.add('active');
+    drawMatrixWidget();
+  }
+
+  function drawMatrixWidget() {
+    const type = currentMatType;
+    const d = 50, k = 15, nPoints = 30, showSize = 20;
+
+    let matSeed = 555;
+    function mRandom() {
+      matSeed = (matSeed * 16807) % 2147483647;
+      return matSeed / 2147483647;
+    }
+    function mGaussian() {
+      return Math.sqrt(-2 * Math.log(mRandom())) * Math.cos(2 * Math.PI * mRandom());
+    }
+
+    // Generate projection matrix
+    matSeed = 555;
+    const A = [];
+    let zeros = 0, total = k * d;
+    for (let i = 0; i < k; i++) {
+      const row = [];
+      for (let j = 0; j < d; j++) {
+        let val;
+        if (type === 'gaussian') {
+          val = mGaussian() / Math.sqrt(k);
+        } else if (type === 'sparse') {
+          const r = mRandom();
+          if (r < 1/6) val = Math.sqrt(3/k);
+          else if (r < 5/6) { val = 0; zeros++; }
+          else val = -Math.sqrt(3/k);
+        } else { // rademacher
+          val = mRandom() < 0.5 ? 1/Math.sqrt(k) : -1/Math.sqrt(k);
+        }
+        row.push(val);
+      }
+      A.push(row);
+    }
+
+    const sparsity = type === 'gaussian' ? '0%' : type === 'sparse' ? (100*zeros/total).toFixed(0)+'%' : '0%';
+    document.getElementById('mat-sparsity').textContent = sparsity;
+
+    // Draw matrix heatmap
+    const mCanvas = document.getElementById('matrix-canvas');
+    const mCtx = mCanvas.getContext('2d');
+    const mW = mCanvas.width, mH = mCanvas.height;
+    mCtx.clearRect(0, 0, mW, mH);
+
+    // Show a square grid of min(k, showSize) x min(d, showSize)
+    const showRows = Math.min(showSize, k);
+    const showCols = Math.min(showSize, d);
+    const cellSize = Math.min(mW / showCols, mH / showRows);
+    const offsetX = (mW - cellSize * showCols) / 2;
+    const offsetY = (mH - cellSize * showRows) / 2;
+
+    // Background
+    mCtx.fillStyle = '#1a1a2e';
+    mCtx.fillRect(0, 0, mW, mH);
+
+    // Find max abs value for color scaling
+    let maxAbs = 0;
+    for (let i = 0; i < showRows; i++) {
+      for (let j = 0; j < showCols; j++) {
+        maxAbs = Math.max(maxAbs, Math.abs(A[i][j]));
+      }
+    }
+
+    for (let i = 0; i < showRows; i++) {
+      for (let j = 0; j < showCols; j++) {
+        const val = A[i][j];
+        const norm = maxAbs > 0 ? val / maxAbs : 0;
+        let r, g, b;
+        if (norm > 0) {
+          r = 72 + norm * 180; g = 52 + norm * 40; b = 212;
+        } else if (norm < 0) {
+          r = 0; g = 184 + norm * 40; b = 148;
+        } else {
+          r = 30; g = 30; b = 50;
+        }
+        mCtx.fillStyle = `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+        mCtx.fillRect(offsetX + j * cellSize, offsetY + i * cellSize, cellSize - 1, cellSize - 1);
+      }
+    }
+
+    const labels = { gaussian: 'GAUSSIAN', sparse: 'SPARSE (ACHLIOPTAS)', rademacher: '±1 (RADEMACHER)' };
+    document.getElementById('matrix-type-label').textContent = labels[type] + ` MATRIX (${showRows}×${showCols} SHOWN)`;
+
+    // Generate test data points (same across types)
+    let dataSeed2 = 777;
+    function dRandom2() {
+      dataSeed2 = (dataSeed2 * 16807) % 2147483647;
+      return dataSeed2 / 2147483647;
+    }
+    function dGaussian2() {
+      return Math.sqrt(-2 * Math.log(dRandom2())) * Math.cos(2 * Math.PI * dRandom2());
+    }
+
+    dataSeed2 = 777;
+    const points = [];
+    for (let i = 0; i < nPoints; i++) {
+      const p = [];
+      for (let j = 0; j < d; j++) p.push(dGaussian2());
+      points.push(p);
+    }
+
+    // Project
+    const projected = [];
+    for (const p of points) {
+      const q = [];
+      for (let i = 0; i < k; i++) {
+        let sum = 0;
+        for (let j = 0; j < d; j++) sum += A[i][j] * p[j];
+        q.push(sum);
+      }
+      projected.push(q);
+    }
+
+    // Distances
+    const pairs = [];
+    for (let i = 0; i < nPoints; i++) {
+      for (let j = i + 1; j < nPoints; j++) {
+        let origSq = 0, projSq = 0;
+        for (let dd = 0; dd < d; dd++) origSq += (points[i][dd] - points[j][dd]) ** 2;
+        for (let dd = 0; dd < k; dd++) projSq += (projected[i][dd] - projected[j][dd]) ** 2;
+        pairs.push({ orig: Math.sqrt(origSq), proj: Math.sqrt(projSq), distortion: Math.abs(Math.sqrt(projSq)/Math.sqrt(origSq) - 1) });
+      }
+    }
+
+    const maxDist = Math.max(...pairs.map(p => p.distortion));
+    const avgDist = pairs.reduce((a, p) => a + p.distortion, 0) / pairs.length;
+    document.getElementById('mat-max-dist').textContent = (100*maxDist).toFixed(1) + '%';
+    document.getElementById('mat-avg-dist').textContent = (100*avgDist).toFixed(1) + '%';
+
+    // Draw distortion scatter
+    const dCanvas = document.getElementById('matrix-dist-canvas');
+    const dCtx = dCanvas.getContext('2d');
+    const dW = dCanvas.width, dH = dCanvas.height;
+    dCtx.clearRect(0, 0, dW, dH);
+
+    const pad = { top: 25, right: 25, bottom: 40, left: 50 };
+    const plotW = dW - pad.left - pad.right;
+    const plotH = dH - pad.top - pad.bottom;
+
+    const axMax = Math.max(...pairs.map(p => p.orig), ...pairs.map(p => p.proj)) * 1.1;
+
+    // Axes
+    dCtx.strokeStyle = 'rgba(255,255,255,0.2)';
+    dCtx.lineWidth = 1;
+    dCtx.beginPath();
+    dCtx.moveTo(pad.left, pad.top);
+    dCtx.lineTo(pad.left, dH - pad.bottom);
+    dCtx.lineTo(dW - pad.right, dH - pad.bottom);
+    dCtx.stroke();
+
+    // Diagonal
+    dCtx.strokeStyle = 'rgba(255,255,255,0.3)';
+    dCtx.setLineDash([6, 4]);
+    dCtx.beginPath();
+    dCtx.moveTo(pad.left, dH - pad.bottom);
+    dCtx.lineTo(pad.left + plotW, dH - pad.bottom - plotH);
+    dCtx.stroke();
+    dCtx.setLineDash([]);
+
+    // Points
+    for (const p of pairs) {
+      const x = pad.left + (p.orig / axMax) * plotW;
+      const y = dH - pad.bottom - (p.proj / axMax) * plotH;
+      const col = p.distortion < 0.1 ? 'rgba(0,184,148,0.8)' : p.distortion < 0.3 ? 'rgba(72,52,212,0.8)' : 'rgba(253,121,168,0.8)';
+      dCtx.beginPath();
+      dCtx.arc(x, y, 3, 0, Math.PI * 2);
+      dCtx.fillStyle = col;
+      dCtx.fill();
+    }
+
+    // Labels
+    dCtx.fillStyle = 'rgba(255,255,255,0.4)';
+    dCtx.font = '11px system-ui, sans-serif';
+    dCtx.textAlign = 'center';
+    dCtx.fillText('Original Distance', dW / 2, dH - 6);
+    dCtx.save();
+    dCtx.translate(12, dH / 2);
+    dCtx.rotate(-Math.PI / 2);
+    dCtx.fillText('Projected', 0, 0);
+    dCtx.restore();
+  }
+
+  drawMatrixWidget();
+  </script>
+</body>
+</html>
