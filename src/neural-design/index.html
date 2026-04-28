@@ -1,0 +1,3222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Your Brain Is Shaped Like That — Principles of Neural Design</title>
+<meta name="description" content="The 20-watt computer in your skull runs on a handful of design principles. An illustrated explainer on the economics of brains.">
+
+<!-- Fonts: Newsreader serif + Figtree sans + Source Code Pro mono (per style guide) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Figtree:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:             #FAF9F7;
+  --demo-bg:        #F3F2EE;
+  --text:           #2D2D2D;
+  --text-secondary: #666;
+
+  /* warm, vibrant palette */
+  --violet:         #6366F1;   /* primary accent */
+  --violet-dark:    #4F46E5;
+  --violet-light:   #E0E7FF;
+  --coral:          #F472B6;   /* cost / danger / wire-tax */
+  --coral-dark:     #EC4899;
+  --coral-light:    #FCE7F3;
+  --amber:          #FBBF24;   /* aha / information */
+  --amber-light:    #FEF3C7;
+  --teal:           #14B8A6;   /* efficient / good */
+  --teal-dark:      #0D9488;
+  --teal-light:     #CCFBF1;
+  --slate:          #475569;
+
+  --border:         #E5E5E0;
+  --radius:         14px;
+  --max-w:          720px;
+
+  --font-serif:     'Newsreader', Georgia, serif;
+  --font-sans:      'Figtree', system-ui, -apple-system, sans-serif;
+  --font-mono:      'Source Code Pro', ui-monospace, Menlo, Consolas, monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+}
+
+/* ============================================================
+   STICKY BACK LINK
+   ============================================================ */
+.back-link {
+  position: sticky; top: 0; z-index: 9999;
+  display: block;
+  padding: 10px 20px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  text-decoration: none;
+  background: rgba(250, 249, 247, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+.back-link:hover { color: var(--violet); }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  background: linear-gradient(135deg, #6366F1 0%, #A855F7 35%, #F472B6 70%, #FBBF24 100%);
+  padding: 88px 32px 72px;
+  margin: 0 auto 48px;
+  border-radius: 0 0 28px 28px;
+  text-align: left;
+  max-width: 1080px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(38px, 7vw, 72px);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin-bottom: 18px;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.12);
+}
+
+.hero .subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(17px, 2.3vw, 22px);
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.92);
+  max-width: 620px;
+}
+
+.hero .byline {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  margin-top: 28px;
+  letter-spacing: 0.02em;
+}
+
+/* Hero neural-mesh canvas behind the text */
+#hero-mesh {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+/* Intro quote */
+.intro-quote {
+  max-width: var(--max-w);
+  margin: 0 auto 56px;
+  padding: 0 32px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--text);
+  border-left: 4px solid var(--violet);
+  padding-left: 24px;
+}
+.intro-quote p + p { margin-top: 16px; }
+
+/* ============================================================
+   TABLE OF CONTENTS
+   ============================================================ */
+.toc {
+  max-width: var(--max-w);
+  margin: 0 auto 72px;
+  padding: 24px 32px 28px;
+  background: var(--demo-bg);
+  border-radius: var(--radius);
+}
+.toc h3 {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+.toc ol { list-style: none; counter-reset: toc; }
+.toc li {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  padding: 5px 0;
+  color: var(--text);
+}
+.toc li::before {
+  counter-increment: toc;
+  content: counter(toc, upper-roman) ". ";
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 10px;
+}
+.toc a { text-decoration: none; color: inherit; transition: color 0.15s; }
+.toc a:hover { color: var(--violet); }
+
+/* ============================================================
+   ARTICLE LAYOUT
+   ============================================================ */
+article {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 32px 120px;
+}
+
+section { margin-bottom: 84px; }
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding-top: 36px;
+  border-top: 1px solid var(--border);
+}
+.section-number {
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  -webkit-text-stroke: 1px var(--text-secondary);
+  color: transparent;
+  white-space: nowrap;
+  line-height: 1;
+}
+.section-heading h2 {
+  font-family: var(--font-sans);
+  font-size: clamp(26px, 4.2vw, 38px);
+  font-weight: 700;
+  line-height: 1.12;
+  color: var(--text);
+  letter-spacing: -0.015em;
+}
+
+section h3 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 40px;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+p { margin-bottom: 14px; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+a { color: var(--violet); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+ul, ol { margin: 12px 0 18px 0; padding-left: 24px; }
+ul li, ol li { margin-bottom: 8px; }
+
+/* ============================================================
+   CALLOUTS & SIDENOTES
+   ============================================================ */
+.callout {
+  background: var(--violet-light);
+  border-left: 4px solid var(--violet);
+  padding: 18px 22px;
+  margin: 28px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 18px;
+  line-height: 1.5;
+}
+.callout.teal {
+  background: var(--teal-light);
+  border-left-color: var(--teal);
+}
+.callout.amber {
+  background: var(--amber-light);
+  border-left-color: var(--amber);
+}
+.callout.coral {
+  background: var(--coral-light);
+  border-left-color: var(--coral);
+}
+
+.sidenote {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid var(--border);
+  padding: 16px 18px;
+  margin: 24px 0;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  backdrop-filter: blur(6px);
+}
+.sidenote-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--violet);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Figure captions */
+.figure-caption {
+  text-align: center;
+  font-style: italic;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+/* ============================================================
+   WIDGET / DEMO CONTAINERS
+   ============================================================ */
+.widget {
+  background: var(--demo-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin: 36px 0;
+  position: relative;
+}
+.widget-title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+.widget svg,
+.widget canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-width: 100%;
+}
+.widget svg text {
+  font-family: var(--font-sans);
+}
+/* Only apply default text color to text elements that don't already have an explicit fill attribute */
+.widget svg text:not([fill]) {
+  fill: var(--text);
+}
+/* Widget stat-card grids: prevent overflow on narrow viewports */
+.widget .stat-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.widget .stat-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.widget .stat-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.widget .stat-card {
+  background: white;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  min-width: 0;
+  overflow: hidden;
+}
+.widget .stat-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.widget .stat-card-value {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 4px;
+  color: var(--violet-dark);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.widget .stat-card-sub {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-top: 20px;
+}
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+}
+.control-group label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.control-group .value-display {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--violet-dark);
+  min-width: 60px;
+  text-align: right;
+  font-weight: 600;
+}
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #D4D4D0;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--violet);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--violet);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--violet);
+  color: white;
+}
+.btn-primary:hover { background: var(--violet-dark); }
+
+.btn-secondary {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: #F5F5F0; }
+.btn-secondary.active {
+  background: var(--violet);
+  color: white;
+  border-color: var(--violet);
+}
+
+.btn-group {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.btn-group .btn-secondary {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+  font-size: 13px;
+  padding: 8px 14px;
+}
+.btn-group .btn-secondary:last-child { border-right: none; }
+
+/* ============================================================
+   METRIC BAR (for power budget, watt readouts, etc.)
+   ============================================================ */
+.metric-bar {
+  position: relative;
+  height: 32px;
+  background: #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.metric-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--amber) 65%, var(--coral) 100%);
+  border-radius: 8px;
+  transition: width 0.25s ease;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  min-width: 48px;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  margin: 24px 0;
+}
+th, td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+th {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+td.check { color: var(--teal-dark); font-weight: 600; }
+td.cross { color: var(--coral-dark); font-weight: 600; }
+td.mixed { color: var(--amber); font-weight: 600; }
+
+/* ============================================================
+   FURTHER READING / FOOTER
+   ============================================================ */
+.further {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.further h3 {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+.further ul {
+  padding-left: 22px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.further li {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.colophon {
+  margin-top: 56px;
+  padding: 32px 0;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   REVEAL ANIMATION
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  body { font-size: 18px; }
+  article { padding: 0 20px 80px; }
+  .hero { padding: 60px 22px 50px; border-radius: 0 0 20px 20px; }
+  .intro-quote { padding: 0 20px 0 20px; font-size: 19px; margin: 0 auto 40px; padding-left: 20px; }
+  .toc { padding: 20px 22px; }
+  .widget { padding: 18px; }
+  .controls { gap: 12px; }
+  .control-group { min-width: 140px; }
+  .section-heading { gap: 12px; }
+  .section-number { font-size: 26px; }
+
+  /* On narrow viewports SVGs scale down aggressively — bump text and bar sizes so nothing becomes unreadable */
+  .widget svg text {
+    font-size: 15px;  /* override any inline smaller size set on <text> elements at lower specificity */
+  }
+  /* Keep explicit-size text working if it was set via attribute by raising them inline via JS or upping the minimum here */
+  .widget svg text[font-size="13"],
+  .widget svg text[font-size="14"],
+  .widget svg text[font-size="13"] {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 560px) {
+  .widget .stat-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .widget .stat-grid.cols-3 .stat-card.span-2 { grid-column: span 2; }
+}
+
+@media (max-width: 480px) {
+  .btn-group { flex-wrap: wrap; }
+  .btn-group .btn-secondary {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    justify-content: center;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .btn-group .btn-secondary:last-child { border-bottom: none; }
+  /* Stack stat cards on very narrow viewports */
+  .widget .stat-grid.cols-3,
+  .widget .stat-grid.cols-2 { grid-template-columns: 1fr; }
+  .controls { flex-direction: column; align-items: stretch; }
+  .control-group { min-width: 0; }
+}
+
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../index.html">&larr; All Explainers</a>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="hero">
+  <canvas id="hero-mesh"></canvas>
+  <div class="hero-inner">
+    <h1>Why Your Brain Is Shaped Like That</h1>
+    <p class="subtitle">The 20-watt computer in your skull runs on a handful of design principles. They explain everything from why neurons whisper instead of shouting, to why you can't just make a bigger brain.</p>
+    <p class="byline">An illustrated explainer on the economics of neural design.</p>
+  </div>
+</header>
+
+<!-- ============================================================
+     INTRO QUOTE
+     ============================================================ -->
+<div class="intro-quote">
+  <p>You have about 86 billion neurons. Your brain is 2% of your body mass but burns about 20% of your calories. A single spike, counting all of its downstream synaptic effects, costs several billion ATP molecules. Axons &mdash; the brain's wires &mdash; fill roughly half of cortical volume. And yet the whole thing fits in a box the size of a grapefruit, boots up every morning from nothing, and somehow writes Hamlet.</p>
+  <p>Not by magic. By <em>ruthless</em> engineering. Every gram of grey matter is under the same constraints a chip designer faces: energy, space, noise, latency. Evolution has been iterating on this design for 600 million years, and the solutions it landed on aren't arbitrary &mdash; they are nearly forced by physics. This is an explainer about those solutions.</p>
+</div>
+
+<!-- ============================================================
+     TABLE OF CONTENTS
+     ============================================================ -->
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#sec-1">Your brain runs on a light bulb</a></li>
+    <li><a href="#sec-2">The currency of thought</a></li>
+    <li><a href="#sec-3">Send only what surprises</a></li>
+    <li><a href="#sec-4">Whisper instead of shout</a></li>
+    <li><a href="#sec-5">Analog where you can, spikes only when you must</a></li>
+    <li><a href="#sec-6">Every wire is a tax</a></li>
+    <li><a href="#sec-7">The axon triangle: speed, size, energy</a></li>
+    <li><a href="#sec-8">Compute in the dendrites</a></li>
+    <li><a href="#sec-9">Adapt, match, track reality</a></li>
+    <li><a href="#sec-10">The principles compose</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================
+     ARTICLE
+     ============================================================ -->
+<article>
+
+<!-- SECTION I -->
+<section id="sec-1">
+  <div class="section-heading">
+    <span class="section-number">I.</span>
+    <h2>Your brain runs on a light bulb</h2>
+  </div>
+
+  <p>Let's start with the headline number: a human brain runs on about <strong>20 watts</strong>. That is less than a MacBook charger. It is less than a ceiling fan. It is a little more than a USB power bank trickle-charging a phone.</p>
+
+  <p>For that 20 watts you get: 86 billion neurons, roughly a quadrillion synapses, most of the heavy lifting of vision, hearing, language, motor control, memory, and whatever-it-is that happens when you daydream. The thing boots up every morning with no recalibration, runs for decades with no spare parts, and is small enough to carry around on top of your shoulders.</p>
+
+  <p>Contrast that with the computers we build. A single NVIDIA H100 GPU &mdash; the kind of chip used to train large language models &mdash; draws about <strong>700 watts</strong>. Training one frontier model consumes gigawatt-hours. Even a mid-range laptop CPU burns <em>twice</em> the brain's budget just browsing the web.</p>
+
+  <div class="callout">
+    The comparison isn't perfectly fair. Brains and GPUs solve different problems (one controls a body in real time; the other predicts tokens from a prompt). But the <strong>power gap</strong> is real, and it is enormous. The brain is doing something the GPU is not: <em>computing under a brutal energy budget.</em>
+  </div>
+
+  <p>So how does this work? How does 20 watts of wet meat outcompete 700 watts of silicon? That's the mystery this explainer is about. And the short answer is: the brain is a machine shaped, by natural selection, to stay within a strict budget. Every gram of grey matter is under the same constraints a chip designer faces &mdash; <em>energy, space, noise, latency</em> &mdash; and evolution has been iterating on this design for about 600 million years.</p>
+
+  <p>The principles we will uncover aren't a list of cute tricks. They're the near-inevitable consequences of trying to compute anything useful on a budget this small. Once you see them, the brain's anatomy stops looking like a pile of pink oatmeal and starts looking like a contract drawn up with physics.</p>
+
+  <!-- WIDGET 1 — power budget infographic -->
+  <div class="widget" id="widget-power">
+    <div class="widget-title">Figure 1 &middot; Power budget, on a log scale</div>
+    <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" aria-label="Log-scale comparison of power consumption: brain 20W, laptop CPU 45W, H100 GPU 700W, LLM training run 10 megawatts">
+      <!-- baseline -->
+      <line x1="130" y1="320" x2="650" y2="320" stroke="#CBD5E1" stroke-width="1"/>
+
+      <!-- axis ticks (log scale, 1W to 100MW) -->
+      <g font-family="Source Code Pro, monospace" font-size="13" fill="#94A3B8" text-anchor="middle">
+        <g>
+          <line x1="130" y1="320" x2="130" y2="326" stroke="#CBD5E1"/>
+          <text x="130" y="342">1W</text>
+        </g>
+        <g>
+          <line x1="195" y1="320" x2="195" y2="326" stroke="#CBD5E1"/>
+          <text x="195" y="342">10W</text>
+        </g>
+        <g>
+          <line x1="260" y1="320" x2="260" y2="326" stroke="#CBD5E1"/>
+          <text x="260" y="342">100W</text>
+        </g>
+        <g>
+          <line x1="325" y1="320" x2="325" y2="326" stroke="#CBD5E1"/>
+          <text x="325" y="342">1kW</text>
+        </g>
+        <g>
+          <line x1="390" y1="320" x2="390" y2="326" stroke="#CBD5E1"/>
+          <text x="390" y="342">10kW</text>
+        </g>
+        <g>
+          <line x1="455" y1="320" x2="455" y2="326" stroke="#CBD5E1"/>
+          <text x="455" y="342">100kW</text>
+        </g>
+        <g>
+          <line x1="520" y1="320" x2="520" y2="326" stroke="#CBD5E1"/>
+          <text x="520" y="342">1MW</text>
+        </g>
+        <g>
+          <line x1="585" y1="320" x2="585" y2="326" stroke="#CBD5E1"/>
+          <text x="585" y="342">10MW</text>
+        </g>
+        <g>
+          <line x1="650" y1="320" x2="650" y2="326" stroke="#CBD5E1"/>
+          <text x="650" y="342">100MW</text>
+        </g>
+      </g>
+
+      <!-- Bars: position = 130 + 65*log10(W); width = 14 -->
+      <!-- Human brain: 20W -> log10(20)=1.301 -> x = 130 + 65*1.301 = 214.57 -->
+      <g>
+        <rect x="130" y="80" width="85" height="32" fill="#14B8A6" rx="4"/>
+        <text x="225" y="102" font-family="Figtree, sans-serif" font-size="15" font-weight="700" fill="#0D9488">Human brain &mdash; 20 W</text>
+        <text x="225" y="120" font-family="Newsreader, serif" font-style="italic" font-size="13" fill="#475569">86 billion neurons, runs for ~80 years on autopilot</text>
+      </g>
+
+      <!-- Laptop CPU: 45W -> log10(45)=1.653 -> x = 130 + 65*1.653 = 237.5 -->
+      <g>
+        <rect x="130" y="140" width="107" height="32" fill="#6366F1" rx="4"/>
+        <text x="247" y="162" font-family="Figtree, sans-serif" font-size="15" font-weight="700" fill="#4F46E5">Laptop CPU &mdash; 45 W</text>
+        <text x="247" y="180" font-family="Newsreader, serif" font-style="italic" font-size="13" fill="#475569">≈2.3× the brain, just browsing the web</text>
+      </g>
+
+      <!-- H100 GPU: 700W -> log10(700)=2.845 -> x = 130 + 65*2.845 = 314.9 -->
+      <g>
+        <rect x="130" y="200" width="184" height="32" fill="#F472B6" rx="4"/>
+        <text x="324" y="222" font-family="Figtree, sans-serif" font-size="15" font-weight="700" fill="#EC4899">One NVIDIA H100 &mdash; 700 W</text>
+        <text x="324" y="240" font-family="Newsreader, serif" font-style="italic" font-size="13" fill="#475569">35× the brain, one GPU inference card</text>
+      </g>
+
+      <!-- LLM training run: 10 MW -> log10(10e6)=7 -> x = 130 + 65*7 = 585 -->
+      <g>
+        <rect x="130" y="260" width="455" height="32" fill="#FBBF24" rx="4"/>
+        <text x="130" y="282" font-family="Figtree, sans-serif" font-size="15" font-weight="700" fill="#B45309" dx="6">One LLM training cluster &mdash; ~10 MW</text>
+        <text x="130" y="300" font-family="Newsreader, serif" font-style="italic" font-size="13" fill="#475569" dx="6">500,000× the brain, for a few weeks of training</text>
+      </g>
+
+      <!-- axis title -->
+      <text x="390" y="30" font-family="Figtree, sans-serif" font-size="13" font-weight="700" text-anchor="middle" fill="#475569" letter-spacing="0.08em" style="text-transform: uppercase;">Continuous power draw (log scale)</text>
+    </svg>
+  </div>
+  <p class="figure-caption">
+    The brain is the cheapest thing on the chart. By orders of magnitude. The rest of this explainer is about <em>how</em>.
+  </p>
+
+</section>
+
+<!-- SECTION II -->
+<section id="sec-2">
+  <div class="section-heading">
+    <span class="section-number">II.</span>
+    <h2>The currency of thought</h2>
+  </div>
+
+  <p>Before we talk about design <em>principles</em>, we need to understand the <em>budget</em>. Every decision the brain makes &mdash; how many neurons to grow, how thick to make an axon, when to fire, whom to connect to &mdash; is a trade against one resource: <strong>ATP</strong>, the universal molecular battery.</p>
+
+  <p>ATP powers pretty much everything in a cell. In neurons, its single biggest customer is a protein called the <strong>sodium-potassium pump</strong>. Every time a neuron spikes, sodium rushes in and potassium rushes out. To fire again, the neuron has to pump those ions back across the membrane, <em>against</em> their concentration gradients, and that costs ATP &mdash; lots of it.</p>
+
+  <p>Here's the ugly truth, in round numbers (Attwell &amp; Laughlin 2001; Harris &amp; Attwell 2012):</p>
+
+  <ul>
+    <li><strong>A single spike</strong> costs hundreds of millions of ATP molecules just to restore the membrane potential of the neuron that fired.</li>
+    <li><strong>But the bigger cost is downstream.</strong> A cortical pyramidal neuron contacts thousands of partner neurons via synapses. Each synapse that receives the signal has to pump <em>its own</em> ions, recycle <em>its own</em> neurotransmitter, clean up <em>its own</em> calcium. Roll all that in, and the full bill for one spike comes to <strong>several billion ATP</strong>. Most of the brain's "spike budget" is actually postsynaptic.</li>
+    <li><strong>Housekeeping isn't free.</strong> Even a silent, resting neuron is burning ATP to hold its membrane at −70 mV. About half of the brain's 20 W goes to overhead that never depends on whether you're thinking hard.</li>
+    <li><strong>Glucose budget:</strong> roughly 6 g per hour, ≈25% of your body's total glucose consumption. Your brain is an expensive tenant.</li>
+  </ul>
+
+  <p>And here is the hard ceiling: if the average cortical firing rate crept up to even 10 Hz, the brain would demand more power than cerebral blood flow can supply. So it <em>can't</em>. The average firing rate has to stay well under 1 Hz, across the entire cortical population (Lennie 2003).</p>
+
+  <div class="callout amber">
+    <strong>This is the constraint.</strong> Everything downstream &mdash; sparse firing, short wires, analog retinas, adaptive receptors, dendritic computation &mdash; is a strategy for squeezing more <em>bits per ATP</em>.
+  </div>
+
+  <p>To make it concrete, try the calculator. You set the average firing rate and what fraction of the 86 billion cortical neurons are actively participating. The widget computes the brain's total power draw and tells you whether your design is biologically plausible, or whether you've just cooked your brain.</p>
+
+  <!-- WIDGET 2 — Metabolic Budget Calculator -->
+  <div class="widget" id="widget-budget">
+    <div class="widget-title">Interactive 1 &middot; Metabolic Budget Calculator</div>
+
+    <svg viewBox="0 0 740 300" preserveAspectRatio="xMidYMid meet" id="budget-svg" aria-label="Bar chart showing signalling, housekeeping, and total brain power draw">
+      <defs>
+        <linearGradient id="grad-safe" x1="0" x2="1">
+          <stop offset="0%" stop-color="#14B8A6"/>
+          <stop offset="100%" stop-color="#0D9488"/>
+        </linearGradient>
+        <linearGradient id="grad-warn" x1="0" x2="1">
+          <stop offset="0%" stop-color="#FBBF24"/>
+          <stop offset="100%" stop-color="#F59E0B"/>
+        </linearGradient>
+        <linearGradient id="grad-danger" x1="0" x2="1">
+          <stop offset="0%" stop-color="#F472B6"/>
+          <stop offset="100%" stop-color="#EC4899"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Background axis: 0 to 120W; bar region x=210..670 (width 460) -->
+      <line x1="210" y1="60" x2="210" y2="240" stroke="#CBD5E1" stroke-width="1"/>
+      <line x1="210" y1="240" x2="670" y2="240" stroke="#CBD5E1" stroke-width="1"/>
+
+      <!-- ticks at 20, 40, 60, 80, 100, 120 watts (460/6 = 76.67 px per 20W) -->
+      <g font-family="Source Code Pro, monospace" font-size="13" fill="#94A3B8" text-anchor="middle">
+        <g><line x1="210" y1="240" x2="210" y2="246" stroke="#CBD5E1"/><text x="210" y="262">0</text></g>
+        <g><line x1="286.7" y1="240" x2="286.7" y2="246" stroke="#CBD5E1"/><text x="286.7" y="262">20</text></g>
+        <g><line x1="363.3" y1="240" x2="363.3" y2="246" stroke="#CBD5E1"/><text x="363.3" y="262">40</text></g>
+        <g><line x1="440" y1="240" x2="440" y2="246" stroke="#CBD5E1"/><text x="440" y="262">60</text></g>
+        <g><line x1="516.7" y1="240" x2="516.7" y2="246" stroke="#CBD5E1"/><text x="516.7" y="262">80</text></g>
+        <g><line x1="593.3" y1="240" x2="593.3" y2="246" stroke="#CBD5E1"/><text x="593.3" y="262">100</text></g>
+        <g><line x1="670" y1="240" x2="670" y2="246" stroke="#CBD5E1"/><text x="670" y="262">120</text></g>
+        <text x="440" y="285" font-size="14" fill="#475569" font-weight="600">watts</text>
+      </g>
+
+      <!-- Blood-flow limit marker at ~25W: 210 + 25*3.833 = 305.83 -->
+      <g>
+        <line id="bloodflow-line" x1="305.8" y1="60" x2="305.8" y2="240" stroke="#EC4899" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="310" y="72" font-family="Figtree, sans-serif" font-size="13" font-weight="600" fill="#EC4899">blood-flow limit (~25 W)</text>
+      </g>
+
+      <!-- Housekeeping row -->
+      <g>
+        <text x="200" y="112" font-family="Figtree, sans-serif" font-size="14" font-weight="600" text-anchor="end" fill="#475569">Housekeeping</text>
+        <rect id="bar-housekeeping" x="210" y="95" width="38" height="28" fill="url(#grad-safe)" rx="4"/>
+        <text id="bar-housekeeping-label" x="254" y="114" font-family="Source Code Pro, monospace" font-size="13" font-weight="600" fill="#0D9488">10 W</text>
+      </g>
+
+      <!-- Signaling row -->
+      <g>
+        <text x="200" y="162" font-family="Figtree, sans-serif" font-size="14" font-weight="600" text-anchor="end" fill="#475569">Signaling</text>
+        <rect id="bar-signaling" x="210" y="145" width="38" height="28" fill="url(#grad-safe)" rx="4"/>
+        <text id="bar-signaling-label" x="254" y="164" font-family="Source Code Pro, monospace" font-size="13" font-weight="600" fill="#0D9488">10 W</text>
+      </g>
+
+      <!-- Total row -->
+      <g>
+        <text x="200" y="212" font-family="Figtree, sans-serif" font-size="14" font-weight="700" text-anchor="end" fill="#1E293B">Total</text>
+        <rect id="bar-total" x="210" y="195" width="77" height="28" fill="url(#grad-safe)" rx="4"/>
+        <text id="bar-total-label" x="293" y="214" font-family="Source Code Pro, monospace" font-size="14" font-weight="700" fill="#0D9488">20 W</text>
+      </g>
+    </svg>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Average firing rate</label>
+          <span class="value-display" id="budget-rate-val">0.30 Hz</span>
+        </div>
+        <input type="range" id="budget-rate" min="0.01" max="20" step="0.01" value="0.30">
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Active neurons (of 86 B)</label>
+          <span class="value-display" id="budget-frac-val">100%</span>
+        </div>
+        <input type="range" id="budget-frac" min="1" max="100" step="1" value="100">
+      </div>
+    </div>
+    <div id="budget-verdict" style="margin-top: 18px; font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: #0D9488;">
+      ✓ Plausible design — blood flow can supply this much power.
+    </div>
+  </div>
+  <p class="figure-caption">
+    Move the sliders. At the default (0.3 Hz average rate across all neurons) you land near the real 20 W. Push the rate up and the power bar turns red &mdash; at some point, no blood supply could feed the brain, and the design fails.
+  </p>
+
+  <div class="sidenote">
+    <span class="sidenote-label">Well ackshually…</span>
+    The exact split between "signaling" and "housekeeping" varies across studies and species, and not all authors agree on where to draw the line. The qualitative fact &mdash; that signaling cost scales with spike rate fast enough to force sparse firing &mdash; is robust across every budget that has been published since Attwell &amp; Laughlin 2001.
+  </div>
+
+</section>
+
+<!-- SECTION III -->
+<section id="sec-3">
+  <div class="section-heading">
+    <span class="section-number">III.</span>
+    <h2>Send only what surprises</h2>
+  </div>
+
+  <p>Given the budget, the first principle writes itself: <strong>don't send information the receiver already has.</strong></p>
+
+  <p>This is the insight Horace Barlow turned into a research program in 1961. His claim was radical for its time: <em>the goal of early sensory processing isn't to represent the world faithfully. It's to re-encode the world so the message is as short as possible.</em> A neuron that transmits redundant information is burning ATP for no new bits.</p>
+
+  <p>And natural signals are wildly redundant. Neighboring pixels in a photograph are almost identical. A blue sky sends the same message a million times over. Textures repeat. Movies change slowly from frame to frame. Sending the raw data would be like mailing someone the entire Wikipedia dump every time they ask for the weather.</p>
+
+  <p>So the retina doesn't. It <em>subtracts the predictable part</em>.</p>
+
+  <h3>The retina as a compression engine</h3>
+
+  <p>The retina has roughly 100 million photoreceptors but only about 1 million optic-nerve fibers leaving the eye for the brain. That's a <strong>100× compression ratio at the very first processing stage.</strong> Somehow the retina takes all those pixel-level measurements and squeezes them into a much smaller stream of signals without losing much that matters.</p>
+
+  <p>The trick &mdash; discovered in cat retina by Stephen Kuffler in 1953 &mdash; is the <strong>center-surround receptive field</strong>. A retinal ganglion cell looks at a small patch of photoreceptors in its "center" and compares their average brightness to an annulus of photoreceptors around it (the "surround"). It fires when the center is brighter than the surround (or the reverse, depending on the cell type). Effectively, each ganglion cell is computing:</p>
+
+  <div class="callout amber">
+    <strong>output = (center brightness) − (local average brightness)</strong>
+  </div>
+
+  <p>What gets through is the <em>difference</em> between a pixel and its neighborhood &mdash; in other words, the part the neighborhood <em>didn't predict</em>. On a uniform surface the output is zero: no spikes needed, no ATP spent. On an edge, where the center and surround disagree sharply, the output is large: the spike is earning its keep.</p>
+
+  <p>This is the same move JPEG uses (local averages + difference coding). The same move video codecs use (send only what changed from the last frame). The same move modern LLMs use (predict the next token and keep only the residual surprise). The retina figured it out first, by about half a billion years.</p>
+
+  <!-- WIDGET 3 — Retinal filter -->
+  <div class="widget" id="widget-retina">
+    <div class="widget-title">Interactive 2 &middot; The Retina's Eye</div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+      <div>
+        <div style="font-family: var(--font-sans); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 8px;">Raw input</div>
+        <canvas id="retina-raw" width="280" height="280" style="background: #000; border-radius: 6px;"></canvas>
+      </div>
+      <div>
+        <div style="font-family: var(--font-sans); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 8px;">After center-surround</div>
+        <canvas id="retina-out" width="280" height="280" style="background: #808080; border-radius: 6px;"></canvas>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label style="margin-bottom: 8px;">Scene</label>
+        <div class="btn-group" id="retina-scene-group">
+          <button class="btn btn-secondary active" data-scene="face">Face</button>
+          <button class="btn btn-secondary" data-scene="rings">Rings</button>
+          <button class="btn btn-secondary" data-scene="gradient">Gradient</button>
+          <button class="btn btn-secondary" data-scene="noise">Noise</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="label-row">
+          <label>Surround radius</label>
+          <span class="value-display" id="retina-radius-val">6 px</span>
+        </div>
+        <input type="range" id="retina-radius" min="2" max="16" step="1" value="6">
+      </div>
+    </div>
+
+    <div class="stat-grid cols-2">
+      <div class="stat-card">
+        <div class="stat-card-label">Active pixels</div>
+        <div class="stat-card-value" id="retina-sparsity">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Bits saved vs raw</div>
+        <div class="stat-card-value" id="retina-bits" style="color: var(--teal-dark);">—</div>
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Uniform regions vanish into grey &mdash; no signal, no spikes. Edges light up. The retina sends roughly the complement of what you'd expect: <em>not</em> the image, but the places the image is about to surprise you.
+  </p>
+
+  <div class="sidenote">
+    <span class="sidenote-label">Aside</span>
+    The precise framing of early sensory processing is debated. "Redundancy reduction" à la Barlow is one reading; "predictive coding" (send only the prediction error) is a closely related one; and "sparse coding" over a learned dictionary is yet another. They agree more than they disagree: the retina, cochlea, and early cortex all seem to push the signal toward a representation where each active unit is rare, informative, and cheap. This explainer uses the term <em>efficient coding</em> to cover all three.
+  </div>
+
+</section>
+
+<!-- SECTION IV -->
+<section id="sec-4">
+  <div class="section-heading">
+    <span class="section-number">IV.</span>
+    <h2>Whisper instead of shout</h2>
+  </div>
+
+  <p>If each spike costs several billion ATP &mdash; counting the downstream synaptic work &mdash; then every spike you <em>don't</em> send is money in the bank. So the next principle follows immediately:</p>
+
+  <div class="callout">
+    <strong>Send information at the lowest spike rate that gets the job done.</strong>
+  </div>
+
+  <p>There are two ways to pull this off, and the brain uses both:</p>
+
+  <ol>
+    <li><strong>Lower the rate directly.</strong> Transmit at a few Hertz, not hundreds. Let most time slots be silent.</li>
+    <li><strong>Sparsify the population.</strong> Instead of 1,000 neurons each firing at 10 Hz, have 10 neurons fire at 100 Hz and the other 990 stay quiet. The <em>average</em> firing rate is the same, but each spike is now a rarer event, and by Shannon's logic a rarer event carries more bits. You've made each spike earn its keep.</li>
+  </ol>
+
+  <p>Real cortex uses both, aggressively. Recordings from awake monkey V1 during natural viewing (Vinje &amp; Gallant 2000) and from rodent auditory cortex (Hromádka et al. 2008) find that only a small minority of neurons respond above baseline at any given moment. Across cortex as a whole, average firing rates well under 1 Hz are routine (Lennie 2003, Shoham et al. 2006). Most neurons, most of the time, are silent.</p>
+
+  <h3>A worked example: the fly's H1 neuron</h3>
+
+  <p>A beautiful case study comes from an insect. The <strong>H1 neuron</strong> sits in the fly's visual lobe and reports horizontal motion &mdash; the kind of signal a fly needs to stabilize flight. H1 has been measured to carry about <strong>1 bit of information per spike</strong> under natural conditions (de Ruyter van Steveninck &amp; Bialek). That's astonishingly efficient; many engineered channels do worse.</p>
+
+  <p>How does H1 pull that off? Part of the answer is <em>spike timing</em>. If you rate-code (average spike count over a fixed window), you throw away the temporal pattern. H1 doesn't. Its downstream readout cares about precisely when each spike arrives. A small number of well-timed spikes beats a large number of sloppily-placed ones.</p>
+
+  <h3>Noise is the hidden reason this matters</h3>
+
+  <p>Every spike train is jittery. Voltage-gated channels are stochastic, synapses release vesicles probabilistically, membranes have thermal noise. If you want a reliable readout from a rate code, you have to average over many spikes to beat the noise down &mdash; and averaging costs spikes. A sparse, temporally precise code hands the downstream decoder the most useful bits in the fewest events. <em>The noise argument and the energy argument point the same way.</em></p>
+
+  <!-- WIDGET 4 — H1-style coding demo -->
+  <div class="widget" id="widget-h1">
+    <div class="widget-title">Interactive 3 &middot; H1 on a Rainy Day</div>
+
+    <svg viewBox="0 0 680 320" preserveAspectRatio="xMidYMid meet" id="h1-svg" aria-label="Visualization of three ways to encode a motion signal: dense rate, sparse rate, and temporal code">
+      <!-- Stimulus at top -->
+      <g>
+        <text x="10" y="20" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">True motion signal (velocity)</text>
+        <rect x="10" y="30" width="660" height="44" fill="white" stroke="#E5E5E0" rx="4"/>
+        <path id="h1-stim" d="" stroke="#6366F1" stroke-width="2" fill="none"/>
+        <line x1="10" y1="52" x2="670" y2="52" stroke="#CBD5E1" stroke-dasharray="2 3"/>
+      </g>
+
+      <!-- Dense rate code row -->
+      <g>
+        <text x="10" y="100" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#EC4899" letter-spacing="0.06em" style="text-transform: uppercase;">① Dense rate code — always firing, rate tracks velocity</text>
+        <rect x="10" y="110" width="660" height="40" fill="#FDF2F8" stroke="#FBCFE8" rx="4"/>
+        <g id="h1-spikes-dense"></g>
+      </g>
+
+      <!-- Sparse rate code row -->
+      <g>
+        <text x="10" y="180" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#B45309" letter-spacing="0.06em" style="text-transform: uppercase;">② Sparse rate code — fire only when velocity is high</text>
+        <rect x="10" y="190" width="660" height="40" fill="#FEF3C7" stroke="#FDE68A" rx="4"/>
+        <g id="h1-spikes-sparse"></g>
+      </g>
+
+      <!-- Temporal code row -->
+      <g>
+        <text x="10" y="260" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#0D9488" letter-spacing="0.06em" style="text-transform: uppercase;">③ Temporal code — one well-timed spike per event</text>
+        <rect x="10" y="270" width="660" height="40" fill="#CCFBF1" stroke="#99F6E4" rx="4"/>
+        <g id="h1-spikes-temporal"></g>
+      </g>
+    </svg>
+
+    <div class="stat-grid cols-3">
+      <div class="stat-card">
+        <div class="stat-card-label" style="color: var(--coral-dark);">① Dense</div>
+        <div class="stat-card-value" style="color: var(--text); font-size: 15px;" id="h1-dense-count">— spikes</div>
+        <div class="stat-card-sub" id="h1-dense-bits">— bits/spike</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label" style="color: #B45309;">② Sparse</div>
+        <div class="stat-card-value" style="color: var(--text); font-size: 15px;" id="h1-sparse-count">— spikes</div>
+        <div class="stat-card-sub" id="h1-sparse-bits">— bits/spike</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label" style="color: var(--teal-dark);">③ Temporal</div>
+        <div class="stat-card-value" style="color: var(--text); font-size: 15px;" id="h1-temporal-count">— spikes</div>
+        <div class="stat-card-sub" id="h1-temporal-bits">— bits/spike</div>
+      </div>
+    </div>
+
+    <div class="controls" style="margin-top: 16px;">
+      <button class="btn btn-primary" id="h1-shuffle">↻ New stimulus</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    All three codes report the same motion signal. The dense rate code burns around 80 spikes per second window; the sparse code fires in the tens; the temporal code makes do with around a dozen &mdash; each one carrying more information than a whole barrage of dense-code spikes. On a strict ATP budget, only ③ is sustainable.
+  </p>
+
+  <div class="sidenote">
+    <span class="sidenote-label">Aside</span>
+    This is why grandmother cells aren't quite the myth they're sometimes said to be. Extremely sparse codes ("one neuron fires for Jennifer Aniston") are metabolically <em>cheap</em>. The real brain probably sits somewhere between fully distributed and fully localist &mdash; sparse but not singular.
+  </div>
+
+</section>
+
+<!-- SECTION V -->
+<section id="sec-5">
+  <div class="section-heading">
+    <span class="section-number">V.</span>
+    <h2>Analog where you can, spikes only when you must</h2>
+  </div>
+
+  <p>We've been talking about spikes as if the brain's whole vocabulary were ones and zeros. It isn't. Spikes are only the part of the story that <em>we</em>, as recording neuroscientists, find easiest to measure. Inside a single neuron, signals are <strong>analog</strong> &mdash; continuous, graded voltages on the membrane, continuous currents through synapses, continuous concentrations of calcium in a dendrite. These analog operations are where most of the actual computation happens, and they are <em>astonishingly</em> cheap.</p>
+
+  <p>An analog integration &mdash; summing inputs on a dendrite, for instance &mdash; costs roughly whatever it costs to let ions flow passively through a patch of membrane. There is no discrete event to pay for, no pump needing to run at full tilt. As long as the signal stays small and local, analog is close to free.</p>
+
+  <p>The catch is that analog signals <em>degrade with distance</em>. A membrane is both resistive and capacitive: it has the electrical shape of a leaky cable. A subthreshold voltage launched at one end of a long dendrite doesn't arrive at the other end unchanged &mdash; it smears out, attenuates, and drifts into the noise floor. Pass a ruler: analog is beautiful over a few hundred micrometers. Over millimeters, it's a mess. Over centimeters or meters, it's impossible.</p>
+
+  <p>This is exactly the problem a digital spike solves. An action potential is <em>self-restoring</em>: as long as the membrane is excitable, each patch regenerates the full voltage swing as the wave passes through. A spike that leaves your lumbar spine can arrive at your big toe with the same amplitude a meter later. Digital is robust because each repeater cleans up the signal on the way.</p>
+
+  <p>So the design rule is:</p>
+
+  <div class="callout teal">
+    <strong>Analog where you can, spikes only when you must.</strong>
+  </div>
+
+  <p>The retina gives us a beautiful demonstration. Its first several layers &mdash; photoreceptors, bipolar cells, horizontal cells, and most amacrine cells &mdash; run entirely on <em>graded</em> voltages. No action potentials. Massive parallel computation (contrast enhancement, gain control, direction-selectivity, motion detection) happens in pure analog, inside a structure only a fraction of a millimeter thick. It's only when the retinal ganglion cells have to send their output a long way &mdash; down the optic nerve, to the thalamus &mdash; that spikes finally show up. The retina defers digitization until the last possible moment.</p>
+
+  <p>The same pattern shows up elsewhere. Cochlear hair cells communicate with their auditory-nerve partners via graded voltage, though the nerve itself spikes. Many invertebrate neurons get by with no spikes at all. Spikes are expensive and you only spend on them when geometry forces your hand.</p>
+
+  <!-- WIDGET 5 — Analog vs Digital over distance -->
+  <div class="widget" id="widget-ad">
+    <div class="widget-title">Interactive 4 &middot; The Analog-Digital Tradeoff</div>
+
+    <svg viewBox="0 0 680 360" preserveAspectRatio="xMidYMid meet" id="ad-svg" aria-label="Analog signal degrades with distance while a digital spike train regenerates">
+      <defs>
+        <pattern id="dot-grid" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="0.7" fill="#E5E7EB"/>
+        </pattern>
+      </defs>
+
+      <!-- Analog panel -->
+      <g>
+        <text x="20" y="28" font-family="Figtree, sans-serif" font-size="13" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">Analog channel (graded voltage)</text>
+        <rect x="20" y="40" width="640" height="120" fill="url(#dot-grid)" stroke="#E5E7EB" rx="4"/>
+        <path id="ad-analog" d="" fill="none" stroke="#F472B6" stroke-width="2"/>
+        <line x1="20" y1="100" x2="660" y2="100" stroke="#94A3B8" stroke-dasharray="2 3" stroke-width="0.8"/>
+        <text id="ad-analog-verdict" x="650" y="155" font-family="Figtree, sans-serif" font-size="14" font-style="italic" fill="#6B7280" text-anchor="end">intact</text>
+      </g>
+
+      <!-- Digital panel -->
+      <g>
+        <text x="20" y="200" font-family="Figtree, sans-serif" font-size="13" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">Digital channel (spikes)</text>
+        <rect x="20" y="212" width="640" height="120" fill="url(#dot-grid)" stroke="#E5E7EB" rx="4"/>
+        <g id="ad-digital"></g>
+        <line x1="20" y1="272" x2="660" y2="272" stroke="#94A3B8" stroke-dasharray="2 3" stroke-width="0.8"/>
+        <text id="ad-digital-verdict" x="650" y="327" font-family="Figtree, sans-serif" font-size="14" font-style="italic" fill="#6B7280" text-anchor="end">intact</text>
+      </g>
+    </svg>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Transmission distance</label>
+          <span class="value-display" id="ad-dist-val">1 mm</span>
+        </div>
+        <input type="range" id="ad-dist" min="0" max="100" step="1" value="10">
+      </div>
+    </div>
+
+    <div class="stat-grid cols-2">
+      <div class="stat-card" style="background: #FCE7F3; border-color: #FBCFE8;">
+        <div class="stat-card-label" style="color: #EC4899;">Analog energy cost</div>
+        <div class="stat-card-value" style="font-size: 14px; color: var(--text);" id="ad-cost-analog">~1× baseline</div>
+      </div>
+      <div class="stat-card" style="background: #CCFBF1; border-color: #99F6E4;">
+        <div class="stat-card-label" style="color: var(--teal-dark);">Digital energy cost</div>
+        <div class="stat-card-value" style="font-size: 14px; color: var(--text);" id="ad-cost-digital">~1000× baseline</div>
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Move the slider. At short distances (inside a dendrite, up to a few hundred micrometers), analog wins on every axis. Crank the distance up and analog falls apart &mdash; the signal dies out before it arrives. Spikes cost vastly more to generate but <em>stay legible</em> over any distance.
+  </p>
+
+</section>
+
+<!-- SECTION VI -->
+<section id="sec-6">
+  <div class="section-heading">
+    <span class="section-number">VI.</span>
+    <h2>Every wire is a tax</h2>
+  </div>
+
+  <p>Your cortex is mostly wire. Axons and dendrites together occupy roughly half of cortical volume (Braitenberg &amp; Schüz). Cell bodies, synapses, blood vessels, and glia share the remaining half. You are, anatomically speaking, walking around with a couple of kilograms of neural cabling sloshing inside a braincase.</p>
+
+  <p>Every wire costs:</p>
+
+  <ul>
+    <li><strong>Space.</strong> Every millimeter of axon occupies volume that could otherwise hold a neuron, a synapse, or a capillary.</li>
+    <li><strong>Energy.</strong> Even a silent axon burns ATP &mdash; the sodium-potassium pumps run whether the axon is firing or not, just to maintain the resting potential.</li>
+    <li><strong>Time.</strong> Signals are slow. Thin unmyelinated cortical fibers conduct at roughly 0.5–2 m/s (about 0.5–2 ms per centimeter). Even the fastest myelinated fibers top out around 100 m/s. Distance is latency, and latency is behavior: a motor command that takes too long arrives after the prey has escaped.</li>
+  </ul>
+
+  <p>The conclusion is inescapable:</p>
+
+  <div class="callout coral">
+    <strong>Minimize wire.</strong>
+  </div>
+
+  <p>The brain uses three big tricks to obey this rule:</p>
+
+  <h3>Trick 1: Topographic maps</h3>
+
+  <p>Adjacent points on the retina project to adjacent neurons in V1. Adjacent fingers project to adjacent columns in somatosensory cortex. Adjacent frequencies project to adjacent regions in auditory cortex. These <em>topographic maps</em> aren't there because the brain likes neatness &mdash; they're there because related neurons need to talk to each other, and putting them next to each other minimizes wire.</p>
+
+  <h3>Trick 2: Modularity</h3>
+
+  <p>The brain is carved into dozens of functionally distinct areas &mdash; V1, V2, V4, MT, IT, M1, S1, and so on. Why? Because most communication within any one function is local. Keeping all the parts of "visual processing" in the occipital lobe means most of visual cortex's axons stay within a few millimeters of each other. Only a handful need to be long-range.</p>
+
+  <h3>Trick 3: Small-world connectivity</h3>
+
+  <p>Most connections in cortex are local. A small number are long-range shortcuts between distant areas. This is the <em>small-world</em> pattern that Chklovskii and colleagues (2002) showed is close to what you would get if you solved the connectivity layout as a formal wire-minimization problem. In well-mapped nervous systems &mdash; <em>C. elegans</em>, primate visual cortex &mdash; the real layout sits remarkably close to the wiring-optimal one.</p>
+
+  <p>Below, try your hand at the problem. You have eight brain "modules" connected by a fixed pattern of edges. Drag them around. See if you can beat the random layout &mdash; and then try to beat the layout a computer finds by gradient-descent on wire length.</p>
+
+  <!-- WIDGET 6 — Minimize the wire -->
+  <div class="widget" id="widget-wire">
+    <div class="widget-title">Interactive 5 &middot; Minimize the Wire</div>
+
+    <svg viewBox="0 0 680 400" preserveAspectRatio="xMidYMid meet" id="wire-svg" style="cursor: grab; touch-action: none;" aria-label="Interactive: drag brain modules to minimize total wire length">
+      <g id="wire-edges"></g>
+      <g id="wire-nodes"></g>
+    </svg>
+
+    <div class="stat-grid cols-3">
+      <div class="stat-card">
+        <div class="stat-card-label">Your total wire</div>
+        <div class="stat-card-value" id="wire-current">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Random layout</div>
+        <div class="stat-card-value" id="wire-random" style="color: var(--coral-dark);">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Optimum (by computer)</div>
+        <div class="stat-card-value" id="wire-best" style="color: var(--teal-dark);">—</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-secondary" id="wire-shuffle">Shuffle (random)</button>
+      <button class="btn btn-primary" id="wire-optimize">Optimize it for me</button>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Drag the modules. The highlighted edges tell you which pairs are connected, and the total wire length updates live. Notice how clusters of densely-connected modules want to be near each other &mdash; exactly the layout principle that organizes real cortex.
+  </p>
+
+  <div class="sidenote">
+    <span class="sidenote-label">Well ackshually…</span>
+    The cortex is folded &mdash; gyri and sulci &mdash; and one reason often cited is that folding reduces white-matter volume by keeping connected areas close. This is probably partly right, but also partly mechanical: the cortical sheet grows faster than the skull, and has to buckle. As with most things in the brain, multiple pressures matter at once.
+  </div>
+
+</section>
+
+<!-- SECTION VII -->
+<section id="sec-7">
+  <div class="section-heading">
+    <span class="section-number">VII.</span>
+    <h2>The axon triangle: speed, size, energy</h2>
+  </div>
+
+  <p>Zoom in on a single wire &mdash; one axon. The designer (evolution) wants three things from it:</p>
+
+  <ul>
+    <li><strong>Fast.</strong> Signals need to arrive in time for the animal to act.</li>
+    <li><strong>Thin.</strong> Millions of these have to fit in a small space.</li>
+    <li><strong>Cheap.</strong> Every micrometer burns ATP, awake or asleep.</li>
+  </ul>
+
+  <p>You can't have all three. The physics sets up a triangle where improving any two corners makes the third worse. This is one of the most elegant design tradeoffs in all of biology.</p>
+
+  <h3>Unmyelinated axons</h3>
+
+  <p>In an unmyelinated axon &mdash; the kind you find in invertebrates and in many thin vertebrate fibers &mdash; the conduction velocity scales as the <em>square root</em> of the diameter:</p>
+
+  <div class="callout" style="font-family: var(--font-mono); font-size: 17px;">
+    velocity &prop; √(diameter)
+  </div>
+
+  <p>Want to double the speed? You need to <strong>quadruple</strong> the diameter. The membrane area per unit length goes up 4×, and the volume of the axon (proportional to diameter squared) goes up a whopping <strong>16×</strong>. Unmyelinated speed is ruinously expensive to buy.</p>
+
+  <p>This is why the giant squid axon is giant. It's about a millimeter thick, so it can conduct at ~25 m/s &mdash; fast enough to trigger an escape jet when a predator looms. The squid can afford the volume only because it's a huge animal and the axon is a single wire to its mantle. A human trying to do the same thing would need an optic nerve the thickness of a telephone pole.</p>
+
+  <h3>Myelin: the hack that changed everything</h3>
+
+  <p>Vertebrates invented a fix. Wrap the axon in an insulating sheath &mdash; myelin &mdash; leaving small gaps (nodes of Ranvier) where the spike is regenerated. The signal effectively <em>jumps</em> between nodes, a process called saltatory conduction. The velocity now scales linearly with diameter:</p>
+
+  <div class="callout teal" style="font-family: var(--font-mono); font-size: 17px;">
+    velocity (myelinated) &prop; diameter
+  </div>
+
+  <p>This is huge. At a given diameter, a myelinated axon is roughly 5–10× faster than an unmyelinated one. Or equivalently, for a given speed, you can use a much thinner (and cheaper) wire.</p>
+
+  <p>But myelin isn't free. The oligodendrocytes that make it cost metabolic energy to grow and maintain. The sheath itself takes up space. And there's a minimum diameter below which it doesn't pay off: below about <strong>0.2 µm</strong> (Waxman &amp; Bennett 1972), the myelin sheath would be thicker than the speed it buys you. Real thin axons, like many cortical local-circuit fibers, <em>don't</em> myelinate. Real thick axons, like motor neurons projecting to muscles, always do.</p>
+
+  <p>The brain has both, each axon in the cheapest configuration for its job. Try to build one.</p>
+
+  <!-- WIDGET 7 — Design your own axon -->
+  <div class="widget" id="widget-axon">
+    <div class="widget-title">Interactive 6 &middot; Design Your Own Axon</div>
+
+    <svg viewBox="0 0 680 340" preserveAspectRatio="xMidYMid meet" id="axon-svg" aria-label="Side-by-side diagram of an axon with adjustable diameter and myelination">
+      <!-- Axon visualization -->
+      <g>
+        <text x="10" y="24" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">Your axon, side view</text>
+        <!-- background region -->
+        <rect x="10" y="34" width="660" height="120" fill="white" stroke="#E5E5E0" rx="4"/>
+        <!-- the axon: thick/thin rectangle centered vertically in the band -->
+        <g id="axon-drawing" transform="translate(10, 94)">
+          <!-- internal: axon body -->
+          <rect id="axon-inner" x="30" y="-10" width="600" height="20" fill="#FDE68A"/>
+          <!-- myelin segments (only drawn when myelinated) -->
+          <g id="axon-myelin"></g>
+          <!-- nodes of ranvier (only when myelinated) -->
+          <g id="axon-nodes"></g>
+        </g>
+        <!-- signal pulse animation -->
+        <circle id="axon-pulse" cx="40" cy="94" r="7" fill="#EC4899"/>
+      </g>
+
+      <!-- Scatter plot: diameter vs cost, with biological axons overlaid -->
+      <g transform="translate(0, 180)">
+        <text x="10" y="14" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">Velocity vs diameter · biological axons are the gray dots</text>
+        <rect x="10" y="22" width="660" height="140" fill="white" stroke="#E5E5E0" rx="4"/>
+        <!-- axes -->
+        <!-- x-axis: 0.1 to 20 µm (log) mapped to 40..650 -->
+        <line x1="40" y1="152" x2="660" y2="152" stroke="#CBD5E1"/>
+        <!-- y-axis: 0 to 120 m/s mapped to 152..32 -->
+        <line x1="40" y1="32" x2="40" y2="152" stroke="#CBD5E1"/>
+        <g font-family="Source Code Pro, monospace" font-size="13" fill="#94A3B8" text-anchor="middle">
+          <!-- x ticks (log): 0.1, 1, 10, 20 -->
+          <g><line x1="40" y1="152" x2="40" y2="156" stroke="#CBD5E1"/><text x="40" y="170">0.1µm</text></g>
+          <g><line x1="226" y1="152" x2="226" y2="156" stroke="#CBD5E1"/><text x="226" y="170">1µm</text></g>
+          <g><line x1="412" y1="152" x2="412" y2="156" stroke="#CBD5E1"/><text x="412" y="170">10µm</text></g>
+          <g><line x1="480" y1="152" x2="480" y2="156" stroke="#CBD5E1"/><text x="480" y="170">20µm</text></g>
+        </g>
+        <g font-family="Source Code Pro, monospace" font-size="13" fill="#94A3B8" text-anchor="end">
+          <g><line x1="36" y1="152" x2="40" y2="152" stroke="#CBD5E1"/><text x="34" y="156">0</text></g>
+          <g><line x1="36" y1="112" x2="40" y2="112" stroke="#CBD5E1"/><text x="34" y="116">40</text></g>
+          <g><line x1="36" y1="72" x2="40" y2="72" stroke="#CBD5E1"/><text x="34" y="76">80</text></g>
+          <g><line x1="36" y1="32" x2="40" y2="32" stroke="#CBD5E1"/><text x="34" y="36">120</text></g>
+        </g>
+        <text x="40" y="18" font-family="Source Code Pro, monospace" font-size="13" fill="#94A3B8">m/s</text>
+        <!-- unmyelinated curve: v = 2.5 * sqrt(d) m/s -->
+        <path id="axon-curve-un" d="" fill="none" stroke="#F472B6" stroke-width="2" stroke-dasharray="4 3"/>
+        <!-- myelinated curve: v = 6 * d m/s -->
+        <path id="axon-curve-my" d="" fill="none" stroke="#14B8A6" stroke-width="2"/>
+        <!-- biological data points (pre-seeded, approximate) -->
+        <g id="axon-biology" fill="#64748B"></g>
+        <!-- user's choice -->
+        <circle id="axon-user" cx="226" cy="142" r="9" fill="#FBBF24" stroke="white" stroke-width="2"/>
+        <!-- legend -->
+        <text x="400" y="48" font-family="Figtree, sans-serif" font-size="14" fill="#F472B6">— — —  unmyelinated (√d)</text>
+        <text x="400" y="66" font-family="Figtree, sans-serif" font-size="14" fill="#0D9488">——— myelinated (d)</text>
+      </g>
+    </svg>
+
+    <div class="controls">
+      <div class="control-group">
+        <div class="label-row">
+          <label>Diameter</label>
+          <span class="value-display" id="axon-d-val">1.0 µm</span>
+        </div>
+        <input type="range" id="axon-d" min="0.1" max="20" step="0.1" value="1.0">
+      </div>
+      <div class="control-group">
+        <label style="margin-bottom: 6px;">Myelination</label>
+        <div class="btn-group" id="axon-myelin-group">
+          <button class="btn btn-secondary active" data-mye="0">No myelin</button>
+          <button class="btn btn-secondary" data-mye="1">Myelinated</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid cols-3">
+      <div class="stat-card">
+        <div class="stat-card-label">Conduction speed</div>
+        <div class="stat-card-value" id="axon-speed">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Cross-section area</div>
+        <div class="stat-card-value" id="axon-area" style="color: var(--coral-dark);">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Verdict</div>
+        <div style="font-family: var(--font-sans); font-size: 14px; font-weight: 600; margin-top: 4px; line-height: 1.3;" id="axon-verdict">—</div>
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    The pink dashed curve is the unmyelinated option: slow to gain speed, thick to be fast. The teal curve is the myelinated option: faster for any given diameter, but only worth it above about 0.2 µm. The grey dots are real biological axons &mdash; from cortical thin fibers to motor neurons. They cluster tightly along one curve or the other. Evolution is not making arbitrary choices.
+  </p>
+
+</section>
+
+<!-- SECTION VIII -->
+<section id="sec-8">
+  <div class="section-heading">
+    <span class="section-number">VIII.</span>
+    <h2>Compute in the dendrites</h2>
+  </div>
+
+  <p>Here's a generalization of the previous section: <strong>if wire is expensive, pack more computation into each neuron, because local computation is cheaper than extra neurons plus the axons to connect them.</strong> A neuron that can solve a hard sub-problem inside its own dendrites is saving you a whole circuit.</p>
+
+  <p>For a long time, textbooks treated the neuron as a point &mdash; a little weighted-sum-plus-threshold unit, the classic McCulloch-Pitts model, which is also what artificial neural networks imitate. Dendrites, in this view, were passive antennae: they just collected inputs and funneled them to the soma to be summed.</p>
+
+  <p>That picture is wrong, and has been for decades.</p>
+
+  <p>Real cortical dendrites are studded with voltage-gated ion channels (NMDA, Ca²⁺, Na⁺). They generate their own local regenerative events called dendritic spikes. Different branches act like semi-independent subcomputers, each one applying a nonlinearity to its own set of inputs before passing the result along. Poirazi &amp; Mel (2003) showed that a single cortical pyramidal cell can, in principle, implement the computation of a small <em>two-layer</em> artificial neural network. One neuron; two layers.</p>
+
+  <h3>A concrete case: direction selectivity in the retina</h3>
+
+  <p>The retina has cells called <strong>starburst amacrine cells</strong> that detect the direction of motion. A starburst has a radial dendritic tree, like a starfish, with inputs coming in along the whole spread. As light moves <em>outward</em> along one of the dendrites, it excites the more distal parts first, and the excitation propagates inward toward the soma. If the motion is in the "preferred" direction, the excitation builds up over time and produces a strong output. If the motion is in the opposite ("null") direction, inhibitory inputs along the way cancel the excitation and the output stays silent.</p>
+
+  <p>The punchline: the starburst cell computes direction selectivity <em>inside its own dendritic tree</em>, before a single spike leaves the cell. An equivalent network built from simple point-neurons would need around a dozen cells, several layers of synapses, and a cobweb of axons running between them. The dendrite-based version, in contrast, is one cell. Massively cheaper.</p>
+
+  <!-- WIDGET 8 — One fancy neuron vs ten plain ones -->
+  <div class="widget" id="widget-dendrite">
+    <div class="widget-title">Figure 2 &middot; One fancy neuron vs ten plain ones</div>
+    <svg viewBox="0 0 680 420" preserveAspectRatio="xMidYMid meet" id="dendrite-svg" aria-label="Comparison of a single starburst amacrine cell computing direction selectivity vs an equivalent network of simple point neurons">
+      <!-- LEFT: one fancy starburst cell -->
+      <g>
+        <text x="170" y="24" font-family="Figtree, sans-serif" font-size="13" font-weight="700" fill="#0D9488" letter-spacing="0.06em" text-anchor="middle" style="text-transform: uppercase;">① Starburst amacrine cell</text>
+        <rect x="15" y="34" width="310" height="330" fill="#CCFBF1" stroke="#99F6E4" rx="8"/>
+
+        <!-- the starburst: soma + radial dendrites -->
+        <g transform="translate(170, 200)">
+          <!-- preferred motion direction arrow -->
+          <g transform="translate(-115, -115)">
+            <line x1="0" y1="0" x2="50" y2="0" stroke="#F472B6" stroke-width="2"/>
+            <polygon points="50,-4 60,0 50,4" fill="#F472B6"/>
+            <text x="0" y="-8" font-family="Figtree, sans-serif" font-size="13" fill="#EC4899" font-weight="600">motion</text>
+          </g>
+
+          <!-- dendrites: 8 radial arms -->
+          <g stroke="#0D9488" stroke-width="2.5" fill="none">
+            <line x1="0" y1="0" x2="100" y2="0"/>
+            <line x1="0" y1="0" x2="70.7" y2="70.7"/>
+            <line x1="0" y1="0" x2="0" y2="100"/>
+            <line x1="0" y1="0" x2="-70.7" y2="70.7"/>
+            <line x1="0" y1="0" x2="-100" y2="0"/>
+            <line x1="0" y1="0" x2="-70.7" y2="-70.7"/>
+            <line x1="0" y1="0" x2="0" y2="-100"/>
+            <line x1="0" y1="0" x2="70.7" y2="-70.7"/>
+          </g>
+
+          <!-- terminal dendrite tips: the "direction selective" outputs -->
+          <g>
+            <circle cx="100" cy="0" r="6" fill="#14B8A6"/>
+            <circle cx="70.7" cy="70.7" r="6" fill="#14B8A6"/>
+            <circle cx="0" cy="100" r="6" fill="#14B8A6"/>
+            <circle cx="-70.7" cy="70.7" r="6" fill="#14B8A6"/>
+            <circle cx="-100" cy="0" r="6" fill="#14B8A6"/>
+            <circle cx="-70.7" cy="-70.7" r="6" fill="#14B8A6"/>
+            <circle cx="0" cy="-100" r="6" fill="#14B8A6"/>
+            <circle cx="70.7" cy="-70.7" r="6" fill="#14B8A6"/>
+          </g>
+
+          <!-- inputs (bipolar cell contacts) along each dendrite -->
+          <g fill="#FBBF24">
+            <circle cx="35" cy="0" r="3"/><circle cx="65" cy="0" r="3"/><circle cx="85" cy="0" r="3"/>
+            <circle cx="25" cy="25" r="3"/><circle cx="45" cy="45" r="3"/><circle cx="62" cy="62" r="3"/>
+            <circle cx="0" cy="35" r="3"/><circle cx="0" cy="65" r="3"/><circle cx="0" cy="85" r="3"/>
+            <circle cx="-25" cy="25" r="3"/><circle cx="-45" cy="45" r="3"/><circle cx="-62" cy="62" r="3"/>
+            <circle cx="-35" cy="0" r="3"/><circle cx="-65" cy="0" r="3"/><circle cx="-85" cy="0" r="3"/>
+            <circle cx="-25" cy="-25" r="3"/><circle cx="-45" cy="-45" r="3"/><circle cx="-62" cy="-62" r="3"/>
+            <circle cx="0" cy="-35" r="3"/><circle cx="0" cy="-65" r="3"/><circle cx="0" cy="-85" r="3"/>
+            <circle cx="25" cy="-25" r="3"/><circle cx="45" cy="-45" r="3"/><circle cx="62" cy="-62" r="3"/>
+          </g>
+
+          <!-- soma -->
+          <circle r="12" fill="#065F46"/>
+        </g>
+
+        <text x="170" y="380" font-family="Newsreader, serif" font-style="italic" font-size="14" fill="#047857" text-anchor="middle">1 cell &middot; ~24 inputs &middot; 8 direction-selective outputs</text>
+      </g>
+
+      <!-- RIGHT: equivalent point-neuron network -->
+      <g>
+        <text x="510" y="24" font-family="Figtree, sans-serif" font-size="13" font-weight="700" fill="#EC4899" letter-spacing="0.06em" text-anchor="middle" style="text-transform: uppercase;">② Equivalent point-neuron network</text>
+        <rect x="355" y="34" width="310" height="330" fill="#FCE7F3" stroke="#FBCFE8" rx="8"/>
+
+        <!-- input layer (5 circles left) -->
+        <g fill="#FBBF24">
+          <circle cx="380" cy="80" r="6"/>
+          <circle cx="380" cy="135" r="6"/>
+          <circle cx="380" cy="190" r="6"/>
+          <circle cx="380" cy="245" r="6"/>
+          <circle cx="380" cy="300" r="6"/>
+        </g>
+        <text x="380" y="340" font-family="Source Code Pro, monospace" font-size="10" fill="#B45309" text-anchor="middle">inputs</text>
+
+        <!-- hidden layer: 6 interneurons implementing delay lines -->
+        <g fill="#64748B">
+          <circle cx="470" cy="70" r="9"/>
+          <circle cx="470" cy="120" r="9"/>
+          <circle cx="470" cy="170" r="9"/>
+          <circle cx="470" cy="220" r="9"/>
+          <circle cx="470" cy="270" r="9"/>
+          <circle cx="470" cy="320" r="9"/>
+        </g>
+        <text x="470" y="340" font-family="Source Code Pro, monospace" font-size="10" fill="#64748B" text-anchor="middle">delay + gate</text>
+
+        <!-- output layer: 8 direction-selective units -->
+        <g fill="#EC4899">
+          <circle cx="580" cy="50" r="9"/>
+          <circle cx="580" cy="90" r="9"/>
+          <circle cx="580" cy="130" r="9"/>
+          <circle cx="580" cy="170" r="9"/>
+          <circle cx="580" cy="210" r="9"/>
+          <circle cx="580" cy="250" r="9"/>
+          <circle cx="580" cy="290" r="9"/>
+          <circle cx="580" cy="330" r="9"/>
+        </g>
+        <text x="580" y="350" font-family="Source Code Pro, monospace" font-size="10" fill="#DB2777" text-anchor="middle">direction cells</text>
+
+        <!-- messy fan-out of connections -->
+        <g stroke="#CBD5E1" stroke-width="0.7" fill="none" stroke-opacity="0.7">
+          <line x1="388" y1="80" x2="462" y2="70"/>
+          <line x1="388" y1="80" x2="462" y2="120"/>
+          <line x1="388" y1="135" x2="462" y2="70"/>
+          <line x1="388" y1="135" x2="462" y2="120"/>
+          <line x1="388" y1="135" x2="462" y2="170"/>
+          <line x1="388" y1="190" x2="462" y2="120"/>
+          <line x1="388" y1="190" x2="462" y2="170"/>
+          <line x1="388" y1="190" x2="462" y2="220"/>
+          <line x1="388" y1="245" x2="462" y2="170"/>
+          <line x1="388" y1="245" x2="462" y2="220"/>
+          <line x1="388" y1="245" x2="462" y2="270"/>
+          <line x1="388" y1="300" x2="462" y2="220"/>
+          <line x1="388" y1="300" x2="462" y2="270"/>
+          <line x1="388" y1="300" x2="462" y2="320"/>
+
+          <line x1="478" y1="70" x2="572" y2="50"/>
+          <line x1="478" y1="70" x2="572" y2="90"/>
+          <line x1="478" y1="120" x2="572" y2="90"/>
+          <line x1="478" y1="120" x2="572" y2="130"/>
+          <line x1="478" y1="170" x2="572" y2="130"/>
+          <line x1="478" y1="170" x2="572" y2="170"/>
+          <line x1="478" y1="220" x2="572" y2="170"/>
+          <line x1="478" y1="220" x2="572" y2="210"/>
+          <line x1="478" y1="270" x2="572" y2="210"/>
+          <line x1="478" y1="270" x2="572" y2="250"/>
+          <line x1="478" y1="270" x2="572" y2="290"/>
+          <line x1="478" y1="320" x2="572" y2="290"/>
+          <line x1="478" y1="320" x2="572" y2="330"/>
+        </g>
+
+        <text x="510" y="380" font-family="Newsreader, serif" font-style="italic" font-size="14" fill="#DB2777" text-anchor="middle">~14+ neurons &middot; ~40+ synapses &middot; extra axons</text>
+      </g>
+    </svg>
+  </div>
+  <p class="figure-caption">
+    Both circuits compute the same function: given a moving stimulus, report its direction. On the left, one clever cell does it in analog, inside its own dendrites, for roughly the energy cost of one cell. On the right, a point-neuron network achieves the same computation using more neurons, more synapses, more axons &mdash; and more spikes. Local compute wins.
+  </p>
+
+  <p>The same story plays out in the hippocampus, where pyramidal-cell dendrites combine grid-cell inputs with sensory cues to produce place-specific firing; in the cerebellum, where Purkinje cells integrate hundreds of thousands of inputs with branch-specific gain control; and in the cortex, where layer-5 pyramidal neurons use NMDA spikes and dendritic calcium plateaus to implement nonlinear combinations of feedback and feedforward signals. The common theme: <em>whenever you can trade a little biophysical cleverness for a lot of extra neurons and axons, take the trade.</em></p>
+
+</section>
+
+<!-- SECTION IX -->
+<section id="sec-9">
+  <div class="section-heading">
+    <span class="section-number">IX.</span>
+    <h2>Adapt, match, track reality</h2>
+  </div>
+
+  <p>Efficient coding (§III) isn't just about <em>space</em>. It's also about <em>time</em>. The world at noon is not the world at midnight; a code tuned for daylight is wasted on a moonless forest. So the "match your code to the statistics of the input" principle has to be reapplied continuously. That's <strong>adaptation</strong>.</p>
+
+  <p>Every neuron has a limited dynamic range &mdash; perhaps five or six bits of effective information per spike train, in a good case. The world, on the other hand, has a dynamic range that's embarrassing. Starlight to noon sunshine is a factor of <strong>10⁹</strong>. Sound intensities span twelve orders of magnitude from quietest whisper to painful loudness. A single-scale neuron would saturate half the time and be lost in the dark the other half.</p>
+
+  <p>The way out is to <em>rescale</em> the encoding continuously. This is why:</p>
+
+  <ul>
+    <li>Your photoreceptors desensitize within seconds when you walk into sunlight (and sensitize over many minutes when you enter a dark room).</li>
+    <li>Cochlear hair cells lower their gain for sustained loud sounds &mdash; the reason concerts feel quieter after ten minutes than they did in the first thirty seconds.</li>
+    <li>Cortical neurons renormalize their firing rates relative to their own recent history (Benucci et al., and many others).</li>
+  </ul>
+
+  <h3>Laughlin's fly, and the information-theoretic optimum</h3>
+
+  <p>In 1981 Simon Laughlin (yes, same Laughlin) measured the input-output curve of the blowfly's <em>large monopolar cells</em> &mdash; the first interneurons in the fly visual system &mdash; and compared it to the distribution of contrasts the fly actually encounters in a natural scene. The comparison was beautiful:</p>
+
+  <div class="callout amber">
+    <strong>The neuron's response curve was almost exactly the cumulative distribution function of natural contrast.</strong>
+  </div>
+
+  <p>Why is that the right answer? Because if you match the response curve to the CDF of the input, each output level is used with equal probability &mdash; which, by a classic result in information theory, is the encoding that maximizes transmitted bits per spike for a bounded output. The fly has, in effect, tuned itself to the world it lives in. A fly that evolved in a different visual environment would have a slightly different curve.</p>
+
+  <p>This is also why perceptual laws like <strong>Weber–Fechner</strong> exist: perceived intensity often goes as the <em>log</em> of physical intensity. Not a mystery &mdash; close to the optimal compressive coding when inputs span many orders of magnitude with a roughly log-distributed probability.</p>
+
+  <p>Your turn to match a histogram.</p>
+
+  <!-- WIDGET 9 — Match the histogram -->
+  <div class="widget" id="widget-hist">
+    <div class="widget-title">Interactive 7 &middot; Match the Histogram</div>
+
+    <svg viewBox="0 0 680 380" preserveAspectRatio="xMidYMid meet" id="hist-svg" style="touch-action: none;" aria-label="Interactive: design a neuron's response curve to match the cumulative distribution of input intensities">
+      <!-- Input histogram (top) -->
+      <g>
+        <text x="10" y="18" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">Input histogram (natural scene)</text>
+        <rect x="10" y="26" width="660" height="90" fill="white" stroke="#E5E5E0" rx="4"/>
+        <g id="hist-input-bars"></g>
+      </g>
+
+      <!-- User's response curve (bottom) -->
+      <g>
+        <text x="10" y="150" font-family="Figtree, sans-serif" font-size="14" font-weight="700" fill="#475569" letter-spacing="0.06em" style="text-transform: uppercase;">Your neuron's response curve (drag the dots)</text>
+        <rect x="10" y="160" width="660" height="200" fill="white" stroke="#E5E5E0" rx="4"/>
+
+        <!-- axes -->
+        <line x1="60" y1="340" x2="660" y2="340" stroke="#CBD5E1"/>
+        <line x1="60" y1="180" x2="60" y2="340" stroke="#CBD5E1"/>
+        <g font-family="Source Code Pro, monospace" font-size="13" fill="#94A3B8">
+          <text x="30" y="344" text-anchor="end">0</text>
+          <text x="30" y="264" text-anchor="end">50%</text>
+          <text x="30" y="184" text-anchor="end">max</text>
+          <text x="60" y="358" text-anchor="middle">0</text>
+          <text x="360" y="358" text-anchor="middle">mid input</text>
+          <text x="660" y="358" text-anchor="middle">max</text>
+        </g>
+
+        <!-- CDF reference line (hidden by default) -->
+        <path id="hist-cdf" d="" fill="none" stroke="#FBBF24" stroke-width="2" stroke-dasharray="5 4" style="display: none;"/>
+
+        <!-- user's response curve -->
+        <path id="hist-user-curve" d="" fill="rgba(99,102,241,0.12)" stroke="#6366F1" stroke-width="2.5"/>
+        <g id="hist-dots"></g>
+      </g>
+    </svg>
+
+    <div class="controls">
+      <div class="control-group">
+        <label style="margin-bottom: 6px;">Scene</label>
+        <div class="btn-group" id="hist-scene-group">
+          <button class="btn btn-secondary active" data-scene="natural">Natural scene</button>
+          <button class="btn btn-secondary" data-scene="dark">Dark room</button>
+          <button class="btn btn-secondary" data-scene="high-contrast">Harsh sun</button>
+        </div>
+      </div>
+      <div class="control-group" style="flex: 0 0 auto;">
+        <label style="margin-bottom: 6px;">&nbsp;</label>
+        <button class="btn btn-primary" id="hist-reveal">Reveal optimum</button>
+      </div>
+    </div>
+
+    <div class="stat-grid cols-2">
+      <div class="stat-card">
+        <div class="stat-card-label">Information transmitted</div>
+        <div style="margin-top: 6px;">
+          <div class="metric-bar"><div class="metric-bar-fill" id="hist-info-fill" style="width: 30%;">—</div></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Match to optimal CDF</div>
+        <div class="stat-card-value" id="hist-match">—</div>
+      </div>
+    </div>
+  </div>
+  <p class="figure-caption">
+    Drag the violet dots to shape your neuron's response curve. The widget computes how much information the curve transmits about the input. The maximum &mdash; revealed by the "optimum" button &mdash; is always the cumulative distribution of the input. A neuron that knows the world's statistics carries the most bits. A neuron with a fixed generic curve (say, a straight line) does not.
+  </p>
+
+</section>
+
+<!-- SECTION X -->
+<section id="sec-10">
+  <div class="section-heading">
+    <span class="section-number">X.</span>
+    <h2>The principles compose</h2>
+  </div>
+
+  <p>Take a breath. Here is the list, in seven words each:</p>
+
+  <ul>
+    <li><strong>Send only what surprises.</strong> Redundancy is for amateurs.</li>
+    <li><strong>Whisper instead of shout.</strong> Sparse, well-timed spikes beat dense ones.</li>
+    <li><strong>Analog where you can.</strong> Spikes only when geometry forces.</li>
+    <li><strong>Minimize wire.</strong> Topographic, modular, small-world layouts.</li>
+    <li><strong>Match axon to job.</strong> Unmyelinated thin, myelinated thick.</li>
+    <li><strong>Compute in dendrites.</strong> One fancy neuron beats ten plain ones.</li>
+    <li><strong>Adapt constantly.</strong> Match the code to the current statistics.</li>
+  </ul>
+
+  <p>These are not seven independent tips. They all fall out of the same recurring pressure: <em>intelligence has to run on a metabolically limited, physically embedded substrate.</em> Evolution has stress-tested an enormous number of nervous systems &mdash; from jellyfish nerve nets to human cortex &mdash; and the ones that survived tend to respect these constraints in overlapping ways. The principles are, more or less, the shape of the survivors.</p>
+
+  <h3>Why you can't just make a bigger brain</h3>
+
+  <p>An obvious question: if a larger brain is smarter, why aren't we all dolphins? Suzana Herculano-Houzel and colleagues answered this using a technique called isotropic fractionation &mdash; literally dissolving brains and counting the nuclei in the soup. The results were startling:</p>
+
+  <ul>
+    <li>In rodents, adding brain mass gives you a <em>declining</em> return in neurons. Neurons get bigger (and more expensive) faster than mass increases. A rodent brain twice as big as a rat's has fewer than twice as many neurons.</li>
+    <li>In primates, the scaling is nearly linear &mdash; primates pack more neurons per gram. This is why a 1.4 kg human brain outperforms a 4 kg cow brain. Not more mass: more neurons, more densely packed.</li>
+    <li>White matter &mdash; the wire &mdash; scales <em>super-linearly</em>. Double the gray matter and you need more than double the wire to connect it. This is why you can't just scale a brain by inflating it; the wire budget eats you alive. It probably helps cap mammalian brain size around 10 kg (elephants, large cetaceans).</li>
+  </ul>
+
+  <p>The moral: the brain's constraints are not arbitrary. They're the reason bigger isn't automatically better, and they're part of why there is no obvious path to a brain ten times the size of a human's that would still fit in a skull with enough blood supply to run.</p>
+
+  <h3>What these principles help explain</h3>
+
+  <p>Not fully, but substantially:</p>
+
+  <ul>
+    <li><em>Why cortex is folded</em> &mdash; keeping connected areas near each other saves wire (one widely-cited hypothesis; mechanical arguments also matter).</li>
+    <li><em>Why there are topographic maps everywhere</em> &mdash; local wire is cheap, long-range wire is expensive.</li>
+    <li><em>Why the cerebellum is so regular</em> &mdash; identical circuits repeated 10⁸ times is a wire- and coding-budget win.</li>
+    <li><em>Why mammals with similar brain sizes can differ in intelligence</em> &mdash; neuron density and wire efficiency vary.</li>
+    <li><em>Why lesion studies often show graceful degradation</em> &mdash; sparse distributed codes are redundant without being wasteful.</li>
+  </ul>
+
+  <h3>A harder comparison: brains vs LLMs</h3>
+
+  <p>You can't talk about neural design in the 2020s without the obvious question: if evolution built a 20-watt thinking machine, why does it take 700 watts to run GPT-4 inference, and gigawatt-hours to train it?</p>
+
+  <p>The honest answer isn't that LLMs are "doing it wrong." It's more nuanced:</p>
+
+  <ul>
+    <li>The two systems solve <em>different</em> problems. A brain controls a body in real time and has to react in milliseconds; an LLM predicts the next token in a sequence and has all the time in the world. Comparing their power draws is like comparing a hummingbird to a turbine.</li>
+    <li>Most of the brain's efficiency comes from <strong>sparse activations</strong>, <strong>analog in-place computation</strong>, and <strong>co-located memory and compute</strong>. GPU-based transformer inference uses essentially none of these. It's a <em>hardware + algorithm</em> mismatch, not a moral failure of deep learning.</li>
+    <li>Compare like to like. A frontier LLM training run consumes gigawatt-hours; inference on a single H100 draws 700 W. But a human brain represents 20 W × 80 years &mdash; roughly 14 MWh over a lifetime, most of it spent not thinking especially hard. Split the bill by task, not by totals.</li>
+    <li>There's an active research front trying to import the brain's tricks: <strong>sparse mixture-of-experts</strong> models (activate only a few experts per token), <strong>low-bit quantization</strong> (analog-ish compute), <strong>in-memory computing</strong>, and <strong>neuromorphic chips</strong> like Intel's Loihi, IBM NorthPole, Manchester's SpiNNaker, and silicon retinas from iniVation. Early results are encouraging; the gap is still enormous.</li>
+  </ul>
+
+  <p>Here's a scorecard, with the caveat that the comparison is imperfect:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Principle</th>
+        <th>Brain</th>
+        <th>Transformer on GPU</th>
+        <th>Neuromorphic target</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Sparse activity</td>
+        <td class="check">✓ &lt;1 Hz avg</td>
+        <td class="cross">✘ dense</td>
+        <td class="mixed">~ partial (MoE)</td>
+      </tr>
+      <tr>
+        <td>Analog local compute</td>
+        <td class="check">✓ graded voltages</td>
+        <td class="cross">✘ all digital</td>
+        <td class="check">✓ in-memory compute</td>
+      </tr>
+      <tr>
+        <td>Co-located memory + compute</td>
+        <td class="check">✓ same cell</td>
+        <td class="cross">✘ HBM round-trip</td>
+        <td class="check">✓ the whole point</td>
+      </tr>
+      <tr>
+        <td>Event-driven operation</td>
+        <td class="check">✓ spikes</td>
+        <td class="cross">✘ tick-synchronous</td>
+        <td class="check">✓ spike-based</td>
+      </tr>
+      <tr>
+        <td>Wire-aware layout</td>
+        <td class="check">✓ small-world cortex</td>
+        <td class="mixed">~ chiplet placement</td>
+        <td class="mixed">~ mesh interconnects</td>
+      </tr>
+      <tr>
+        <td>Online adaptation</td>
+        <td class="check">✓ continuous</td>
+        <td class="cross">✘ frozen weights</td>
+        <td class="mixed">~ work in progress</td>
+      </tr>
+      <tr>
+        <td>Low precision / noise tolerance</td>
+        <td class="check">✓ noise-native</td>
+        <td class="mixed">~ bfloat16, quant</td>
+        <td class="check">✓ noise-native</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The scorecard shows the efficiency gap isn't mysterious &mdash; it's a <em>design</em> gap, and it's one that hardware people are actively trying to close. The principles aren't just a story about biology. They are, increasingly, a roadmap for silicon.</p>
+
+  <h3>Closing thought</h3>
+
+  <p>The brain is not a general-purpose computer that happens to run on biology. It is a machine whose structure has been heavily sculpted by a few hard physical limits &mdash; energy, space, latency, noise. Evolution didn't "choose" these principles so much as <em>stumble onto designs that don't go extinct</em>. The principles are the shape of the survivors.</p>
+
+  <p>So the next time someone asks why a brain can do so much with so little &mdash; tell them it's because it <em>had to</em>. A more generous budget would have produced a different, lazier machine. The 20 watts is why the design is interesting at all.</p>
+
+  <div class="callout amber" style="margin-top: 32px; font-size: 19px;">
+    <strong>The universe's stingiest engineer is the one you should learn from.</strong> Thermodynamics is a teacher who never grades on a curve.
+  </div>
+
+</section>
+
+<!-- FURTHER READING -->
+<div class="further">
+  <h3>Further reading</h3>
+  <ul>
+    <li>Sterling &amp; Laughlin, <em>Principles of Neural Design</em> (MIT Press, 2015) &mdash; the canonical treatment.</li>
+    <li>Attwell &amp; Laughlin (2001), "An energy budget for signaling in the grey matter of the brain."</li>
+    <li>Harris &amp; Attwell (2012), "The energetics of CNS white matter."</li>
+    <li>Barlow (1961), "Possible principles underlying the transformation of sensory messages."</li>
+    <li>Chklovskii, Schikorski &amp; Stevens (2002), "Wiring optimization in cortical circuits."</li>
+    <li>Rieke, Warland, de Ruyter van Steveninck &amp; Bialek, <em>Spikes: Exploring the Neural Code</em>.</li>
+    <li>Olshausen &amp; Field (1996), "Emergence of simple-cell receptive field properties by learning a sparse code for natural images."</li>
+    <li>Laughlin (1981), "A simple coding procedure enhances a neuron's information capacity."</li>
+    <li>Herculano-Houzel, <em>The Human Advantage: A New Understanding of How Our Brain Became Remarkable</em>.</li>
+    <li>Niven &amp; Laughlin (2008), "Energy limitation as a selective pressure on the evolution of sensory systems."</li>
+  </ul>
+</div>
+
+<div class="colophon">
+  Built with a lot of help from evolution.
+</div>
+
+</article>
+
+<script>
+/* ============================================================
+   HERO NEURAL MESH — animated background
+   Sparse mesh of nodes with occasional pulse propagation.
+   Embodies the "sparse coding" idea: most nodes silent, rare cascades.
+   ============================================================ */
+(function heroMesh() {
+  const canvas = document.getElementById('hero-mesh');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, dpr;
+
+  // Node + edge model
+  const NODES = [];
+  const EDGES = [];
+  const PULSES = [];
+
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width  = Math.max(1, Math.round(W * dpr));
+    canvas.height = Math.max(1, Math.round(H * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    rebuild();
+  }
+
+  function rebuild() {
+    NODES.length = 0;
+    EDGES.length = 0;
+    PULSES.length = 0;
+    // hex-ish grid
+    const spacing = Math.max(52, Math.min(W, H) / 10);
+    const cols = Math.ceil(W / spacing) + 2;
+    const rows = Math.ceil(H / spacing) + 2;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = c * spacing + (r % 2 ? spacing / 2 : 0) - spacing;
+        const y = r * spacing * 0.86 - spacing;
+        NODES.push({
+          x: x + (Math.random() - 0.5) * 10,
+          y: y + (Math.random() - 0.5) * 10,
+          active: 0
+        });
+      }
+    }
+    // Connect near neighbors
+    const r2 = (spacing * 1.2) * (spacing * 1.2);
+    for (let i = 0; i < NODES.length; i++) {
+      for (let j = i + 1; j < NODES.length; j++) {
+        const dx = NODES[i].x - NODES[j].x;
+        const dy = NODES[i].y - NODES[j].y;
+        if (dx * dx + dy * dy < r2) {
+          EDGES.push([i, j]);
+        }
+      }
+    }
+  }
+
+  function spawnPulse() {
+    if (NODES.length === 0) return;
+    const startIdx = Math.floor(Math.random() * NODES.length);
+    // find edges from start and send a pulse along one
+    const outgoing = EDGES.filter(e => e[0] === startIdx || e[1] === startIdx);
+    if (outgoing.length === 0) return;
+    for (let k = 0; k < 2 + Math.floor(Math.random() * 2); k++) {
+      const e = outgoing[Math.floor(Math.random() * outgoing.length)];
+      const from = e[0] === startIdx ? e[0] : e[1];
+      const to   = e[0] === startIdx ? e[1] : e[0];
+      PULSES.push({ from, to, t: 0, speed: 0.010 + Math.random() * 0.006 });
+    }
+    NODES[startIdx].active = 1;
+  }
+
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min(80, now - last); last = now;
+    ctx.clearRect(0, 0, W, H);
+
+    // occasional pulse
+    if (Math.random() < 0.035) spawnPulse();
+
+    // edges
+    ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+    ctx.lineWidth = 1;
+    for (const [a, b] of EDGES) {
+      ctx.beginPath();
+      ctx.moveTo(NODES[a].x, NODES[a].y);
+      ctx.lineTo(NODES[b].x, NODES[b].y);
+      ctx.stroke();
+    }
+
+    // pulses
+    for (let i = PULSES.length - 1; i >= 0; i--) {
+      const p = PULSES[i];
+      p.t += p.speed * (dt / 16);
+      if (p.t >= 1) {
+        NODES[p.to].active = 1;
+        // chain onward with some probability
+        if (Math.random() < 0.55) {
+          const neighbors = EDGES
+            .filter(e => (e[0] === p.to || e[1] === p.to) && !(e[0] === p.from || e[1] === p.from));
+          if (neighbors.length) {
+            const e = neighbors[Math.floor(Math.random() * neighbors.length)];
+            const nextTo = e[0] === p.to ? e[1] : e[0];
+            PULSES.push({ from: p.to, to: nextTo, t: 0, speed: p.speed * (0.9 + Math.random() * 0.3) });
+          }
+        }
+        PULSES.splice(i, 1);
+        continue;
+      }
+      const from = NODES[p.from], to = NODES[p.to];
+      const x = from.x + (to.x - from.x) * p.t;
+      const y = from.y + (to.y - from.y) * p.t;
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, 16);
+      glow.addColorStop(0, 'rgba(255,255,255,0.95)');
+      glow.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // nodes
+    for (const n of NODES) {
+      n.active = Math.max(0, n.active - 0.025);
+      ctx.fillStyle = `rgba(255,255,255,${0.28 + n.active * 0.7})`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 1.8 + n.active * 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(tick);
+})();
+
+/* ============================================================
+   INTERACTIVE 1 — METABOLIC BUDGET CALCULATOR
+   ============================================================ */
+(function budgetCalc() {
+  const rate = document.getElementById('budget-rate');
+  const frac = document.getElementById('budget-frac');
+  if (!rate || !frac) return;
+  const rateVal = document.getElementById('budget-rate-val');
+  const fracVal = document.getElementById('budget-frac-val');
+  const barH = document.getElementById('bar-housekeeping');
+  const barS = document.getElementById('bar-signaling');
+  const barT = document.getElementById('bar-total');
+  const labH = document.getElementById('bar-housekeeping-label');
+  const labS = document.getElementById('bar-signaling-label');
+  const labT = document.getElementById('bar-total-label');
+  const verdict = document.getElementById('budget-verdict');
+
+  // Model (calibrated so defaults land near real-brain 20W, consistent with
+  // Attwell-Laughlin / Harris-Attwell for the all-in per-spike cost, and Lennie
+  // 2003's ~0.3 Hz cortical average):
+  // - Neurons: 86e9 (whole-brain, simplified)
+  // - All-in spike cost (spike + downstream synaptic work): ~7.5e9 ATP
+  // - ATP hydrolysis energy: ~5e-20 J/molecule
+  // - Housekeeping: ~10 W (resting potentials + glia + biosynthesis)
+  // At default 0.3 Hz * 86e9 active: signaling ≈ 9.7 W, total ≈ 19.7 W ≈ 20 W ✓
+  const N_TOTAL = 86e9;
+  const ATP_PER_SPIKE = 7.5e9;
+  const J_PER_ATP = 5e-20;
+  const HOUSEKEEPING_W = 10;
+  const BLOODFLOW_LIMIT_W = 25;  // beyond this, cerebral blood flow cannot supply O2/glucose fast enough
+
+  // x-axis: 0..120W maps to 210..670 (width 460)
+  const X0 = 210, W_PER_WATT = 460 / 120;
+
+  function fmtWatts(w) {
+    return w.toFixed(1) + ' W';
+  }
+
+  function update() {
+    const r = parseFloat(rate.value);
+    const f = parseFloat(frac.value) / 100;  // fraction of neurons active
+    rateVal.textContent = r.toFixed(2) + ' Hz';
+    fracVal.textContent = Math.round(f * 100) + '%';
+
+    const activeN = N_TOTAL * f;
+    const spikesPerSec = activeN * r;
+    const signalingW = spikesPerSec * ATP_PER_SPIKE * J_PER_ATP;
+    const totalW = HOUSEKEEPING_W + signalingW;
+
+    const hk_w = Math.max(2, HOUSEKEEPING_W * W_PER_WATT);
+    const sig_w = Math.max(2, signalingW * W_PER_WATT);
+    const tot_w = Math.max(2, totalW * W_PER_WATT);
+
+    // Clamp visual bars at right edge (but keep numeric label showing true value)
+    const MAX_X = 670 - X0;  // 460 px
+    const hk_clamped = Math.min(hk_w, MAX_X);
+    const sig_clamped = Math.min(sig_w, MAX_X);
+    const tot_clamped = Math.min(tot_w, MAX_X);
+
+    barH.setAttribute('width', hk_clamped);
+    barS.setAttribute('width', sig_clamped);
+    barT.setAttribute('width', tot_clamped);
+
+    // Label placement: inside the bar (white) if close to right edge, else outside (colored)
+    function placeLabel(lab, clamped, trueW, bar_right, insideColor, outsideColor) {
+      const labelText = trueW >= 100 ? trueW.toFixed(0) + ' W' : trueW.toFixed(1) + ' W';
+      lab.textContent = labelText;
+      const estimatedWidth = labelText.length * 8 + 4;  // approx for mono 13px
+      if (X0 + clamped + estimatedWidth > 680) {
+        lab.setAttribute('x', X0 + clamped - 8);
+        lab.setAttribute('text-anchor', 'end');
+        lab.setAttribute('fill', insideColor);
+      } else {
+        lab.setAttribute('x', X0 + clamped + 6);
+        lab.setAttribute('text-anchor', 'start');
+        lab.setAttribute('fill', outsideColor);
+      }
+    }
+
+    // color the TOTAL bar by safety
+    let fill, labelColor;
+    if (totalW <= 22) {
+      fill = 'url(#grad-safe)';
+      labelColor = '#0D9488';
+      verdict.innerHTML = '✓ Plausible design — within the real brain\'s ~20 W budget.';
+      verdict.style.color = '#0D9488';
+    } else if (totalW <= BLOODFLOW_LIMIT_W) {
+      fill = 'url(#grad-warn)';
+      labelColor = '#B45309';
+      verdict.innerHTML = '⚠ Approaching the cerebral blood-flow limit (~25 W). You\'d be running hot.';
+      verdict.style.color = '#B45309';
+    } else {
+      fill = 'url(#grad-danger)';
+      labelColor = '#EC4899';
+      const factor = (totalW / 20).toFixed(1);
+      verdict.innerHTML = '✗ Over budget — ' + factor + '× the real brain. No vasculature could sustain this.';
+      verdict.style.color = '#EC4899';
+    }
+    const sigFill = signalingW < 12 ? 'url(#grad-safe)' : signalingW < 20 ? 'url(#grad-warn)' : 'url(#grad-danger)';
+    barT.setAttribute('fill', fill);
+    barS.setAttribute('fill', sigFill);
+
+    placeLabel(labH, hk_clamped, HOUSEKEEPING_W, null, 'white', '#0D9488');
+    placeLabel(labS, sig_clamped, signalingW, null, 'white', labelColor);
+    placeLabel(labT, tot_clamped, totalW, null, 'white', labelColor);
+  }
+
+  rate.addEventListener('input', update);
+  frac.addEventListener('input', update);
+  update();
+})();
+
+/* ============================================================
+   INTERACTIVE 2 — RETINAL CENTER-SURROUND FILTER
+   ============================================================ */
+(function retinaFilter() {
+  const rawCanvas = document.getElementById('retina-raw');
+  const outCanvas = document.getElementById('retina-out');
+  const radiusEl = document.getElementById('retina-radius');
+  const radiusVal = document.getElementById('retina-radius-val');
+  const group = document.getElementById('retina-scene-group');
+  const sparsityEl = document.getElementById('retina-sparsity');
+  const bitsEl = document.getElementById('retina-bits');
+  if (!rawCanvas || !outCanvas) return;
+
+  const W = rawCanvas.width, H = rawCanvas.height;
+  const rawCtx = rawCanvas.getContext('2d');
+  const outCtx = outCanvas.getContext('2d');
+
+  let currentScene = 'face';
+
+  function drawFace(ctx) {
+    // A simple stylized face: light oval on dark background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+    // Face oval
+    ctx.save();
+    ctx.translate(W/2, H/2);
+    const grad = ctx.createRadialGradient(0, -10, 10, 0, 0, 110);
+    grad.addColorStop(0, '#e8c8a0');
+    grad.addColorStop(0.7, '#c49874');
+    grad.addColorStop(1, '#22140a');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 90, 115, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Eyes
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath(); ctx.arc(-32, -20, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc( 32, -20, 9, 0, Math.PI * 2); ctx.fill();
+    // Eye highlights
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-29, -23, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc( 35, -23, 2.5, 0, Math.PI * 2); ctx.fill();
+    // Nose shadow
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, -5); ctx.lineTo(-5, 15); ctx.lineTo(4, 18);
+    ctx.stroke();
+    // Mouth
+    ctx.strokeStyle = '#5a2010';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-20, 48); ctx.quadraticCurveTo(0, 58, 20, 48);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawRings(ctx) {
+    ctx.fillStyle = '#f0ead8';
+    ctx.fillRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(W/2, H/2);
+    for (let r = 20; r < 180; r += 14) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = r % 28 === 20 ? '#2b2b2b' : '#f0ead8';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawGradient(ctx) {
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#0a0a2a');
+    grad.addColorStop(0.5, '#6060a0');
+    grad.addColorStop(1, '#ffe8c4');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    // A little texture - clouds
+    for (let i = 0; i < 8; i++) {
+      const cx = Math.random() * W;
+      const cy = Math.random() * H;
+      const r = 20 + Math.random() * 40;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, 'rgba(255,255,255,0.35)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawNoise(ctx) {
+    const img = ctx.createImageData(W, H);
+    for (let i = 0; i < img.data.length; i += 4) {
+      // correlated noise: each pixel is an average of its neighbors' random values
+      const v = 128 + (Math.random() - 0.5) * 200;
+      const c = Math.max(0, Math.min(255, v));
+      img.data[i] = img.data[i+1] = img.data[i+2] = c;
+      img.data[i+3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  function renderScene(name) {
+    currentScene = name;
+    if (name === 'face') drawFace(rawCtx);
+    else if (name === 'rings') drawRings(rawCtx);
+    else if (name === 'gradient') drawGradient(rawCtx);
+    else if (name === 'noise') drawNoise(rawCtx);
+    applyCenterSurround();
+  }
+
+  // Center-surround via box-blur approximation:
+  //   surround = average over a radius-R box
+  //   output   = (center - surround), rescaled to 0..255 around 128
+  function applyCenterSurround() {
+    const radius = parseInt(radiusEl.value);
+    const src = rawCtx.getImageData(0, 0, W, H);
+    // convert to luminance
+    const lum = new Float32Array(W * H);
+    for (let i = 0; i < W * H; i++) {
+      lum[i] = 0.2126 * src.data[i*4] + 0.7152 * src.data[i*4+1] + 0.0722 * src.data[i*4+2];
+    }
+    // compute blurred luminance via integral image
+    const integ = new Float32Array((W+1) * (H+1));
+    for (let y = 1; y <= H; y++) {
+      let rowSum = 0;
+      for (let x = 1; x <= W; x++) {
+        rowSum += lum[(y-1)*W + (x-1)];
+        integ[y*(W+1) + x] = integ[(y-1)*(W+1) + x] + rowSum;
+      }
+    }
+    function boxAvg(x, y, r) {
+      const x0 = Math.max(0, x - r), y0 = Math.max(0, y - r);
+      const x1 = Math.min(W, x + r + 1), y1 = Math.min(H, y + r + 1);
+      const area = (x1 - x0) * (y1 - y0);
+      const s = integ[y1*(W+1) + x1] - integ[y0*(W+1) + x1] - integ[y1*(W+1) + x0] + integ[y0*(W+1) + x0];
+      return s / area;
+    }
+    const out = outCtx.createImageData(W, H);
+    let activeCount = 0;
+    const threshold = 18;  // |response| > threshold => counted as "active" pixel
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const c = lum[y*W + x];
+        const s = boxAvg(x, y, radius);
+        // rescale with gain=1.4
+        const r = (c - s) * 1.4;
+        const g = Math.max(0, Math.min(255, 128 + r));
+        const i = (y*W + x) * 4;
+        out.data[i] = out.data[i+1] = out.data[i+2] = g;
+        out.data[i+3] = 255;
+        if (Math.abs(r) > threshold) activeCount++;
+      }
+    }
+    outCtx.putImageData(out, 0, 0);
+
+    const totalPx = W * H;
+    const sparsityPct = (100 * activeCount / totalPx);
+    sparsityEl.textContent = sparsityPct.toFixed(1) + '%';
+    // crude bits-saved estimate: if raw needs 8 bits/pixel and output has `activeCount` above-threshold pixels,
+    // and those need say 4 bits each, the rest 0 bits.
+    const rawBits = totalPx * 8;
+    const compressedBits = activeCount * 5 + (totalPx - activeCount) * 0;
+    const savedRatio = 1 - compressedBits / rawBits;
+    bitsEl.textContent = (savedRatio * 100).toFixed(0) + '% fewer';
+  }
+
+  group.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    group.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    renderScene(b.dataset.scene);
+  });
+
+  radiusEl.addEventListener('input', () => {
+    radiusVal.textContent = radiusEl.value + ' px';
+    applyCenterSurround();
+  });
+
+  renderScene('face');
+})();
+
+/* ============================================================
+   INTERACTIVE 3 — H1 ON A RAINY DAY
+   ============================================================ */
+(function h1Demo() {
+  const stimPath = document.getElementById('h1-stim');
+  const denseG = document.getElementById('h1-spikes-dense');
+  const sparseG = document.getElementById('h1-spikes-sparse');
+  const temporalG = document.getElementById('h1-spikes-temporal');
+  const shuffle = document.getElementById('h1-shuffle');
+  if (!stimPath) return;
+
+  const denseCount = document.getElementById('h1-dense-count');
+  const denseBits  = document.getElementById('h1-dense-bits');
+  const sparseCount = document.getElementById('h1-sparse-count');
+  const sparseBits  = document.getElementById('h1-sparse-bits');
+  const tCount = document.getElementById('h1-temporal-count');
+  const tBits  = document.getElementById('h1-temporal-bits');
+
+  const X0 = 10, X1 = 670;   // stimulus x range
+  const Y_TOP = 30, Y_MID = 52, Y_BOT = 74;  // stimulus band
+  const LEN = X1 - X0;
+
+  function makeStim() {
+    // Piecewise velocity: baseline noise + a few "events" (bumps) where velocity goes high
+    const N = 400;
+    const vel = new Float32Array(N);
+    // baseline noise
+    for (let i = 0; i < N; i++) vel[i] = (Math.random() - 0.5) * 0.18;
+    // add 4-6 events at random positions
+    const nEvents = 4 + Math.floor(Math.random() * 3);
+    for (let k = 0; k < nEvents; k++) {
+      const center = 30 + Math.random() * (N - 60);
+      const width = 8 + Math.random() * 12;
+      const amp = 0.55 + Math.random() * 0.4;
+      for (let i = 0; i < N; i++) {
+        const d = (i - center) / width;
+        vel[i] += amp * Math.exp(-d * d);
+      }
+    }
+    return vel;
+  }
+
+  function draw(vel) {
+    const N = vel.length;
+    // stimulus path: map velocity [-1, 1] to y [Y_TOP, Y_BOT]
+    let d = '';
+    for (let i = 0; i < N; i++) {
+      const x = X0 + (i / (N - 1)) * LEN;
+      const y = Y_MID - Math.max(-1, Math.min(1, vel[i])) * 22;
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    }
+    stimPath.setAttribute('d', d);
+
+    // ============ Generate spike trains ============
+    // ① Dense rate code: Poisson with rate = 30 + 120 * max(vel, 0)  Hz
+    //    over a 1-second window => N time bins of dt = 1/N s
+    const dt = 1 / N;
+    let denseSpikes = [];
+    for (let i = 0; i < N; i++) {
+      const rate = 30 + 220 * Math.max(0, vel[i]);
+      if (Math.random() < rate * dt) denseSpikes.push(i);
+    }
+    // ② Sparse rate code: threshold vel > 0.4, fire Poisson at elevated rate when above threshold
+    let sparseSpikes = [];
+    for (let i = 0; i < N; i++) {
+      if (vel[i] > 0.40) {
+        if (Math.random() < 120 * dt) sparseSpikes.push(i);
+      } else {
+        if (Math.random() < 2 * dt) sparseSpikes.push(i);
+      }
+    }
+    // ③ Temporal code: one spike per event at peak, plus tiny background
+    // Find local maxima above 0.4
+    let temporalSpikes = [];
+    for (let i = 2; i < N - 2; i++) {
+      if (vel[i] > 0.45 && vel[i] >= vel[i-1] && vel[i] >= vel[i+1] && vel[i] > vel[i-2] && vel[i] > vel[i+2]) {
+        temporalSpikes.push(i);
+      }
+    }
+
+    // render spike trains
+    function renderSpikes(g, spikes, yTop, yBot, color) {
+      g.innerHTML = '';
+      for (const i of spikes) {
+        const x = X0 + (i / (N - 1)) * LEN;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x.toFixed(1));
+        line.setAttribute('y1', yTop);
+        line.setAttribute('x2', x.toFixed(1));
+        line.setAttribute('y2', yBot);
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', '1.6');
+        g.appendChild(line);
+      }
+    }
+    renderSpikes(denseG, denseSpikes, 115, 145, '#DB2777');
+    renderSpikes(sparseG, sparseSpikes, 195, 225, '#D97706');
+    renderSpikes(temporalG, temporalSpikes, 275, 305, '#0D9488');
+
+    // ============ Info estimates (illustrative, not rigorous) ============
+    // bits per spike ~= log2(total time bins / number of spikes)  (surprise of location)
+    function fmtBits(n) {
+      if (n === 0) return '0.0 bits/spike';
+      return (Math.log2(N / n)).toFixed(1) + ' bits/spike';
+    }
+    denseCount.textContent = denseSpikes.length + ' spikes';
+    denseBits.textContent = fmtBits(denseSpikes.length);
+    sparseCount.textContent = sparseSpikes.length + ' spikes';
+    sparseBits.textContent = fmtBits(sparseSpikes.length);
+    tCount.textContent = temporalSpikes.length + ' spikes';
+    tBits.textContent = fmtBits(temporalSpikes.length);
+  }
+
+  function shuffleNow() {
+    draw(makeStim());
+  }
+
+  shuffle.addEventListener('click', shuffleNow);
+  shuffleNow();
+})();
+
+/* ============================================================
+   INTERACTIVE 4 — ANALOG vs DIGITAL over distance
+   ============================================================ */
+(function analogDigital() {
+  const dist = document.getElementById('ad-dist');
+  const distVal = document.getElementById('ad-dist-val');
+  const analogPath = document.getElementById('ad-analog');
+  const digitalG = document.getElementById('ad-digital');
+  const analogVerdict = document.getElementById('ad-analog-verdict');
+  const digitalVerdict = document.getElementById('ad-digital-verdict');
+  const costAnalog = document.getElementById('ad-cost-analog');
+  const costDigital = document.getElementById('ad-cost-digital');
+  if (!dist) return;
+
+  // Distance slider: 0..100 maps log-ish to 0.1mm..1m
+  //   d_mm = 0.1 * 10^(slider/25)   => slider=0 -> 0.1mm, 25 -> 1mm, 50 -> 10mm, 75 -> 100mm, 100 -> 1000mm (1m)
+  function sliderToDistMm(s) {
+    return 0.1 * Math.pow(10, s / 25);
+  }
+  function fmtDist(mm) {
+    if (mm < 1) return (mm * 1000).toFixed(0) + ' µm';
+    if (mm < 1000) return mm.toFixed(1) + ' mm';
+    return (mm / 1000).toFixed(2) + ' m';
+  }
+
+  const X0 = 20, X1 = 660, LEN = X1 - X0;
+
+  // Reference analog waveform: a few bumps representing a graded signal
+  function baselineAnalog(x) {
+    // x in 0..1
+    const t = x * 6;
+    return 0.55 * Math.exp(-Math.pow((t - 1.2) / 0.5, 2))
+         + 0.75 * Math.exp(-Math.pow((t - 2.7) / 0.6, 2))
+         + 0.35 * Math.exp(-Math.pow((t - 4.5) / 0.4, 2))
+         - 0.25 * Math.exp(-Math.pow((t - 3.6) / 0.3, 2));
+  }
+
+  function update() {
+    const s = parseFloat(dist.value);
+    const d_mm = sliderToDistMm(s);
+    distVal.textContent = fmtDist(d_mm);
+
+    // Attenuation for analog: exponential decay with length constant ~0.5 mm
+    // plus additive noise that grows with distance
+    const lambda = 0.5;  // mm
+    const atten = Math.exp(-d_mm / lambda);
+    const noiseAmp = Math.min(0.25, 0.015 + d_mm / 200);
+
+    // Build analog path
+    const MIDY = 100;
+    let path = '';
+    const N = 320;
+    for (let i = 0; i < N; i++) {
+      const x = i / (N - 1);
+      const clean = baselineAnalog(x);
+      const noise = (Math.random() - 0.5) * 2 * noiseAmp;
+      const signal = clean * atten + noise;
+      const xPx = X0 + x * LEN;
+      const yPx = MIDY - signal * 45;
+      path += (i === 0 ? 'M' : 'L') + xPx.toFixed(1) + ',' + yPx.toFixed(1) + ' ';
+    }
+    analogPath.setAttribute('d', path);
+
+    // Digital: always clean regenerated spikes at same positions
+    digitalG.innerHTML = '';
+    const peakTimes = [0.15, 0.33, 0.48, 0.62, 0.78];
+    for (const pt of peakTimes) {
+      const xPx = X0 + pt * LEN;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', xPx);
+      line.setAttribute('y1', 225);
+      line.setAttribute('x2', xPx);
+      line.setAttribute('y2', 319);
+      line.setAttribute('stroke', '#0D9488');
+      line.setAttribute('stroke-width', '2.2');
+      digitalG.appendChild(line);
+    }
+    // Show a small propagation delay indicator (not visible change in amplitude)
+    const latencyMs = d_mm / 2;  // assume 2 mm/ms for mixed fibers
+    digitalVerdict.textContent = 'intact · delay ' + latencyMs.toFixed(1) + ' ms';
+
+    // Analog verdict
+    if (atten > 0.6) {
+      analogVerdict.textContent = 'clean';
+      analogVerdict.setAttribute('fill', '#0D9488');
+    } else if (atten > 0.15) {
+      analogVerdict.textContent = 'attenuated';
+      analogVerdict.setAttribute('fill', '#B45309');
+    } else if (atten > 0.01) {
+      analogVerdict.textContent = 'nearly gone';
+      analogVerdict.setAttribute('fill', '#EC4899');
+    } else {
+      analogVerdict.textContent = 'lost in noise';
+      analogVerdict.setAttribute('fill', '#EC4899');
+    }
+
+    // Energy cost ratios (qualitative)
+    // Baseline: within a short analog segment, ~1 unit
+    // At long distance, a spiking axon must regenerate the signal; cost scales roughly with length
+    // We show cheaper option as "✓"
+    const analogReach_mm = 0.5;  // analog only practical below this
+    if (d_mm <= analogReach_mm) {
+      costAnalog.innerHTML = '✓ ~1× &nbsp;(cheap)';
+      costDigital.innerHTML = '~1000× &nbsp;(wasteful here)';
+    } else {
+      costAnalog.innerHTML = 'impossible &nbsp;(signal dies)';
+      costDigital.innerHTML = '✓ regenerates cleanly';
+    }
+  }
+
+  dist.addEventListener('input', update);
+  update();
+})();
+
+/* ============================================================
+   INTERACTIVE 5 — WIRE MINIMIZATION
+   ============================================================ */
+(function wireMin() {
+  const svg = document.getElementById('wire-svg');
+  const edgesG = document.getElementById('wire-edges');
+  const nodesG = document.getElementById('wire-nodes');
+  const cur = document.getElementById('wire-current');
+  const rnd = document.getElementById('wire-random');
+  const best = document.getElementById('wire-best');
+  const btnShuffle = document.getElementById('wire-shuffle');
+  const btnOpt = document.getElementById('wire-optimize');
+  if (!svg) return;
+
+  // 8 brain modules, roughly inspired by primate visual system
+  const NODE_LABELS = ['Retina','LGN','V1','V2','V4','MT','IT','PFC'];
+  const NODE_COLORS = ['#14B8A6','#0D9488','#6366F1','#4F46E5','#F472B6','#EC4899','#FBBF24','#D97706'];
+  // Edges encode rough functional connectivity (weighted)
+  const EDGES = [
+    [0,1,1], [1,2,1], [2,3,1], [3,4,1], [3,5,1], [4,6,1], [5,6,0.6],
+    [4,7,0.5], [6,7,1], [5,7,0.7], [2,4,0.4], [2,5,0.4], [1,3,0.3]
+  ];
+
+  const W = 680, H = 400;
+  const R = 28;
+  const PADDING = 50;
+
+  let nodes = [];   // {x,y,id,label,color,vx,vy}
+  let randomCost = 0;
+  let bestCost = 0;
+
+  function seedPositions(rand) {
+    // Lay nodes out in a jittered grid so they never start on top of each other.
+    // 4 columns x 2 rows
+    const cols = 4, rows = 2;
+    const cellW = (W - 2 * PADDING) / cols;
+    const cellH = (H - 2 * PADDING) / rows;
+    const positions = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        positions.push({
+          x: PADDING + c * cellW + cellW / 2,
+          y: PADDING + r * cellH + cellH / 2,
+        });
+      }
+    }
+    // Shuffle the position array
+    for (let i = positions.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+    const jitter = Math.min(cellW, cellH) * 0.15;
+    nodes = NODE_LABELS.map((lbl, i) => ({
+      id: i,
+      label: lbl,
+      color: NODE_COLORS[i],
+      x: positions[i].x + (rand() - 0.5) * 2 * jitter,
+      y: positions[i].y + (rand() - 0.5) * 2 * jitter,
+    }));
+  }
+
+  function totalWire() {
+    let s = 0;
+    for (const [a, b, w] of EDGES) {
+      const dx = nodes[a].x - nodes[b].x;
+      const dy = nodes[a].y - nodes[b].y;
+      s += w * Math.sqrt(dx * dx + dy * dy);
+    }
+    return s;
+  }
+
+  function render() {
+    // edges first so nodes draw on top
+    edgesG.innerHTML = '';
+    for (const [a, b, w] of EDGES) {
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', nodes[a].x);
+      l.setAttribute('y1', nodes[a].y);
+      l.setAttribute('x2', nodes[b].x);
+      l.setAttribute('y2', nodes[b].y);
+      l.setAttribute('stroke', '#94A3B8');
+      l.setAttribute('stroke-width', 1 + w * 2);
+      l.setAttribute('stroke-opacity', 0.5);
+      edgesG.appendChild(l);
+    }
+    nodesG.innerHTML = '';
+    for (const n of nodes) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', `translate(${n.x},${n.y})`);
+      g.setAttribute('data-id', n.id);
+      g.style.cursor = 'grab';
+
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('r', R);
+      c.setAttribute('fill', n.color);
+      c.setAttribute('stroke', 'white');
+      c.setAttribute('stroke-width', 3);
+      g.appendChild(c);
+
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dy', 5);
+      t.setAttribute('font-family', 'Figtree, sans-serif');
+      t.setAttribute('font-size', 13);
+      t.setAttribute('font-weight', 700);
+      t.setAttribute('fill', 'white');
+      t.setAttribute('pointer-events', 'none');
+      t.textContent = n.label;
+      g.appendChild(t);
+
+      nodesG.appendChild(g);
+    }
+    cur.textContent = totalWire().toFixed(0) + ' px';
+  }
+
+  function shuffle() {
+    seedPositions(Math.random);
+    randomCost = totalWire();
+    rnd.textContent = randomCost.toFixed(0) + ' px';
+    render();
+  }
+
+  function optimize() {
+    // Force-directed: nodes attract along edges (spring), repel each other weakly
+    // Plus boundary constraint.
+    const ITERS = 500;
+    for (let iter = 0; iter < ITERS; iter++) {
+      const fx = new Array(nodes.length).fill(0);
+      const fy = new Array(nodes.length).fill(0);
+      // Attractive: along edges, F ~ w * distance (this minimizes sum of weighted distances)
+      for (const [a, b, w] of EDGES) {
+        const dx = nodes[b].x - nodes[a].x;
+        const dy = nodes[b].y - nodes[a].y;
+        fx[a] += w * dx * 0.02;
+        fy[a] += w * dy * 0.02;
+        fx[b] -= w * dx * 0.02;
+        fy[b] -= w * dy * 0.02;
+      }
+      // Repulsive between all pairs to avoid overlap
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const d2 = dx * dx + dy * dy + 1;
+          const d = Math.sqrt(d2);
+          const minDist = 2 * R + 8;
+          if (d < minDist) {
+            const push = (minDist - d) * 0.5;
+            fx[i] += (dx / d) * push;
+            fy[i] += (dy / d) * push;
+            fx[j] -= (dx / d) * push;
+            fy[j] -= (dy / d) * push;
+          } else {
+            // mild global repulsion
+            const f = 300 / d2;
+            fx[i] += (dx / d) * f;
+            fy[i] += (dy / d) * f;
+            fx[j] -= (dx / d) * f;
+            fy[j] -= (dy / d) * f;
+          }
+        }
+      }
+      // Integrate
+      for (let i = 0; i < nodes.length; i++) {
+        nodes[i].x += fx[i];
+        nodes[i].y += fy[i];
+        // clamp to bounds
+        nodes[i].x = Math.max(PADDING, Math.min(W - PADDING, nodes[i].x));
+        nodes[i].y = Math.max(PADDING, Math.min(H - PADDING, nodes[i].y));
+      }
+    }
+    bestCost = totalWire();
+    best.textContent = bestCost.toFixed(0) + ' px';
+    render();
+  }
+
+  // Precompute the optimal cost so the UI has a reference even before the user clicks optimize
+  function precomputeBest() {
+    const saveState = nodes.map(n => ({...n}));
+    // Run optimization several times with different seeds, take the best
+    let localBest = Infinity;
+    for (let trial = 0; trial < 5; trial++) {
+      seedPositions(Math.random);
+      optimize();
+      if (totalWire() < localBest) localBest = totalWire();
+    }
+    bestCost = localBest;
+    best.textContent = bestCost.toFixed(0) + ' px';
+    // restore original random layout
+    nodes = saveState;
+    render();
+  }
+
+  // -------- Drag handling --------
+  let dragId = null;
+  function svgPoint(evt) {
+    const rect = svg.getBoundingClientRect();
+    const viewBox = svg.viewBox.baseVal;
+    const scaleX = viewBox.width / rect.width;
+    const scaleY = viewBox.height / rect.height;
+    return {
+      x: (evt.clientX - rect.left) * scaleX,
+      y: (evt.clientY - rect.top) * scaleY,
+    };
+  }
+  svg.addEventListener('pointerdown', (evt) => {
+    const target = evt.target.closest('g[data-id]');
+    if (!target) return;
+    dragId = parseInt(target.dataset.id);
+    svg.setPointerCapture(evt.pointerId);
+  });
+  svg.addEventListener('pointermove', (evt) => {
+    if (dragId === null) return;
+    const p = svgPoint(evt);
+    nodes[dragId].x = Math.max(PADDING, Math.min(W - PADDING, p.x));
+    nodes[dragId].y = Math.max(PADDING, Math.min(H - PADDING, p.y));
+    render();
+  });
+  svg.addEventListener('pointerup', () => { dragId = null; });
+  svg.addEventListener('pointercancel', () => { dragId = null; });
+
+  btnShuffle.addEventListener('click', shuffle);
+  btnOpt.addEventListener('click', optimize);
+
+  // initialize
+  shuffle();
+  precomputeBest();
+})();
+
+/* ============================================================
+   INTERACTIVE 6 — DESIGN YOUR OWN AXON
+   ============================================================ */
+(function axonDesign() {
+  const dEl = document.getElementById('axon-d');
+  const dVal = document.getElementById('axon-d-val');
+  const group = document.getElementById('axon-myelin-group');
+  const speedEl = document.getElementById('axon-speed');
+  const areaEl = document.getElementById('axon-area');
+  const verdictEl = document.getElementById('axon-verdict');
+  const inner = document.getElementById('axon-inner');
+  const myelinG = document.getElementById('axon-myelin');
+  const nodesG = document.getElementById('axon-nodes');
+  const pulse = document.getElementById('axon-pulse');
+  const curveUn = document.getElementById('axon-curve-un');
+  const curveMy = document.getElementById('axon-curve-my');
+  const biologyG = document.getElementById('axon-biology');
+  const userPt = document.getElementById('axon-user');
+  if (!dEl) return;
+
+  let myelinated = false;
+
+  // --- velocity models (approximate) ---
+  //   unmyelinated:  v = 2.5 * sqrt(d)   m/s
+  //   myelinated:    v = 6 * d           m/s  (only valid d >= 0.2 um)
+  function velocity(d, mye) {
+    if (!mye) return 2.5 * Math.sqrt(d);
+    if (d < 0.2) return 2.5 * Math.sqrt(d);  // below crossover, behaves like unmyelinated
+    return 6 * d;
+  }
+
+  // --- log-scale mapping for x-axis ---
+  //   d in [0.1, 20] -> x in [40, 660]
+  //   log10(0.1) = -1, log10(20) = 1.301
+  const X_MIN = 40, X_MAX = 660;
+  const LOG_MIN = -1, LOG_MAX = Math.log10(20);
+  function dToX(d) {
+    const t = (Math.log10(d) - LOG_MIN) / (LOG_MAX - LOG_MIN);
+    return X_MIN + t * (X_MAX - X_MIN);
+  }
+  function vToY(v) {
+    // 0 -> 152, 120 -> 32
+    const t = Math.min(1, v / 120);
+    return 152 - t * 120;
+  }
+
+  // Draw the two curves once
+  function drawCurves() {
+    let p1 = '';
+    for (let i = 0; i <= 100; i++) {
+      const logD = LOG_MIN + (i / 100) * (LOG_MAX - LOG_MIN);
+      const d = Math.pow(10, logD);
+      const v = velocity(d, false);
+      p1 += (i === 0 ? 'M' : 'L') + dToX(d).toFixed(1) + ',' + vToY(v).toFixed(1) + ' ';
+    }
+    curveUn.setAttribute('d', p1);
+
+    let p2 = '';
+    let started = false;
+    for (let i = 0; i <= 100; i++) {
+      const logD = LOG_MIN + (i / 100) * (LOG_MAX - LOG_MIN);
+      const d = Math.pow(10, logD);
+      if (d < 0.2) continue;
+      const v = velocity(d, true);
+      p2 += (!started ? 'M' : 'L') + dToX(d).toFixed(1) + ',' + vToY(v).toFixed(1) + ' ';
+      started = true;
+    }
+    curveMy.setAttribute('d', p2);
+  }
+
+  function drawBiology() {
+    // approximate real axon diameters (µm) and velocities (m/s)
+    // cortical local unmyelinated: thin & slow
+    // Ia motor myelinated: thick & fast
+    // C fibers (pain): thin, unmyelinated
+    const data = [
+      // [diameter µm, velocity m/s, myelinated]
+      [0.3, 1.2, false], [0.4, 1.5, false], [0.6, 1.9, false], [0.8, 2.2, false], [1.0, 2.5, false],
+      [0.5, 0.8, false], [0.35, 1.0, false], // cortical local
+      [1.0, 6, true], [1.5, 9, true], [2.0, 12, true],
+      [5, 30, true], [8, 50, true], [10, 60, true], [12, 75, true],
+      [14, 85, true], [16, 95, true], [20, 115, true]
+    ];
+    biologyG.innerHTML = '';
+    for (const [d, v] of data) {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', dToX(d).toFixed(1));
+      c.setAttribute('cy', vToY(v).toFixed(1));
+      c.setAttribute('r', 3);
+      c.setAttribute('fill', '#64748B');
+      c.setAttribute('fill-opacity', 0.55);
+      biologyG.appendChild(c);
+    }
+  }
+
+  // --- draw the axon cross-section view (top) ---
+  function drawAxon() {
+    const d = parseFloat(dEl.value);
+    // axon thickness drawn in px: thin ~ 4px, thick ~ 40px
+    // scale d via log: log10(d)+1 maps 0.1->0, 1->1, 10->2, 20->2.3
+    const t = (Math.log10(d) - LOG_MIN) / (LOG_MAX - LOG_MIN);
+    const thicknessPx = Math.max(4, 4 + t * 46);
+    inner.setAttribute('y', -thicknessPx / 2);
+    inner.setAttribute('height', thicknessPx);
+    inner.setAttribute('fill', '#FDE68A');
+
+    myelinG.innerHTML = '';
+    nodesG.innerHTML = '';
+    if (myelinated && d >= 0.2) {
+      // myelin wraps as thicker alternating segments
+      const mye_t = thicknessPx * 2.0;
+      const internodeLen = 60;
+      const nodeLen = 6;
+      const startX = 30, endX = 630;
+      for (let x = startX; x < endX; x += internodeLen + nodeLen) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const segLen = Math.min(internodeLen, endX - x);
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', -mye_t / 2);
+        rect.setAttribute('width', segLen);
+        rect.setAttribute('height', mye_t);
+        rect.setAttribute('fill', '#E2E8F0');
+        rect.setAttribute('stroke', '#94A3B8');
+        rect.setAttribute('stroke-width', '0.8');
+        rect.setAttribute('rx', 4);
+        myelinG.appendChild(rect);
+        // node of Ranvier
+        const node = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        node.setAttribute('cx', x + segLen + nodeLen / 2);
+        node.setAttribute('cy', 0);
+        node.setAttribute('r', 2);
+        node.setAttribute('fill', '#EC4899');
+        nodesG.appendChild(node);
+      }
+    }
+
+    // pulse position: handled in animate()
+  }
+
+  // Animate a propagating pulse along the axon
+  let pulseT = 0;
+  let lastTs = performance.now();
+  function animatePulse(ts) {
+    const dt = ts - lastTs; lastTs = ts;
+    const d = parseFloat(dEl.value);
+    const v = velocity(d, myelinated);
+    // speed on the drawing: map actual velocity (up to ~120 m/s) to a visual speed of 0.2..1.5 per second
+    const visSpeed = 0.15 + Math.min(1.4, v / 100);
+    pulseT += visSpeed * (dt / 1000);
+    if (pulseT > 1.1) pulseT = -0.05;
+    const x = 10 + 40 + pulseT * 600;
+    pulse.setAttribute('cx', x.toFixed(1));
+    requestAnimationFrame(animatePulse);
+  }
+
+  function updateMetrics() {
+    const d = parseFloat(dEl.value);
+    const v = velocity(d, myelinated);
+    dVal.textContent = d.toFixed(2) + ' µm';
+    speedEl.textContent = v.toFixed(1) + ' m/s';
+    const area = Math.PI * (d / 2) * (d / 2);
+    areaEl.textContent = area.toFixed(2) + ' µm²';
+
+    // move the user dot on the scatter plot
+    userPt.setAttribute('cx', dToX(d).toFixed(1));
+    userPt.setAttribute('cy', vToY(v).toFixed(1));
+
+    // verdict
+    let verdict, color;
+    if (myelinated && d < 0.2) {
+      verdict = '✗ Myelin wasted below 0.2 µm';
+      color = '#EC4899';
+    } else if (myelinated && d > 0.2 && d < 3) {
+      verdict = '✓ Local fast fiber';
+      color = '#0D9488';
+    } else if (myelinated && d >= 3) {
+      verdict = '✓ Long-distance highway';
+      color = '#0D9488';
+    } else if (!myelinated && d < 1) {
+      verdict = '✓ Cheap cortical fiber';
+      color = '#0D9488';
+    } else if (!myelinated && d >= 1 && d < 5) {
+      verdict = '⚠ Fat for no myelin — rare';
+      color = '#D97706';
+    } else {
+      verdict = '✗ Giant squid territory';
+      color = '#EC4899';
+    }
+    verdictEl.textContent = verdict;
+    verdictEl.style.color = color;
+  }
+
+  dEl.addEventListener('input', () => { updateMetrics(); drawAxon(); });
+  group.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    group.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    myelinated = b.dataset.mye === '1';
+    updateMetrics(); drawAxon();
+  });
+
+  drawCurves();
+  drawBiology();
+  drawAxon();
+  updateMetrics();
+  requestAnimationFrame(animatePulse);
+})();
+
+/* ============================================================
+   INTERACTIVE 7 — MATCH THE HISTOGRAM
+   ============================================================ */
+(function histogramMatcher() {
+  const svg = document.getElementById('hist-svg');
+  const inBars = document.getElementById('hist-input-bars');
+  const dotsG = document.getElementById('hist-dots');
+  const userCurve = document.getElementById('hist-user-curve');
+  const cdfPath = document.getElementById('hist-cdf');
+  const revealBtn = document.getElementById('hist-reveal');
+  const sceneGroup = document.getElementById('hist-scene-group');
+  const infoFill = document.getElementById('hist-info-fill');
+  const matchEl = document.getElementById('hist-match');
+  if (!svg) return;
+
+  // Scene: probability distribution over 16 input bins
+  function makeDist(name) {
+    const N = 16;
+    const p = new Float32Array(N);
+    if (name === 'natural') {
+      // lognormal-ish: most inputs are medium-low, long tail
+      for (let i = 0; i < N; i++) {
+        const x = (i + 0.5) / N;
+        p[i] = Math.exp(-Math.pow((Math.log(x + 0.1) + 1.8) / 0.9, 2));
+      }
+    } else if (name === 'dark') {
+      // concentrated at low values
+      for (let i = 0; i < N; i++) {
+        const x = (i + 0.5) / N;
+        p[i] = Math.exp(-Math.pow((x - 0.15) / 0.12, 2));
+      }
+    } else if (name === 'high-contrast') {
+      // bimodal (shadow + direct sun)
+      for (let i = 0; i < N; i++) {
+        const x = (i + 0.5) / N;
+        p[i] = Math.exp(-Math.pow((x - 0.15) / 0.07, 2))
+             + 0.9 * Math.exp(-Math.pow((x - 0.85) / 0.07, 2));
+      }
+    }
+    // normalize
+    let s = 0; for (let i = 0; i < N; i++) s += p[i];
+    for (let i = 0; i < N; i++) p[i] /= s;
+    return p;
+  }
+
+  // CDF from distribution
+  function makeCDF(p) {
+    const N = p.length;
+    const c = new Float32Array(N);
+    let acc = 0;
+    for (let i = 0; i < N; i++) { acc += p[i]; c[i] = acc; }
+    return c;
+  }
+
+  const N_DOTS = 8;           // user dots along the response curve
+  const X0 = 60, X1 = 660;    // response curve x range
+  const Y0 = 340, Y1 = 180;   // response curve y range (inverted: Y0 bottom)
+
+  let currentScene = 'natural';
+  let dist = makeDist(currentScene);
+  let cdf = makeCDF(dist);
+
+  // User dots: each has an x at regular positions, y is draggable
+  // Initial: diagonal (linear response)
+  const dots = [];
+  for (let i = 0; i < N_DOTS; i++) {
+    const t = i / (N_DOTS - 1);
+    dots.push({
+      x: X0 + t * (X1 - X0),
+      y: Y0 - t * (Y0 - Y1) * 0.9 + 10  // slightly offset from diagonal
+    });
+  }
+
+  function renderInputHistogram() {
+    inBars.innerHTML = '';
+    const N = dist.length;
+    const maxP = Math.max(...dist);
+    const BAR_W = (660 - 10) / N;
+    for (let i = 0; i < N; i++) {
+      const h = (dist[i] / maxP) * 78;
+      const x = 10 + i * BAR_W + 2;
+      const y = 26 + 86 - h;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x);
+      rect.setAttribute('y', y);
+      rect.setAttribute('width', BAR_W - 4);
+      rect.setAttribute('height', h);
+      rect.setAttribute('fill', '#FBBF24');
+      rect.setAttribute('fill-opacity', 0.85);
+      rect.setAttribute('rx', 2);
+      inBars.appendChild(rect);
+    }
+  }
+
+  function renderUserCurve() {
+    // Build path: from (X0, Y0) across dots to (X1, Y1)
+    // Ensure monotonicity by sorting dots by y descending (higher y = lower output)
+    const pts = [{ x: X0, y: dots[0].y }, ...dots, { x: X1, y: dots[N_DOTS-1].y }];
+    let d = 'M ' + pts[0].x + ' ' + pts[0].y;
+    for (let i = 1; i < pts.length; i++) {
+      d += ' L ' + pts[i].x + ' ' + pts[i].y;
+    }
+    d += ' L ' + X1 + ' ' + Y0 + ' L ' + X0 + ' ' + Y0 + ' Z';
+    userCurve.setAttribute('d', d);
+
+    // Dots
+    dotsG.innerHTML = '';
+    dots.forEach((pt, i) => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', pt.x);
+      c.setAttribute('cy', pt.y);
+      c.setAttribute('r', 8);
+      c.setAttribute('fill', '#6366F1');
+      c.setAttribute('stroke', 'white');
+      c.setAttribute('stroke-width', 3);
+      c.setAttribute('data-idx', i);
+      c.style.cursor = 'grab';
+      dotsG.appendChild(c);
+    });
+  }
+
+  function renderCDF() {
+    const N = cdf.length;
+    let d = 'M ' + X0 + ' ' + Y0;
+    for (let i = 0; i < N; i++) {
+      const x = X0 + ((i + 0.5) / N) * (X1 - X0);
+      const y = Y0 - cdf[i] * (Y0 - Y1);
+      d += ' L ' + x + ' ' + y;
+    }
+    d += ' L ' + X1 + ' ' + Y1;
+    cdfPath.setAttribute('d', d);
+  }
+
+  // Evaluate the user's response curve at a given input (0..1)
+  function userResponse(input) {
+    const x = X0 + input * (X1 - X0);
+    // Interpolate between dots (plus endpoints at same y as first/last dot)
+    const pts = [{ x: X0, y: dots[0].y }, ...dots, { x: X1, y: dots[N_DOTS-1].y }];
+    for (let i = 1; i < pts.length; i++) {
+      if (pts[i].x >= x) {
+        const t = (x - pts[i-1].x) / (pts[i].x - pts[i-1].x);
+        const y = pts[i-1].y + t * (pts[i].y - pts[i-1].y);
+        return 1 - (y - Y1) / (Y0 - Y1);   // output normalized 0..1
+      }
+    }
+    return 1 - (pts[pts.length-1].y - Y1) / (Y0 - Y1);
+  }
+
+  // Information transmitted (approximate):
+  // Bin the outputs into 8 levels, compute mutual information between input and output.
+  // For a monotonic curve, the CDF matching gives the entropy maximum.
+  function computeInfo() {
+    const OUT_BINS = 8;
+    const IN_BINS = dist.length;
+    // p(input) = dist[i]
+    // p(output | input) = delta at quantized level
+    const outBinCount = new Float64Array(OUT_BINS);
+    const jointEntropy = 0;
+    // compute output bin for each input bin
+    const inOutBin = [];
+    for (let i = 0; i < IN_BINS; i++) {
+      const x = (i + 0.5) / IN_BINS;
+      const out = Math.max(0, Math.min(1, userResponse(x)));
+      const b = Math.min(OUT_BINS - 1, Math.floor(out * OUT_BINS));
+      inOutBin.push(b);
+      outBinCount[b] += dist[i];
+    }
+    // H(output)
+    let H = 0;
+    for (let b = 0; b < OUT_BINS; b++) {
+      if (outBinCount[b] > 0) H -= outBinCount[b] * Math.log2(outBinCount[b]);
+    }
+    // max possible entropy = log2(OUT_BINS)
+    const maxH = Math.log2(OUT_BINS);
+    return { H, ratio: H / maxH };
+  }
+
+  function update() {
+    renderUserCurve();
+    const { H, ratio } = computeInfo();
+    const pct = (ratio * 100).toFixed(0);
+    infoFill.style.width = Math.max(8, ratio * 100) + '%';
+    infoFill.textContent = H.toFixed(2) + ' bits';
+
+    // Match to CDF: compute mean squared difference between user curve (at mid of each bin) and CDF
+    const N = dist.length;
+    let ssq = 0;
+    for (let i = 0; i < N; i++) {
+      const x = (i + 0.5) / N;
+      const u = userResponse(x);
+      ssq += (u - cdf[i]) * (u - cdf[i]);
+    }
+    const rmse = Math.sqrt(ssq / N);
+    const match = Math.max(0, 1 - rmse * 2);   // 1 when identical
+    if (match > 0.92) { matchEl.textContent = '✓ excellent (' + (match*100).toFixed(0) + '%)'; matchEl.style.color = '#0D9488'; }
+    else if (match > 0.75) { matchEl.textContent = 'close (' + (match*100).toFixed(0) + '%)'; matchEl.style.color = '#B45309'; }
+    else { matchEl.textContent = 'off (' + (match*100).toFixed(0) + '%)'; matchEl.style.color = '#EC4899'; }
+  }
+
+  // Dragging the dots
+  let dragIdx = null;
+  function svgPoint(evt) {
+    const rect = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal;
+    return {
+      x: (evt.clientX - rect.left) * (vb.width / rect.width),
+      y: (evt.clientY - rect.top) * (vb.height / rect.height),
+    };
+  }
+  svg.addEventListener('pointerdown', (e) => {
+    const t = e.target.closest('circle[data-idx]');
+    if (!t) return;
+    dragIdx = parseInt(t.getAttribute('data-idx'));
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove', (e) => {
+    if (dragIdx === null) return;
+    const p = svgPoint(e);
+    dots[dragIdx].y = Math.max(Y1, Math.min(Y0, p.y));
+    update();
+  });
+  svg.addEventListener('pointerup', () => { dragIdx = null; });
+  svg.addEventListener('pointercancel', () => { dragIdx = null; });
+
+  sceneGroup.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    sceneGroup.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentScene = b.dataset.scene;
+    dist = makeDist(currentScene);
+    cdf = makeCDF(dist);
+    renderInputHistogram();
+    renderCDF();
+    update();
+  });
+
+  revealBtn.addEventListener('click', () => {
+    const shown = cdfPath.style.display !== 'none';
+    cdfPath.style.display = shown ? 'none' : '';
+    revealBtn.textContent = shown ? 'Reveal optimum' : 'Hide optimum';
+  });
+
+  renderInputHistogram();
+  renderCDF();
+  update();
+})();
+
+/* ============================================================
+   REVEAL ON SCROLL
+   ============================================================ */
+(function revealer() {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('section, .intro-quote, .toc, .hero').forEach(el => {
+    el.classList.add('reveal');
+    io.observe(el);
+  });
+})();
+</script>
+
+</body>
+</html>
