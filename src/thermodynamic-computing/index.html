@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Can AI Stop Being a Space Heater? — Thermodynamic Computing Explained</title>
+<meta name="description" content="A long-form explainer on thermodynamic computing, p-bits, and the startups trying to cut AI energy and cooling costs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=Figtree:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+:root {
+  --bg: #FAF9F7;
+  --paper: #FFFFFF;
+  --widget: #F3F1EC;
+  --text: #2D2D2D;
+  --muted: #6A6864;
+  --border: #D9D3CA;
+  --coral: #F05A4F;
+  --tangerine: #F7A34B;
+  --aqua: #4CC9C0;
+  --aqua-dark: #149C95;
+  --cobalt: #275DFF;
+  --cobalt-dark: #1D45C3;
+  --gold: #D9A335;
+  --ink-blue: #193271;
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-sans: "Figtree", system-ui, sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, monospace;
+  --maxw: 720px;
+  --radius: 18px;
+  --shadow: 0 14px 40px rgba(30, 36, 60, 0.08);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 19px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-serif);
+  line-height: 1.48;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top right, rgba(76, 201, 192, 0.12), transparent 30%),
+    radial-gradient(circle at top left, rgba(240, 90, 79, 0.08), transparent 28%),
+    var(--bg);
+}
+
+img,
+svg,
+canvas { display: block; max-width: 100%; }
+
+a {
+  color: var(--cobalt);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+a:hover { color: var(--cobalt-dark); }
+
+.back-link {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: block;
+  padding: 12px 20px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  background: rgba(250, 249, 247, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.back-link:hover { color: var(--cobalt); }
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  max-width: 1120px;
+  margin: 0 auto 46px;
+  border-radius: 0 0 34px 34px;
+  padding: 96px 28px 80px;
+  background:
+    linear-gradient(135deg, #F05A4F 0%, #F7A34B 28%, #4CC9C0 65%, #275DFF 100%);
+  box-shadow: var(--shadow);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 35%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15), transparent 28%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.92);
+  background: rgba(14, 24, 58, 0.18);
+  border: 1px solid rgba(255,255,255,0.16);
+}
+
+.hero h1 {
+  margin: 0 0 16px;
+  font-size: clamp(42px, 7vw, 78px);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  color: white;
+}
+
+.subtitle {
+  max-width: 620px;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(18px, 2.5vw, 24px);
+  line-height: 1.35;
+  font-weight: 500;
+  color: rgba(255,255,255,0.92);
+}
+
+.hero-note {
+  margin-top: 24px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: rgba(255,255,255,0.78);
+}
+
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.92;
+}
+
+.intro-quote,
+.toc,
+article {
+  max-width: var(--maxw);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.intro-quote {
+  margin-bottom: 54px;
+  padding-top: 4px;
+}
+
+.intro-quote .quote-box {
+  padding: 24px 26px 24px 24px;
+  border-left: 4px solid var(--coral);
+  background: rgba(255,255,255,0.66);
+  border-radius: 0 18px 18px 0;
+  box-shadow: 0 12px 24px rgba(30, 36, 60, 0.04);
+  font-style: italic;
+  font-size: 1.06rem;
+  color: #403C38;
+}
+
+.intro-quote p {
+  margin: 0;
+}
+
+.intro-quote p + p {
+  margin-top: 14px;
+}
+
+.toc {
+  margin-bottom: 76px;
+}
+
+.toc-card {
+  padding: 24px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.56)),
+    var(--widget);
+  box-shadow: var(--shadow);
+}
+
+.toc h3 {
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.toc ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  columns: 1;
+}
+
+.toc li {
+  counter-increment: toc;
+  margin: 8px 0;
+  font-family: var(--font-sans);
+  font-size: 17px;
+}
+
+.toc li::before {
+  content: counter(toc, upper-roman) ". ";
+  color: var(--coral);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.toc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.toc a:hover { color: var(--cobalt); }
+
+article {
+  padding-bottom: 120px;
+}
+
+section {
+  margin-bottom: 84px;
+  scroll-margin-top: 70px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-top: 34px;
+  border-top: 1px solid var(--border);
+}
+
+.section-number {
+  flex: 0 0 auto;
+  font-family: var(--font-sans);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(39, 93, 255, 0.55);
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(30px, 4.8vw, 50px);
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  margin: 32px 0 12px;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+p {
+  margin: 0 0 14px;
+}
+
+.lede {
+  font-size: 1.05rem;
+}
+
+.sidenote,
+.callout,
+.widget,
+.compare-table,
+.startup-card,
+.source-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.72);
+  box-shadow: var(--shadow);
+}
+
+.callout,
+.sidenote {
+  margin: 28px 0;
+  padding: 18px 20px;
+}
+
+.callout {
+  background: linear-gradient(180deg, rgba(240, 90, 79, 0.07), rgba(255,255,255,0.82));
+}
+
+.sidenote {
+  background: linear-gradient(180deg, rgba(217, 163, 53, 0.08), rgba(255,255,255,0.8));
+}
+
+.sidenote strong,
+.callout strong { font-family: var(--font-sans); }
+
+.widget {
+  overflow: hidden;
+  margin: 30px 0 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.5)),
+    var(--widget);
+}
+
+.widget-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 20px 0;
+}
+
+.widget-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.widget-content {
+  padding: 18px 20px 22px;
+}
+
+.widget-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
+}
+
+.widget-viz {
+  min-width: 0;
+}
+
+.widget-viz svg {
+  width: 100%;
+  height: auto;
+}
+
+.widget-viz text,
+.widget text {
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+#widget-heat .widget-grid,
+#widget-plumbing .widget-grid,
+#widget-pbits .widget-grid {
+  grid-template-columns: minmax(0, 1.28fr) minmax(280px, 0.72fr);
+}
+
+#heat-viz text,
+#arch-viz text,
+#pbit-viz text {
+  font-size: 24px;
+}
+
+#arch-title {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+#pbit-bar-one-label,
+#pbit-bar-zero-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.widget-controls {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.control {
+  display: grid;
+  gap: 6px;
+}
+
+.range-hints {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.control label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.control .meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-blue);
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--cobalt);
+}
+
+.stats {
+  display: grid;
+  gap: 10px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.62);
+  font-family: var(--font-sans);
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-blue);
+}
+
+.caption {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.mode-switch {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip-btn,
+.toggle-chip {
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(39, 93, 255, 0.18);
+  background: rgba(255,255,255,0.7);
+  color: var(--ink-blue);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.chip-btn.active,
+.toggle-chip.active {
+  background: var(--cobalt);
+  color: white;
+  border-color: var(--cobalt);
+}
+
+.placeholder {
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.4);
+}
+
+.compare-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.widget-explainer {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(39,93,255,0.06);
+  border: 1px solid rgba(39,93,255,0.1);
+  font-size: 0.94rem;
+}
+
+.widget-explainer strong {
+  font-family: var(--font-sans);
+}
+
+.pattern-panels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pattern-panel {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.72);
+}
+
+.pattern-panel h4 {
+  margin: 0 0 10px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.pattern-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: rgba(25,50,113,0.08);
+  border: 1px solid transparent;
+}
+
+.pattern-cell.on {
+  background: rgba(39,93,255,0.9);
+}
+
+.pattern-cell.mismatch {
+  border-color: rgba(240,90,79,0.95);
+  box-shadow: inset 0 0 0 1px rgba(240,90,79,0.95);
+}
+
+.pattern-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.legend-swatch.on { background: rgba(39,93,255,0.9); }
+.legend-swatch.off { background: rgba(25,50,113,0.08); }
+.legend-swatch.mismatch {
+  background: rgba(25,50,113,0.08);
+  border: 1px solid rgba(240,90,79,0.95);
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.62);
+  font-family: var(--font-sans);
+}
+
+.compare-row .k {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.compare-row .v {
+  font-size: 14px;
+  color: var(--ink-blue);
+}
+
+.stack-cards,
+.roadmap,
+.landscape-grid,
+.source-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.stack-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stack-card,
+.road-step,
+.startup-card,
+.source-item {
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.78);
+}
+
+.stack-card h4,
+.road-step h4,
+.startup-card h4,
+.source-item h4 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.stack-card p,
+.road-step p,
+.startup-card p,
+.source-item p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.badge {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.72);
+}
+
+.badge.claim { color: #8b6b19; border-color: rgba(217,163,53,0.38); background: rgba(217,163,53,0.12); }
+.badge.demo { color: #176660; border-color: rgba(76,201,192,0.4); background: rgba(76,201,192,0.12); }
+.badge.roadmap { color: #1e46bf; border-color: rgba(39,93,255,0.3); background: rgba(39,93,255,0.1); }
+.badge.public { color: #96413c; border-color: rgba(240,90,79,0.32); background: rgba(240,90,79,0.1); }
+
+.lane-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.lane {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.74);
+  border: 1px solid var(--border);
+}
+
+.lane h4 {
+  margin: 0 0 10px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+}
+
+.mini-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mini-step {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.mini-step.gpu { background: rgba(39,93,255,0.1); color: var(--cobalt-dark); }
+.mini-step.thermo { background: rgba(76,201,192,0.12); color: var(--aqua-dark); }
+
+.bar-shell {
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(25,50,113,0.08);
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.bar-fill.gpu { background: linear-gradient(90deg, var(--cobalt), var(--coral)); }
+.bar-fill.thermo { background: linear-gradient(90deg, var(--aqua), var(--gold)); }
+
+.bar-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.roadmap {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.road-step {
+  position: relative;
+}
+
+.road-step::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  right: -14px;
+  width: 28px;
+  height: 2px;
+  background: rgba(39,93,255,0.24);
+}
+
+.road-step:last-child::after { display: none; }
+
+.matrix-note {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(76,201,192,0.08);
+  font-size: 0.94rem;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 820px) {
+  .widget-grid {
+    grid-template-columns: 1fr;
+  }
+  .stack-cards,
+  .roadmap,
+  .lane-compare {
+    grid-template-columns: 1fr;
+  }
+.road-step::after { display: none; }
+}
+
+.landscape-controls,
+.toggle-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.landscape-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.startup-card {
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.startup-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(39,93,255,0.26);
+}
+
+.startup-card.active {
+  border-color: rgba(39,93,255,0.42);
+  box-shadow: 0 10px 22px rgba(39,93,255,0.08);
+}
+
+.startup-card .tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(39,93,255,0.08);
+  color: var(--cobalt-dark);
+}
+
+.landscape-detail {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.78);
+}
+
+.landscape-detail h4 {
+  margin: 0 0 8px;
+  font-family: var(--font-sans);
+  font-size: 20px;
+}
+
+.check-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.72);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.check-pill input { accent-color: var(--cobalt); }
+
+.savings-shell {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.74);
+  border: 1px solid var(--border);
+}
+
+.savings-meter {
+  height: 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(25,50,113,0.08);
+  margin-bottom: 12px;
+}
+
+.savings-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--coral), var(--tangerine), var(--aqua), var(--cobalt));
+}
+
+.savings-summary {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.savings-card {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.76);
+  font-family: var(--font-sans);
+}
+
+.savings-card .k {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.savings-card .v {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--ink-blue);
+}
+
+.funnel-wrap,
+.future-rack {
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.76);
+}
+
+.future-rack-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.future-block {
+  padding: 14px;
+  border-radius: 14px;
+  font-family: var(--font-sans);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.future-block h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.future-block p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.sources {
+  margin-top: 24px;
+}
+
+.source-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .landscape-grid,
+  .future-rack-grid,
+  .source-grid,
+  .savings-summary {
+    grid-template-columns: 1fr;
+  }
+  .pattern-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  html { font-size: 18px; }
+  .hero { padding: 84px 18px 62px; border-radius: 0 0 24px 24px; }
+  .intro-quote,
+  .toc,
+  article { padding-left: 18px; padding-right: 18px; }
+  .section-number { font-size: 32px; }
+  .widget-header,
+  .widget-content { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; All Explainers</a>
+
+<header class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <div class="eyebrow">AI hardware, heat, and a possible detour</div>
+    <h1>Can AI Stop Being a Space Heater?</h1>
+    <p class="subtitle">Thermodynamic computing, p-bits, and the race to build AI hardware that wastes less power moving bits around.</p>
+    <p class="hero-note">This explainer separates physics, startups, and wishful thinking as cleanly as possible.</p>
+  </div>
+</header>
+
+<div class="intro-quote">
+  <div class="quote-box">
+    <p>If you ask why AI burns so much electricity, the naive answer is <em>"because the models are huge."</em> The less naive answer is <em>"because we're forcing a probabilistic workload through deterministic hardware while hauling weights back and forth like groceries across a parking lot."</em></p>
+    <p>Thermodynamic computing starts from a rude question: what if some of that randomness, heat, and physical relaxation isn't a bug to suppress, but the computation itself?</p>
+  </div>
+</div>
+
+<nav class="toc" id="contents">
+  <div class="toc-card">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#sec-1">The problem is not just compute. It's heat.</a></li>
+      <li><a href="#sec-2">Why GPUs turn probability into plumbing.</a></li>
+      <li><a href="#sec-3">What thermodynamic computing actually is.</a></li>
+      <li><a href="#sec-4">What could you actually compute with p-bits?</a></li>
+      <li><a href="#sec-5">What Extropic is building.</a></li>
+      <li><a href="#sec-6">What Normal Computing is building.</a></li>
+      <li><a href="#sec-7">The broader war on AI power.</a></li>
+      <li><a href="#sec-8">Can we really get AI without giant cooling bills?</a></li>
+      <li><a href="#sec-9">What has to be true for this to matter.</a></li>
+      <li><a href="#sec-10">The most likely future.</a></li>
+    </ol>
+  </div>
+</nav>
+
+<article>
+  <section id="sec-1" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">I.</div>
+      <h2>The Problem Is Not Just Compute. It's Heat.</h2>
+    </div>
+    <p class="lede">Every serious conversation about AI hardware eventually collapses into thermodynamics, whether people admit it or not. A chip consumes electricity. That electricity becomes useful switching, leakage, signaling, and then, with brutal inevitability, <em>heat</em>. The more compute you pack into a rack, the more aggressively you must remove that heat or the rack throttles, fails, or both.</p>
+    <p>The International Energy Agency estimated that data centres consumed about <strong>415 TWh of electricity in 2024</strong>, and projects roughly <strong>945 TWh by 2030</strong> in its base case. That is not a rounding error. It means AI is no longer just a software story or even a chip story. It is a building, utility, cooling, and transmission story.</p>
+    <p>People often talk as if cooling is a separate tax imposed on top of compute. Physically, it is the same tax viewed from another angle. If your hardware dissipates a megawatt, your facility now has a megawatt-shaped problem to get rid of. Fans, chillers, pumps, liquid loops, power delivery losses, and airflow design are not side quests. They are the invoice for your choice of computing substrate.</p>
+    <div class="callout">
+      <strong>Plain-English version:</strong> when someone promises "low-cooling AI," what they usually mean is "less electrical power burned per useful result." You do not beat cooling with clever HVAC slogans. You beat it by wasting less energy in the first place.
+    </div>
+
+    <div class="widget" id="widget-heat">
+      <div class="widget-header">
+        <div class="widget-title">Interactive 1 · Datacenter Heat Budget</div>
+      </div>
+      <div class="widget-content">
+        <div class="widget-grid">
+          <div class="widget-viz">
+            <svg id="heat-viz" viewBox="0 0 640 420" role="img" aria-label="Datacenter heat budget visualization">
+              <defs>
+                <linearGradient id="rackGlow" x1="0%" x2="100%">
+                  <stop offset="0%" stop-color="#275DFF"/>
+                  <stop offset="100%" stop-color="#F05A4F"/>
+                </linearGradient>
+              </defs>
+              <rect x="46" y="36" width="246" height="316" rx="28" fill="#13254f" opacity="0.95"></rect>
+              <rect x="64" y="56" width="210" height="276" rx="18" fill="#0f1935" stroke="rgba(255,255,255,0.12)"></rect>
+              <g id="rack-tiles"></g>
+              <path d="M365 110 C410 82, 456 82, 512 110" fill="none" stroke="#9FD7FF" stroke-width="12" stroke-linecap="round"></path>
+              <path d="M365 162 C410 190, 456 190, 512 162" fill="none" stroke="#D7EDF4" stroke-width="12" stroke-linecap="round"></path>
+              <path d="M365 214 C410 186, 456 186, 512 214" fill="none" stroke="#FFB56B" stroke-width="12" stroke-linecap="round"></path>
+              <path d="M365 266 C410 294, 456 294, 512 266" fill="none" stroke="#F05A4F" stroke-width="12" stroke-linecap="round"></path>
+              <circle cx="540" cy="188" r="62" fill="#f4efe7" stroke="#d5ccbe"></circle>
+              <circle id="cooling-core" cx="540" cy="188" r="24" fill="#4CC9C0"></circle>
+              <g id="fan-blades">
+                <path d="M540 188 L554 150 Q565 162 561 178 Z" fill="#275DFF" opacity="0.72"></path>
+                <path d="M540 188 L577 201 Q563 211 548 211 Z" fill="#4CC9C0" opacity="0.72"></path>
+                <path d="M540 188 L528 226 Q515 216 519 200 Z" fill="#F7A34B" opacity="0.72"></path>
+                <path d="M540 188 L503 176 Q517 166 532 166 Z" fill="#F05A4F" opacity="0.72"></path>
+              </g>
+              <text x="72" y="385" fill="#6A6864">AI rack</text>
+              <text x="479" y="315" fill="#6A6864">cooling loop</text>
+            </svg>
+          </div>
+          <div class="widget-controls">
+            <div class="control">
+              <label for="accelerator-count">Accelerators per rack</label>
+              <div class="meta"><span>Count</span><span id="accelerator-count-val">64</span></div>
+              <input id="accelerator-count" type="range" min="8" max="192" step="8" value="64">
+            </div>
+            <div class="control">
+              <label for="accelerator-watts">Watts per accelerator</label>
+              <div class="meta"><span>Power</span><span id="accelerator-watts-val">700 W</span></div>
+              <input id="accelerator-watts" type="range" min="80" max="1200" step="20" value="700">
+            </div>
+            <div class="control">
+              <label for="pue-range">Facility PUE</label>
+              <div class="meta"><span>Power Usage Effectiveness</span><span id="pue-range-val">1.25</span></div>
+              <input id="pue-range" type="range" min="1.05" max="1.8" step="0.01" value="1.25">
+            </div>
+            <div class="stats">
+              <div class="stat"><span class="stat-label">IT load</span><span class="stat-value" id="it-load">44.8 kW</span></div>
+              <div class="stat"><span class="stat-label">Facility load</span><span class="stat-value" id="facility-load">56.0 kW</span></div>
+              <div class="stat"><span class="stat-label">Cooling + overhead</span><span class="stat-value" id="cooling-load">11.2 kW</span></div>
+              <div class="stat"><span class="stat-label">Daily energy</span><span class="stat-value" id="daily-energy">1.34 MWh/day</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">The compute bill and the cooling bill are coupled. Higher device power density can be worth it, but only if the extra useful work outruns the extra heat, power delivery, and facility complexity.</p>
+      </div>
+    </div>
+
+    <p>Thermodynamic computing only makes sense against that backdrop. If the problem were merely "we need a slightly better GPU," the entire field would sound eccentric. But once energy becomes the limiting resource, even odd ideas deserve a hearing. The question is no longer only <em>"how many operations per second?"</em> It is <em>"how many useful answers per joule, per rack, per liter of cooling water, per megawatt of site capacity?"</em></p>
+  </section>
+
+  <section id="sec-2" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">II.</div>
+      <h2>Why GPUs Turn Probability Into Plumbing</h2>
+    </div>
+    <p>GPUs are extraordinary machines. They also carry historical baggage. They were refined for graphics, then reused for machine learning because the math lined up beautifully with massively parallel linear algebra. That was a brilliant hack. It may not remain the optimal long-term substrate for every AI workload.</p>
+    <p>The central annoyance is the so-called <em>memory wall</em>. Arithmetic units are cheap only if data arrives exactly when needed. In large models, especially generative ones, moving activations, keys, values, and especially weights around the system becomes an energy problem in its own right. IBM's recent analog in-memory work phrases the issue plainly: every time you move weights on a traditional architecture, you spend time and energy just getting computation into position.</p>
+    <p>This is why so many "next-wave" hardware companies sound different but rhyme technically. Some want to compute <em>inside</em> memory. Some want to move information with photons. Some want to make randomness native instead of synthesizing it expensively with deterministic circuits. All of them are, in one way or another, rebelling against the same plumbing bill.</p>
+
+    <div class="widget" id="widget-plumbing">
+      <div class="widget-header">
+        <div class="widget-title">Interactive 2 · Move Bits or Move Physics?</div>
+        <div class="mode-switch" id="arch-modes">
+          <button class="chip-btn active" data-mode="gpu">Conventional accelerator</button>
+          <button class="chip-btn" data-mode="imc">Analog in-memory</button>
+          <button class="chip-btn" data-mode="thermo">Thermodynamic sampler</button>
+        </div>
+      </div>
+      <div class="widget-content">
+        <div class="widget-grid">
+          <div class="widget-viz">
+            <svg id="arch-viz" viewBox="0 0 640 360" role="img" aria-label="Architecture comparison visualization">
+              <rect x="26" y="30" width="588" height="300" rx="24" fill="#fffaf4" stroke="#ddd1c2"></rect>
+              <g id="arch-static"></g>
+              <g id="arch-packets"></g>
+              <text id="arch-title" x="50" y="64" fill="#193271">Conventional accelerator</text>
+            </svg>
+          </div>
+          <div class="widget-controls">
+            <div class="stats">
+              <div class="stat"><span class="stat-label">Main idea</span><span class="stat-value" id="arch-main">separate memory and compute</span></div>
+              <div class="stat"><span class="stat-label">Traffic pattern</span><span class="stat-value" id="arch-traffic">long-haul shuttling</span></div>
+              <div class="stat"><span class="stat-label">Best at</span><span class="stat-value" id="arch-best">dense deterministic math</span></div>
+              <div class="stat"><span class="stat-label">Energy pressure</span><span class="stat-value" id="arch-pressure">communication heavy</span></div>
+            </div>
+            <div class="sidenote">
+              <strong>Interpret the cartoon correctly:</strong> this widget is not claiming exact joules or exact layouts. It is showing where each architecture is trying to spend less energy: by shortening travel distance, merging storage with compute, or using local stochastic dynamics instead of shipping data to arithmetic blocks and back.
+            </div>
+          </div>
+        </div>
+        <p class="caption">Thermodynamic computing is not the only anti-plumbing strategy. It is one member of a larger family of attempts to reduce the cost of moving information around while AI workloads explode.</p>
+      </div>
+    </div>
+
+    <p>This is also why "AI without massive cooling" is a slightly misleading dream. You probably do not get there by abolishing heat. You get there by changing the ratio of <em>useful reasoning</em> to <em>wasteful movement</em>. That is a much harder, much more interesting target.</p>
+  </section>
+
+  <section id="sec-3" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">III.</div>
+      <h2>What Thermodynamic Computing Actually Is</h2>
+    </div>
+    <p>First, a defensive clarification. Thermodynamic computing does <em>not</em> mean you pour heat onto a chip until it becomes intelligent. The more sober idea is this: some physical systems naturally fluctuate, relax, and settle into patterns that correspond to probability distributions. If the computational problem you care about is itself about <em>probabilities</em>, then maybe you can let the physics do more of the work.</p>
+    <p>Classical digital chips work very hard to suppress ambiguity. A voltage must be cleanly interpreted as 0 or 1. Noise margins exist precisely so random fluctuations do not leak into the logic. Probabilistic hardware takes the opposite posture. It says: for certain tasks, especially sampling and uncertainty, that randomness is not contamination. It is raw material.</p>
+    <p>The cleanest entry point is the <strong>p-bit</strong>, or probabilistic bit. The literature describes it as a bit that flips between 0 and 1 with a controllable probability. Not a quantum state. Not a mysterious superposition marketing term. Think of a weighted coin that keeps tossing itself. Change its bias and it spends more time as heads than tails. Couple many such coins together and the network starts to represent a whole distribution rather than a single hard-coded answer.</p>
+    <div class="sidenote">
+      <strong>Not quantum, but also not ordinary digital:</strong> p-bits live in the awkward, interesting middle ground. They are classical devices, often at room temperature, but their whole value proposition is that they represent and explore uncertainty natively instead of numerically emulating it one deterministic instruction at a time.
+    </div>
+    <h3>How Do You Physically Build A P-bit?</h3>
+    <p>The canonical hardware story in the p-bit literature is <strong>spintronic</strong>. A 2019 review by Çamsarı, Sutton, and Datta argues that low-barrier magnets are a natural physical representation of p-bits. In that picture, a <strong>stochastic magnetic tunnel junction</strong>, or sMTJ, fluctuates spontaneously because its magnetic free layer is intentionally made unstable enough to keep wandering. Attach standard transistor logic to that fluctuating element and you get a noisy bit whose mean value can be biased up or down by an input signal.</p>
+    <p>But that is not the only route. Early hardware demonstrations also emulated p-bits with <strong>microcontrollers</strong>, while newer work uses <strong>CMOS plus stochastic nanomagnets</strong>, oscillator-based p-bits, or other tunable noisy circuits. The common recipe stays the same even when the substrate changes: you need one element that naturally fluctuates, one mechanism that biases its average behavior, and a coupling scheme that lets many such units influence one another.</p>
+    <p>The brain comparison is useful here if handled carefully. A neuron is not literally a p-bit. It does not emit a perfectly memoryless random telegraph signal, and synapses are richer than a simple scalar coupling matrix. But as an analogy it is good: neurons integrate inputs, sit near thresholds, spike stochastically, and recurrent circuits can settle into attractors or clean up noisy evidence. So when people say <em>"in brains this is neural spiking,"</em> the careful version is: brains are not p-bit chips, but noisy spiking neurons are the closest biological cousin to the basic computational idea.</p>
+    <div class="compare-grid">
+      <div class="compare-row"><div class="k">Spintronic p-bit</div><div class="v">A fluctuating magnetic element, often an sMTJ or related low-barrier nanomagnet, plus transistor circuitry that biases how often it outputs 0 versus 1.</div></div>
+      <div class="compare-row"><div class="k">CMOS / oscillator p-bit</div><div class="v">A noisy voltage source, oscillator, or pseudo/true-random circuit plus local digital/analog logic that turns the fluctuations into a tunable probabilistic bit.</div></div>
+      <div class="compare-row"><div class="k">Brain analogy</div><div class="v">Noisy thresholded spikes plus recurrent synaptic couplings. Not literally a p-bit implementation, but conceptually similar in its use of stochastic local dynamics.</div></div>
+    </div>
+    <p>This matters because many AI and scientific workloads are secretly sampling problems. Bayesian inference asks you to reason over distributions. Diffusion-style generation repeatedly denoises random states. Monte Carlo methods wander through state spaces. Optimization routines often benefit from controlled stochasticity because it helps them escape brittle local structure. A thermodynamic machine does not have to be good at everything to be economically relevant. It only has to be much better at the subset of workloads that are becoming expensive enough to hurt.</p>
+
+    <div class="widget" id="widget-pbits">
+      <div class="widget-header">
+        <div class="widget-title">Interactive 3 · P-bit Playground</div>
+      </div>
+      <div class="widget-content">
+        <div class="widget-grid">
+          <div class="widget-viz">
+            <svg id="pbit-viz" viewBox="0 0 640 430" role="img" aria-label="P-bit playground">
+              <rect x="22" y="22" width="596" height="386" rx="24" fill="#fffaf5" stroke="#ddd1c2"></rect>
+              <g id="pbit-links"></g>
+              <g id="pbit-cells"></g>
+              <rect x="410" y="56" width="172" height="120" rx="18" fill="rgba(39,93,255,0.08)" stroke="rgba(39,93,255,0.14)"></rect>
+              <text x="432" y="82" fill="#193271">Outcome mix</text>
+              <rect x="434" y="102" width="124" height="24" rx="12" fill="rgba(25,50,113,0.08)"></rect>
+              <rect id="pbit-bar-one" x="434" y="102" width="62" height="24" rx="12" fill="#275DFF"></rect>
+              <text id="pbit-bar-one-label" x="438" y="118" fill="#ffffff">1s 50%</text>
+              <rect x="434" y="138" width="124" height="24" rx="12" fill="rgba(25,50,113,0.08)"></rect>
+              <rect id="pbit-bar-zero" x="434" y="138" width="62" height="24" rx="12" fill="#F05A4F"></rect>
+              <text id="pbit-bar-zero-label" x="438" y="154" fill="#ffffff">0s 50%</text>
+              <text x="52" y="392" fill="#6A6864">Blue and red cells keep flipping. Coupling makes neighbors prefer agreement.</text>
+            </svg>
+          </div>
+          <div class="widget-controls">
+            <div class="control">
+              <label for="pbit-bias">Bias toward 0 vs 1</label>
+              <div class="meta"><span>direction and strength</span><span id="pbit-bias-val">neutral</span></div>
+              <input id="pbit-bias" type="range" min="0" max="100" step="1" value="50">
+              <div class="range-hints"><span>toward 0</span><span>neutral</span><span>toward 1</span></div>
+            </div>
+            <div class="control">
+              <label for="pbit-coupling">Coupling strength</label>
+              <div class="meta"><span>neighbor influence</span><span id="pbit-coupling-val">1.10</span></div>
+              <input id="pbit-coupling" type="range" min="0" max="2" step="0.02" value="1.1">
+            </div>
+            <div class="control">
+              <label for="pbit-temp">Noise temperature</label>
+              <div class="meta"><span>how jittery the system is</span><span id="pbit-temp-val">1.00</span></div>
+              <input id="pbit-temp" type="range" min="0.3" max="2.4" step="0.02" value="1">
+            </div>
+            <div class="compare-grid">
+              <div class="compare-row"><div class="k">Mean spin</div><div class="v" id="pbit-spin">0.00</div></div>
+              <div class="compare-row"><div class="k">Agreement</div><div class="v" id="pbit-agreement">mixed and restless</div></div>
+              <div class="compare-row"><div class="k">Interpretation</div><div class="v" id="pbit-interpretation">The system is exploring many nearby states.</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="caption">A real thermodynamic computer is not literally this toy. But this is the core intuition: a network of locally coupled random elements can <em>sample</em> rather than merely evaluate.</p>
+      </div>
+    </div>
+
+    <p>If that sounds suspiciously like "an Ising machine with better branding," you are not entirely wrong to notice the family resemblance. The important question is not the label. It is whether a given physical implementation can be manufactured, programmed, benchmarked, and integrated cheaply enough that the sampling advantage survives contact with the rest of the system.</p>
+  </section>
+
+  <section id="sec-4" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">IV.</div>
+      <h2>What Could You Actually Compute With P-bits?</h2>
+    </div>
+    <p>Before talking about startups, it is fair to ask a more basic question: <em>what kind of useful computation would a p-bit network even perform?</em> The answer is not "instantly run GPT-7." The more honest answer is: p-bit networks are naturally good at problems where you want a system to settle into a self-consistent low-energy state. That includes toy versions of denoising, associative memory, error correction, optimization, and constraint satisfaction.</p>
+    <p>A classic mental model is a noisy memory. You store a few patterns in the couplings between bits. Then you present a corrupted clue. If the clue is not too damaged, and the network's dynamics are set up sensibly, the local stochastic updates can pull the state toward the nearest stored pattern. That is already a real computational act: the machine is cleaning up ambiguity by wandering through an energy landscape instead of following a fixed deterministic recipe.</p>
+    <p>The widget below is exactly that sort of toy. It is not modern machine learning. It is the conceptual bridge you need before Extropic or Normal start talking about denoising, diffusion-like models, or hardware-native sampling.</p>
+
+    <div class="widget" id="widget-sampling">
+      <div class="widget-header">
+        <div class="widget-title">Interactive 4 · Pattern Cleanup With A P-bit Network</div>
+      </div>
+      <div class="widget-content">
+        <div class="widget-explainer">
+          <strong>What this is trying to show:</strong> the couplings store a few simple patterns. You give the network a noisy clue. The p-bits keep flipping locally, and the network tries to settle into the nearest remembered pattern. This is the style of computation people mean when they talk about denoising, associative memory, or energy minimization in stochastic hardware.
+        </div>
+        <div class="mode-switch" id="recall-patterns" style="margin-bottom: 16px;">
+          <button class="chip-btn active" data-pattern="x">Pattern X</button>
+          <button class="chip-btn" data-pattern="t">Pattern T</button>
+          <button class="chip-btn" data-pattern="o">Pattern O</button>
+        </div>
+        <div class="widget-grid">
+          <div class="widget-viz">
+            <div class="pattern-panels">
+              <div class="pattern-panel">
+                <h4>Stored pattern</h4>
+                <div class="pattern-grid" id="recall-target"></div>
+              </div>
+              <div class="pattern-panel">
+                <h4>Noisy clue</h4>
+                <div class="pattern-grid" id="recall-clue"></div>
+              </div>
+              <div class="pattern-panel">
+                <h4>Current network state</h4>
+                <div class="pattern-grid" id="recall-state"></div>
+              </div>
+            </div>
+            <div class="pattern-legend">
+              <span class="legend-chip"><span class="legend-swatch on"></span> 1-bit</span>
+              <span class="legend-chip"><span class="legend-swatch off"></span> 0-bit</span>
+              <span class="legend-chip"><span class="legend-swatch mismatch"></span> differs from target</span>
+            </div>
+          </div>
+          <div class="widget-controls">
+            <div class="control">
+              <label for="recall-noise">Noise in the clue</label>
+              <div class="meta"><span>how corrupted the starting hint is</span><span id="recall-noise-val">22%</span></div>
+              <input id="recall-noise" type="range" min="0" max="55" step="1" value="22">
+            </div>
+            <div class="control">
+              <label for="recall-temp">Temperature</label>
+              <div class="meta"><span>higher means more wandering</span><span id="recall-temp-val">0.90</span></div>
+              <input id="recall-temp" type="range" min="0.35" max="2.2" step="0.01" value="0.9">
+            </div>
+            <div class="compare-grid">
+              <div class="compare-row"><div class="k">Clue corruption</div><div class="v" id="recall-corruption">22% of bits flipped</div></div>
+              <div class="compare-row"><div class="k">Current match</div><div class="v" id="recall-match">76% match to target</div></div>
+              <div class="compare-row"><div class="k">Nearest attractor</div><div class="v" id="recall-nearest">Pattern X</div></div>
+              <div class="compare-row"><div class="k">Interpretation</div><div class="v" id="recall-note">The network is cleaning up the noisy clue by drifting toward a stored pattern.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="matrix-note" id="recall-summary">This is already a genuine computing use case: store structure in local couplings, then use stochastic updates to recover a consistent answer from ambiguous evidence.</div>
+        <p class="caption">This is the missing conceptual step before the startup claims: the hardware is not "doing AI" in the abstract. It is performing local stochastic relaxation that can be useful for denoising, recall, optimization, and related probabilistic workloads.</p>
+      </div>
+    </div>
+
+    <p>Scale this idea up and you can at least see why the AI connection exists. Diffusion models are denoisers. Bayesian inference is distributional. Many optimization problems want systems to explore, then settle. None of that proves a startup has solved the problem. But it does explain why people are chasing hardware whose native behavior looks less like rigid logic and more like guided probabilistic relaxation.</p>
+    <div class="sidenote">
+      <strong>A useful biological comparison:</strong> brains do not run at room temperature; they run warm, wet, and noisy at roughly body temperature, around 37°C, without cryogenic cooling or data-center-scale thermal infrastructure. They get away with that because they rely on extreme locality, sparse spikes, analog dynamics, and a lot of computation that looks more like noisy relaxation than precise clocked digital logic. That does not prove thermodynamic-computing startups are right. But it does show the basic design instinct is not absurd.
+    </div>
+  </section>
+
+  <section id="sec-5" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">V.</div>
+      <h2>What Extropic Is Building</h2>
+    </div>
+    <p>As of <strong>October 29, 2025</strong>, Extropic publicly laid out the cleanest startup version of the thermodynamic-computing thesis. The company describes its hardware as <strong>thermodynamic sampling units</strong>, or TSUs. Notice the naming move. Not processing units. <em>Sampling</em> units. Extropic's argument is that if generative AI ultimately needs samples from complicated probability distributions, then it is wasteful to route everything through ordinary deterministic processing first.</p>
+    <p>Its public materials say TSUs keep memory and compute distributed, and allow communication mostly between physically local circuits. That matters because the company explicitly identifies communication, not arithmetic alone, as the real energy sink in standard architectures. In its telling, TSUs do not merely run existing GPU-style models a little faster. They change the primitive from programmable deterministic compute to programmable probabilistic sampling.</p>
+    <p>Extropic also introduced a software layer, <strong>THRML</strong>, and a model family it calls <strong>Denoising Thermodynamic Models</strong>, or DTMs. The rhetorical intent is obvious and smart: show that the hardware is paired with an algorithmic stack rather than arriving as an isolated lab toy. DTMs are framed as diffusion-inspired generative models that use TSUs for the denoising process. That is a better story than "please rewrite AI from scratch for our exotic chip." It is still, importantly, a rewrite of meaningful parts of the stack.</p>
+
+    <div class="widget">
+      <div class="widget-header">
+        <div class="widget-title">Extropic's Public Stack, As Described In Its October 2025 Materials</div>
+      </div>
+      <div class="widget-content">
+        <div class="stack-cards">
+          <div class="stack-card">
+            <h4>THRML</h4>
+            <p>Open-source Python library for simulating thermodynamic hardware and developing algorithms before broad hardware availability.</p>
+          </div>
+          <div class="stack-card">
+            <h4>DTM</h4>
+            <p>Denoising Thermodynamic Models, presented as a diffusion-like generative architecture built for TSUs.</p>
+          </div>
+          <div class="stack-card">
+            <h4>XTR-0</h4>
+            <p>Experimental platform combining a traditional processor path with Extropic chips for development and testing.</p>
+          </div>
+          <div class="stack-card">
+            <h4>Z1</h4>
+            <p>Public roadmap chip for early access in 2026, described as production-scale and CMOS manufacturable.</p>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge public">public roadmap</span>
+          <span class="badge demo">prototype platform</span>
+          <span class="badge claim">simulation efficiency claim</span>
+          <span class="badge roadmap">new model stack required</span>
+        </div>
+      </div>
+    </div>
+
+    <p>The hardware roadmap on Extropic's site currently lists <strong>X0</strong> as a Q1 2025 silicon prototype, <strong>XTR-0</strong> as a Q3 2025 experimental platform, and <strong>Z1</strong> for early access in 2026. The Z1 page describes hundreds of thousands of probabilistic circuits per chip and millions per card. That is meaningful because it tells you the company is thinking beyond toy boards and toward something card-shaped and rack-adjacent.</p>
+    <div class="callout">
+      <strong>The important caveat:</strong> Extropic's most eye-catching number, that running DTMs on TSUs <em>could</em> be up to <strong>10,000× more energy efficient</strong>, comes from simulations on small benchmarks described in its materials and paper. That is interesting. It is not the same thing as a deployed datacenter result.
+    </div>
+    <p>The charitable interpretation is that Extropic has a coherent thesis: sampling is native, locality matters, and probabilistic AI may deserve hardware built for it rather than inherited from graphics. The skeptical interpretation is equally obvious: the company must prove that a custom probabilistic stack can beat incredibly optimized GPU software once all the unglamorous system costs show up. Both interpretations can be true at once.</p>
+  </section>
+
+  <section id="sec-6" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">VI.</div>
+      <h2>What Normal Computing Is Building</h2>
+    </div>
+    <p>Normal Computing takes a related but stylistically different route. Its language is less about a sampling unit stack and more about <strong>physics-based ASICs</strong>. The company says the infrastructure behind today's AI was never designed for current scale or energy demands, and its research pages tie the program explicitly to probabilistic reasoning, diffusion-like models, and stochastic differential equation emulation.</p>
+    <p>There are two public milestones worth separating. First, on <strong>November 9, 2023</strong>, the company published a demonstration of thermodynamic matrix inversion using coupled electrical oscillators on a real board. That was not a production chip, but it was a concrete proof that physical equilibration could be used for a nontrivial numerical primitive. Second, on <strong>August 12, 2025</strong>, Normal announced tape-out of <strong>CN101</strong>, which it described as the world's first thermodynamic computing chip and as a validation step for its Carnot architecture.</p>
+    <p>Normal's framing differs slightly from Extropic's. Extropic emphasizes arrays of p-bits and energy-based generative models. Normal emphasizes fluctuations, dissipation, stochasticity, and hardware built for diffusion-like models and other probabilistic workloads. Underneath, though, the family resemblance is strong: both are trying to exploit local stochastic physics to do useful AI work more efficiently than a conventional deterministic stack.</p>
+
+    <div class="widget">
+      <div class="widget-header">
+        <div class="widget-title">Normal's Public Thermodynamic Roadmap</div>
+      </div>
+      <div class="widget-content">
+        <div class="roadmap">
+          <div class="road-step">
+            <h4>2023 PCB demo</h4>
+            <p>Coupled-oscillator board used for thermodynamic matrix inversion experiments.</p>
+          </div>
+          <div class="road-step">
+            <h4>CN101</h4>
+            <p>Taped out in 2025 as first silicon validation step for the Carnot architecture.</p>
+          </div>
+          <div class="road-step">
+            <h4>CN201</h4>
+            <p>Publicly framed for 2026 with higher-resolution diffusion workloads.</p>
+          </div>
+          <div class="road-step">
+            <h4>CN301</h4>
+            <p>Late 2027 / early 2028 roadmap aimed at advanced video diffusion scaling.</p>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge demo">real board experiment</span>
+          <span class="badge public">taped-out chip</span>
+          <span class="badge claim">up to 1000× on targeted workloads</span>
+          <span class="badge roadmap">diffusion-focused roadmap</span>
+        </div>
+      </div>
+    </div>
+
+    <p>Again, the number that grabs attention needs careful handling. Normal's CN101 announcement says the architecture could achieve <strong>up to 1000× energy-consumption efficiency</strong> on targeted AI and scientific workloads. The phrasing matters: <em>targeted</em> workloads, not all workloads; company announcement, not neutral production benchmark.</p>
+    <div class="matrix-note">
+      The most useful way to read Normal today is: this is no longer just an idea on a whiteboard. There was a coupled-oscillator demo, then a taped-out chip, and a roadmap that explicitly targets diffusion-like AI. That is substantial progress. It is still very far from proving broad datacenter replacement.
+    </div>
+    <p>If you put Extropic and Normal side by side, the high-level pattern becomes visible. Both are betting that uncertainty is not a nuisance to be emulated on rigid hardware, but a computational primitive to be harnessed directly. Both also face the same brutal test: can that physical elegance survive the messiness of software stacks, I/O, manufacturing, economics, and customer adoption?</p>
+  </section>
+
+  <section id="sec-7" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">VII.</div>
+      <h2>The Broader War on AI Power</h2>
+    </div>
+    <p>Thermodynamic computing is the flashy new entrant because it proposes a different <em>primitive</em>. But it is not the only serious attempt to reduce AI's power bill. The more general story is that the industry is attacking the same bottleneck from several angles at once: reduce data movement, shorten communication distance, lower numerical precision, push more work into memory, or use a different physical carrier entirely.</p>
+    <p><strong>Analog in-memory computing</strong> is the most direct rebellion against the memory wall. IBM describes it succinctly: if traditional architectures burn time and energy every time they move weights to compute on them, then blend memory and compute until that movement shrinks. EnCharge frames its own technology the same way, emphasizing robust analog in-memory computing that reduces data movement. Mythic's pitch is similar again, but aimed especially at edge devices where power, cooling, and size are brutally constrained.</p>
+    <p><strong>Photonics</strong> attacks a different slice of the problem. Lightmatter's public materials emphasize interconnect and bandwidth: if electrical signaling and chip-to-chip movement are becoming dominant costs, send information with light where that physics helps. Their recent public work also argues that lower-precision AI workloads make photonic compute more plausible than earlier generations of photonic hype did.</p>
+    <p>These are not mutually exclusive worlds. In fact, the most realistic future probably looks like a strange coalition: digital control logic, memory-centric compute for weight-heavy paths, photonic fabrics for bandwidth, and perhaps thermodynamic samplers where uncertainty and local stochastic relaxation are the natural fit.</p>
+
+    <div class="widget" id="widget-landscape">
+      <div class="widget-header">
+        <div class="widget-title">Interactive 5 · Startup Landscape Map</div>
+      </div>
+      <div class="widget-content">
+        <div class="landscape-controls" id="landscape-filters">
+          <button class="chip-btn active" data-filter="all">All</button>
+          <button class="chip-btn" data-filter="sampling">Native sampling</button>
+          <button class="chip-btn" data-filter="memory">Move less data</button>
+          <button class="chip-btn" data-filter="interconnect">Communicate with light</button>
+          <button class="chip-btn" data-filter="edge">Edge-first</button>
+        </div>
+        <div class="landscape-grid" id="landscape-grid">
+          <div class="startup-card active" data-key="extropic" data-bucket="sampling">
+            <div class="tag">native sampling</div>
+            <h4>Extropic</h4>
+            <p>TSUs, THRML, and diffusion-like thermodynamic models.</p>
+          </div>
+          <div class="startup-card" data-key="normal" data-bucket="sampling">
+            <div class="tag">native sampling</div>
+            <h4>Normal Computing</h4>
+            <p>Physics-based ASICs for diffusion-like and stochastic workloads.</p>
+          </div>
+          <div class="startup-card" data-key="encharge" data-bucket="memory">
+            <div class="tag">move less data</div>
+            <h4>EnCharge AI</h4>
+            <p>Analog in-memory computing with an emphasis on efficiency and programmability.</p>
+          </div>
+          <div class="startup-card" data-key="mythic" data-bucket="memory edge">
+            <div class="tag">move less data</div>
+            <h4>Mythic</h4>
+            <p>Analog compute-in-memory for low-power inference, especially at the edge.</p>
+          </div>
+          <div class="startup-card" data-key="ibm" data-bucket="memory">
+            <div class="tag">research / memory</div>
+            <h4>IBM Research</h4>
+            <p>Analog in-memory work for transformer and MoE bottlenecks.</p>
+          </div>
+          <div class="startup-card" data-key="lightmatter" data-bucket="interconnect">
+            <div class="tag">light-based</div>
+            <h4>Lightmatter</h4>
+            <p>Photonic compute and photonic interconnect for AI bandwidth problems.</p>
+          </div>
+          <div class="startup-card" data-key="memryx" data-bucket="edge">
+            <div class="tag">edge-first</div>
+            <h4>MemryX</h4>
+            <p>Dataflow and at-memory architecture for efficient edge AI deployment.</p>
+          </div>
+        </div>
+        <div class="landscape-detail" id="landscape-detail">
+          <h4>Extropic</h4>
+          <p>Attacks probabilistic AI most directly. The bet is that sampling itself should be a hardware primitive, not just the last step after a deterministic pipeline.</p>
+          <div class="badge-row">
+            <span class="badge claim">simulation-heavy claim set</span>
+            <span class="badge demo">prototype platform</span>
+            <span class="badge roadmap">new software stack</span>
+          </div>
+        </div>
+        <p class="caption">Different companies are swinging at different pain points. Thermodynamic computing is the most radical proposal; in-memory and photonics are, today, the more legible cousins.</p>
+      </div>
+    </div>
+
+    <p>The right mental model is not <em>"who wins?"</em> It is <em>"which part of the energy bill is each approach trying to delete?"</em> Thermodynamic chips want the sampling bill lower. In-memory chips want the weight-shuttling bill lower. Photonics wants the bandwidth bill lower. Edge accelerators want to avoid pushing everything into giant centralized cooling plants in the first place.</p>
+  </section>
+
+  <section id="sec-8" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">VIII.</div>
+      <h2>Can We Really Get AI Without Giant Cooling Bills?</h2>
+    </div>
+    <p>Here is the honest answer: <strong>not literally, no</strong>. If by "without significant energy or cooling costs" you mean a future where advanced AI somehow stops obeying physics, that future is not on the menu. A sufficiently valuable model running at sufficiently large scale will still draw serious power and will still need serious thermal management.</p>
+    <p>But the softer, engineering answer is much more encouraging. You can absolutely imagine a world where the <em>joules per useful token, image, simulation, or control action</em> fall dramatically. If that happens, the cooling problem also shrinks because there is less waste heat to remove per unit of useful work. The real win is not zero power. It is a much better ratio of intelligence to infrastructure.</p>
+    <p>The likely ingredients are boring in aggregate and radical in combination: lower precision, more sparsity, smarter routing, more work done inside or near memory, hardware tuned to dominant subroutines, more on-device inference when latency allows, and possibly stochastic hardware where the workload is naturally probabilistic anyway. No single ingredient is enough. Together they can bend the curve.</p>
+
+    <div class="widget" id="widget-savings">
+      <div class="widget-header">
+        <div class="widget-title">Interactive 6 · Where The Savings Come From</div>
+      </div>
+      <div class="widget-content">
+        <div class="toggle-grid">
+          <label class="check-pill"><input type="checkbox" class="saving-toggle" data-cut="0.18" checked> lower precision</label>
+          <label class="check-pill"><input type="checkbox" class="saving-toggle" data-cut="0.14" checked> sparsity / MoE</label>
+          <label class="check-pill"><input type="checkbox" class="saving-toggle" data-cut="0.16" checked> in-memory compute</label>
+          <label class="check-pill"><input type="checkbox" class="saving-toggle" data-cut="0.12"> thermodynamic sampling</label>
+          <label class="check-pill"><input type="checkbox" class="saving-toggle" data-cut="0.10"> photonic interconnect</label>
+          <label class="check-pill"><input type="checkbox" class="saving-toggle" data-cut="0.08" checked> better scheduling / batching</label>
+        </div>
+        <div class="savings-shell">
+          <div class="savings-meter"><div class="savings-meter-fill" id="savings-fill" style="width: 52%;"></div></div>
+          <div class="savings-summary">
+            <div class="savings-card"><div class="k">Relative energy index</div><div class="v" id="energy-index">52 / 100</div></div>
+            <div class="savings-card"><div class="k">Relative cooling burden</div><div class="v" id="cooling-index">59 / 100</div></div>
+            <div class="savings-card"><div class="k">Interpretation</div><div class="v" id="savings-interpretation">Substantial improvement, but not a miracle.</div></div>
+            <div class="savings-card"><div class="k">Best suited to</div><div class="v" id="savings-best">served inference before frontier training</div></div>
+          </div>
+        </div>
+        <p class="caption">This is a systems cartoon, not a forecast model. The point is that the believable future is additive: lots of medium wins stacked together, not one messianic chip abolishing power draw.</p>
+      </div>
+    </div>
+
+    <h3>Training and inference do not have the same near-term future</h3>
+    <p>Specialized hardware usually has an easier first life in <strong>inference</strong> than in frontier-scale <strong>training</strong>. Inference workloads repeat, costs are persistent, and customers tolerate more specialization if the cost per served result collapses. Training is harsher. It requires mature software, robust numerics, huge distributed coordination, reproducibility, and a developer ecosystem that does not break every time the model changes shape.</p>
+    <div class="compare-grid">
+      <div class="compare-row"><div class="k">Frontier training</div><div class="v">Hardest target for thermodynamic hardware in the near term. Dense linear algebra, optimizer stability, and cluster software remain dominant.</div></div>
+      <div class="compare-row"><div class="k">Served inference</div><div class="v">Most plausible place for heterogeneous racks and special-purpose accelerators to carve out serious savings.</div></div>
+      <div class="compare-row"><div class="k">Edge inference</div><div class="v">Power and cooling constraints are so severe that even modest efficiency gains become economically meaningful very quickly.</div></div>
+    </div>
+    <p>So yes: you can plausibly get much cheaper and cooler AI than today's trajectory suggests. No: you should not expect the energy problem to disappear. That distinction matters, because the most dangerous hype in this area usually begins by erasing it.</p>
+  </section>
+
+  <section id="sec-9" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">IX.</div>
+      <h2>What Has To Be True For This To Matter</h2>
+    </div>
+    <p>Interesting physics is cheap. Important computing platforms are expensive. There is a long, brutal funnel between the two. Thermodynamic computing becomes economically meaningful only if it survives every stage of that funnel without losing the very advantage that made it exciting in the first place.</p>
+    <p>Start with the algorithmic layer. The hardware must map to workloads that people genuinely want to run, not just to elegant toy problems. Then the accuracy story has to hold up: if energy savings buy you unusable outputs, nobody cares. Then the software story arrives with a baseball bat. If model developers cannot target the hardware without inventing a new religion, adoption slows to a crawl.</p>
+    <p>Then come the unromantic layers. How much host logic is needed? How expensive is calibration? How ugly is the compiler? How much of the promised efficiency vanishes once you include I/O, memory staging, packaging, monitoring, and orchestration? Does the foundry path look normal enough that customers can believe in supply? Do benchmark wins persist on economically relevant workloads rather than hand-picked demos? These are not gotchas. They are the actual job.</p>
+
+    <div class="funnel-wrap">
+      <svg viewBox="0 0 720 320" role="img" aria-label="Hype filter funnel">
+        <polygon points="40,28 680,28 610,82 110,82" fill="rgba(240,90,79,0.18)" stroke="rgba(240,90,79,0.34)"></polygon>
+        <polygon points="110,94 610,94 552,148 168,148" fill="rgba(247,163,75,0.18)" stroke="rgba(217,163,53,0.34)"></polygon>
+        <polygon points="168,160 552,160 500,214 220,214" fill="rgba(76,201,192,0.18)" stroke="rgba(76,201,192,0.38)"></polygon>
+        <polygon points="220,226 500,226 454,276 266,276" fill="rgba(39,93,255,0.16)" stroke="rgba(39,93,255,0.34)"></polygon>
+        <text x="250" y="60" fill="#193271">physics demo</text>
+        <text x="270" y="126" fill="#193271">chip demo</text>
+        <text x="278" y="192" fill="#193271">benchmark win</text>
+        <text x="284" y="256" fill="#193271">economic adoption</text>
+        <text x="76" y="304" fill="#6A6864">Most deep-tech hardware ideas die by leaking away their advantage somewhere in this funnel.</text>
+      </svg>
+    </div>
+
+    <div class="compare-grid" style="margin-top: 18px;">
+      <div class="compare-row"><div class="k">What to distrust</div><div class="v">Huge "up to X times" numbers detached from system boundaries. Narrow benchmarks can be real and still fail to generalize.</div></div>
+      <div class="compare-row"><div class="k">What to watch</div><div class="v">Clear workload mapping, software tooling, measured silicon results, and evidence that host overhead does not eat the gain.</div></div>
+      <div class="compare-row"><div class="k">What would be impressive</div><div class="v">A deployable system that beats incumbent inference costs on a commercially valuable probabilistic workload while preserving accuracy and usability.</div></div>
+    </div>
+    <p>If you keep that filter in mind, the space becomes easier to reason about. You no longer have to choose between breathless belief and lazy cynicism. You can simply ask: where, exactly, is the claimed efficiency coming from, and what would have to remain true after packaging, software, and deployment for that advantage to survive?</p>
+  </section>
+
+  <section id="sec-10" class="reveal">
+    <div class="section-heading">
+      <div class="section-number">X.</div>
+      <h2>The Most Likely Future: Weird, Heterogeneous, and Less Wasteful</h2>
+    </div>
+    <p>The most plausible future is not a thermodynamic-computing monoculture. It is a rack full of specialists. CPUs still orchestrate. GPUs or digital tensor cores still dominate dense deterministic math. In-memory blocks handle weight-heavy inference paths. Photonic links relieve the bandwidth pain between chips and packages. And if thermodynamic hardware proves itself, it gets inserted where sampling, uncertainty, and local stochastic relaxation genuinely outperform the digital alternative.</p>
+    <p>This is a less cinematic future than "one weird chip kills Nvidia." It is also more believable. Hardware history usually advances by annexation, not revolution. New primitives enter the stack where they are obviously better, then expand outward if they earn the right.</p>
+    <div class="future-rack">
+      <div class="future-rack-grid">
+        <div class="future-block" style="background: rgba(255,255,255,0.82);">
+          <h4>CPU</h4>
+          <p>Control flow, scheduling, orchestration, and all the glue logic nobody escapes.</p>
+        </div>
+        <div class="future-block" style="background: rgba(39,93,255,0.08);">
+          <h4>GPU / digital tensor</h4>
+          <p>Still excellent for dense linear algebra and mainstream training paths.</p>
+        </div>
+        <div class="future-block" style="background: rgba(76,201,192,0.10);">
+          <h4>In-memory tiles</h4>
+          <p>Good place to bury weight movement when inference becomes memory-bound.</p>
+        </div>
+        <div class="future-block" style="background: rgba(247,163,75,0.12);">
+          <h4>Photonic fabric</h4>
+          <p>Best case: less energy lost on interconnect and more bandwidth where clusters need it.</p>
+        </div>
+        <div class="future-block" style="background: rgba(240,90,79,0.10);">
+          <h4>Thermodynamic sampler</h4>
+          <p>If it works, it earns its place on diffusion-like and probabilistic subroutines.</p>
+        </div>
+      </div>
+    </div>
+    <p>The deepest lesson here is philosophical as much as technical. We have spent years treating AI as if every useful computation should be beaten into the shape of matrix multiply. That was a tremendously productive simplification. It may also be the simplification that starts failing first under energy pressure. Thermodynamic computing is one attempt to ask what comes after that simplification.</p>
+    <p>So, can AI stop being a space heater? Not entirely. But it can stop being <em>needlessly</em> space-heater-shaped. And that may turn out to matter more than any single miraculous chip.</p>
+
+    <div class="sources">
+      <div class="section-heading" style="margin-top: 46px;">
+        <div class="section-number">•</div>
+        <h2>Further Reading</h2>
+      </div>
+      <p>These links reflect public materials available as of <strong>June 19, 2026</strong>. Where companies make aggressive efficiency claims, read them as company claims unless and until independent system-level benchmarks say otherwise.</p>
+      <div class="source-grid">
+        <div class="source-item">
+          <h4><a href="https://www.iea.org/reports/energy-and-ai/energy-demand-from-ai">IEA: Energy demand from AI</a></h4>
+          <p>Best macro backdrop on data-centre electricity growth and why AI is now an energy-system issue.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://pubs.aip.org/aip/apl/article/119/15/150503/40486/Probabilistic-computing-with-p-bits">AIP: Probabilistic computing with p-bits</a></h4>
+          <p>Good conceptual anchor for probabilistic bits and why classical stochastic hardware is interesting.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://www.nature.com/articles/s41467-024-48152-0">Nature Communications: on-chip p-bit core with stochastic MTJs and MoS2</a></h4>
+          <p>Concrete experimental example of a p-bit built from a fluctuating magnetic device plus transistor circuitry on the same chip.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://extropic.ai/writing/thermodynamic-computing-from-zero-to-one">Extropic: From Zero to One</a></h4>
+          <p>Public overview of TSUs, DTMs, THRML, and Extropic's own framing of the energy problem.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://extropic.ai/hardware">Extropic hardware roadmap</a></h4>
+          <p>Current public roadmap for X0, XTR-0, and Z1.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://www.normalcomputing.com/blog/normal-computing-announces-tape-out-of-worlds-first-thermodynamic-computing-chip">Normal Computing: CN101 announcement</a></h4>
+          <p>Public statement of its tape-out milestone, targeted-workload claims, and roadmap.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://www.normalcomputing.com/blog/a-first-demonstration-of-thermodynamic-matrix-inversion-3">Normal: thermodynamic matrix inversion demo</a></h4>
+          <p>Useful for separating board-level experiments from later silicon claims.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://research.ibm.com/blog/how-can-analog-in-memory-computing-power-transformer-models">IBM Research: analog in-memory computing</a></h4>
+          <p>Clear explanation of why moving model weights is such an expensive part of AI inference.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://lightmatter.co/blog/a-new-kind-of-computer/">Lightmatter: A New Kind of Computer</a></h4>
+          <p>Photonic-computing perspective on bandwidth, precision, and post-transistor AI hardware.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://www.enchargeai.com/technology">EnCharge AI technology</a></h4>
+          <p>Official framing of analog in-memory computing as an attack on data movement and efficiency loss.</p>
+        </div>
+        <div class="source-item">
+          <h4><a href="https://mythic.ai/whats-new/unshackling-edge-ai-performance-and-llms/">Mythic: Edge AI and LLMs</a></h4>
+          <p>Useful for the edge-first angle: why low-power inference matters even more when cooling and form factor are constrained.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</article>
+
+<script>
+const q = (sel, root = document) => root.querySelector(sel);
+const qa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+function formatPower(watts) {
+  if (watts >= 1000000) return (watts / 1000000).toFixed(2) + ' MW';
+  if (watts >= 1000) return (watts / 1000).toFixed(1) + ' kW';
+  return Math.round(watts) + ' W';
+}
+
+function formatEnergyWh(wh) {
+  if (wh >= 1000000) return (wh / 1000000).toFixed(2) + ' MWh/day';
+  if (wh >= 1000) return (wh / 1000).toFixed(1) + ' kWh/day';
+  return Math.round(wh) + ' Wh/day';
+}
+
+(function revealOnScroll() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.12 });
+  qa('.reveal').forEach((el) => observer.observe(el));
+})();
+
+(function heroAnimation() {
+  const canvas = q('#hero-canvas');
+  const hero = canvas.parentElement;
+  const ctx = canvas.getContext('2d');
+  let w = 0;
+  let h = 0;
+  let dpr = 1;
+  const leftPackets = Array.from({ length: 28 }, (_, i) => ({
+    lane: i % 7,
+    phase: Math.random(),
+    speed: 0.22 + Math.random() * 0.32
+  }));
+  const rightNodes = Array.from({ length: 26 }, (_, i) => {
+    const col = i % 5;
+    const row = Math.floor(i / 5);
+    return {
+      col,
+      row,
+      offset: Math.random() * Math.PI * 2
+    };
+  });
+  const links = [];
+  rightNodes.forEach((node, i) => {
+    rightNodes.forEach((other, j) => {
+      if (j <= i) return;
+      const dx = Math.abs(node.col - other.col);
+      const dy = Math.abs(node.row - other.row);
+      if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+        links.push([node, other]);
+      }
+    });
+  });
+
+  function resize() {
+    const rect = hero.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    w = rect.width;
+    h = rect.height;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function draw(time) {
+    const t = time * 0.001;
+    ctx.clearRect(0, 0, w, h);
+
+    const gpuZone = { x: w * 0.06, y: h * 0.18, w: w * 0.36, h: h * 0.56 };
+    const thermoZone = { x: w * 0.56, y: h * 0.14, w: w * 0.3, h: h * 0.62 };
+
+    ctx.fillStyle = 'rgba(12, 26, 71, 0.18)';
+    roundRect(ctx, gpuZone.x, gpuZone.y, gpuZone.w, gpuZone.h, 24);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    roundRect(ctx, thermoZone.x, thermoZone.y, thermoZone.w, thermoZone.h, 30);
+    ctx.fill();
+
+    const memX = gpuZone.x + 22;
+    const computeX = gpuZone.x + gpuZone.w - 94;
+    for (let i = 0; i < 4; i += 1) {
+      const y = gpuZone.y + 28 + i * 54;
+      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      roundRect(ctx, memX, y, 76, 34, 9);
+      ctx.fill();
+    }
+    for (let i = 0; i < 6; i += 1) {
+      const row = Math.floor(i / 2);
+      const col = i % 2;
+      const x = computeX + col * 38;
+      const y = gpuZone.y + 24 + row * 44;
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      roundRect(ctx, x, y, 28, 28, 7);
+      ctx.fill();
+    }
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 2;
+    leftPackets.forEach((packet) => {
+      const y = gpuZone.y + 30 + packet.lane * 22;
+      ctx.beginPath();
+      ctx.moveTo(memX + 76, y);
+      ctx.bezierCurveTo(memX + 130, y - 16, computeX - 40, y + 18, computeX + 14, y);
+      ctx.stroke();
+      const p = (packet.phase + t * packet.speed) % 1;
+      const x = cubicPoint(memX + 76, memX + 130, computeX - 40, computeX + 14, p);
+      const cy = cubicPoint(y, y - 16, y + 18, y, p);
+      ctx.fillStyle = `rgba(39, 93, 255, ${0.35 + 0.65 * p})`;
+      ctx.beginPath();
+      ctx.arc(x, cy, 4 + 2 * Math.sin(t + packet.lane), 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    const nodePos = rightNodes.map((node) => {
+      const px = thermoZone.x + 34 + node.col * ((thermoZone.w - 68) / 4);
+      const py = thermoZone.y + 32 + node.row * ((thermoZone.h - 64) / 5);
+      return {
+        x: px + Math.sin(t * 0.9 + node.offset) * 6,
+        y: py + Math.cos(t * 0.8 + node.offset * 1.2) * 6
+      };
+    });
+
+    ctx.lineWidth = 2;
+    links.forEach(([a, b]) => {
+      const ai = rightNodes.indexOf(a);
+      const bi = rightNodes.indexOf(b);
+      const p1 = nodePos[ai];
+      const p2 = nodePos[bi];
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    });
+
+    nodePos.forEach((pos, i) => {
+      const pulse = 0.5 + 0.5 * Math.sin(t * 1.8 + i * 0.6);
+      ctx.fillStyle = `rgba(${Math.round(76 + 160 * pulse)}, ${Math.round(160 + 50 * pulse)}, ${Math.round(192 + 40 * (1 - pulse))}, 0.88)`;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 7 + pulse * 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '600 12px Figtree, sans-serif';
+    ctx.fillText('long-haul shuttling', gpuZone.x + 18, gpuZone.y + gpuZone.h + 24);
+    ctx.fillText('local stochastic relaxation', thermoZone.x + 18, thermoZone.y + thermoZone.h + 24);
+
+    requestAnimationFrame(draw);
+  }
+
+  function roundRect(context, x, y, width, height, radius) {
+    context.beginPath();
+    context.moveTo(x + radius, y);
+    context.lineTo(x + width - radius, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + radius);
+    context.lineTo(x + width, y + height - radius);
+    context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    context.lineTo(x + radius, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - radius);
+    context.lineTo(x, y + radius);
+    context.quadraticCurveTo(x, y, x + radius, y);
+    context.closePath();
+  }
+
+  function cubicPoint(p0, p1, p2, p3, t) {
+    const mt = 1 - t;
+    return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3;
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(draw);
+})();
+
+(function heatBudget() {
+  const countEl = q('#accelerator-count');
+  const wattsEl = q('#accelerator-watts');
+  const pueEl = q('#pue-range');
+  const tiles = q('#rack-tiles');
+  const coolingCore = q('#cooling-core');
+  const fanBlades = q('#fan-blades');
+
+  function render() {
+    const count = Number(countEl.value);
+    const watts = Number(wattsEl.value);
+    const pue = Number(pueEl.value);
+    const itLoad = count * watts;
+    const facilityLoad = itLoad * pue;
+    const overhead = facilityLoad - itLoad;
+    const dailyWh = facilityLoad * 24;
+    const hotness = Math.min(1, facilityLoad / 120000);
+    const visibleTiles = 24;
+    const fillRatio = Math.min(1, count / 192);
+    const litTiles = Math.max(1, Math.round(visibleTiles * fillRatio));
+
+    q('#accelerator-count-val').textContent = count;
+    q('#accelerator-watts-val').textContent = watts + ' W';
+    q('#pue-range-val').textContent = pue.toFixed(2);
+    q('#it-load').textContent = formatPower(itLoad);
+    q('#facility-load').textContent = formatPower(facilityLoad);
+    q('#cooling-load').textContent = formatPower(overhead);
+    q('#daily-energy').textContent = formatEnergyWh(dailyWh);
+
+    tiles.innerHTML = '';
+    for (let i = 0; i < visibleTiles; i += 1) {
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      const x = 82 + col * 66;
+      const y = 72 + row * 32;
+      const active = i < litTiles;
+      const heat = Math.max(0, Math.min(1, (watts - 80) / 1120));
+      const fill = active
+        ? `rgba(${Math.round(39 + 201 * heat)}, ${Math.round(93 + 90 * (1 - heat))}, ${Math.round(255 - 160 * heat)}, 0.92)`
+        : 'rgba(255,255,255,0.08)';
+      const glow = active ? (8 + 10 * hotness) : 0;
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x);
+      rect.setAttribute('y', y);
+      rect.setAttribute('width', 48);
+      rect.setAttribute('height', 20);
+      rect.setAttribute('rx', 7);
+      rect.setAttribute('fill', fill);
+      rect.setAttribute('stroke', 'rgba(255,255,255,0.12)');
+      if (glow) rect.setAttribute('filter', 'drop-shadow(0 0 ' + glow + 'px rgba(240,90,79,0.35))');
+      tiles.appendChild(rect);
+    }
+
+    coolingCore.setAttribute('fill', `rgb(${Math.round(76 + 150 * hotness)}, ${Math.round(201 - 70 * hotness)}, ${Math.round(192 - 112 * hotness)})`);
+    fanBlades.setAttribute('transform', `rotate(${performance.now() * (0.03 + hotness * 0.05)} 540 188)`);
+  }
+
+  [countEl, wattsEl, pueEl].forEach((el) => el.addEventListener('input', render));
+  render();
+})();
+
+(function architectureWidget() {
+  const buttons = qa('#arch-modes .chip-btn');
+  const staticLayer = q('#arch-static');
+  const packetLayer = q('#arch-packets');
+  const title = q('#arch-title');
+  const modes = {
+    gpu: {
+      title: 'Conventional accelerator',
+      main: 'separate memory and compute',
+      traffic: 'long-haul shuttling',
+      best: 'dense deterministic math',
+      pressure: 'communication heavy'
+    },
+    imc: {
+      title: 'Analog in-memory',
+      main: 'compute where weights live',
+      traffic: 'shorter local movement',
+      best: 'weight-heavy inference',
+      pressure: 'precision and calibration'
+    },
+    thermo: {
+      title: 'Thermodynamic sampler',
+      main: 'let a noisy system relax',
+      traffic: 'mostly local coupling',
+      best: 'sampling-centric workloads',
+      pressure: 'mapping and software stack'
+    }
+  };
+  let mode = 'gpu';
+  let frame = 0;
+
+  function setText(meta) {
+    q('#arch-main').textContent = meta.main;
+    q('#arch-traffic').textContent = meta.traffic;
+    q('#arch-best').textContent = meta.best;
+    q('#arch-pressure').textContent = meta.pressure;
+    title.textContent = meta.title;
+  }
+
+  function drawStatic() {
+    if (mode === 'gpu') {
+      staticLayer.innerHTML = `
+        <rect x="58" y="110" width="124" height="132" rx="18" fill="#FFEDE8" stroke="#F05A4F"></rect>
+        <rect x="446" y="82" width="128" height="188" rx="18" fill="#EBF0FF" stroke="#275DFF"></rect>
+        <text x="86" y="132" fill="#8B433D">memory</text>
+        <text x="463" y="104" fill="#1D45C3">tensor cores</text>
+        <line x1="182" y1="140" x2="446" y2="112" stroke="#d8ccbe" stroke-width="8" stroke-linecap="round"></line>
+        <line x1="182" y1="176" x2="446" y2="148" stroke="#d8ccbe" stroke-width="8" stroke-linecap="round"></line>
+        <line x1="182" y1="212" x2="446" y2="184" stroke="#d8ccbe" stroke-width="8" stroke-linecap="round"></line>
+        <line x1="182" y1="248" x2="446" y2="220" stroke="#d8ccbe" stroke-width="8" stroke-linecap="round"></line>
+      `;
+    } else if (mode === 'imc') {
+      staticLayer.innerHTML = `
+        <rect x="74" y="72" width="492" height="212" rx="28" fill="#ECFFFD" stroke="#4CC9C0"></rect>
+        <text x="102" y="100" fill="#15756f">crossbar tiles that store weights and compute dot-products locally</text>
+        ${Array.from({ length: 7 }, (_, i) => `<line x1="${118 + i * 58}" y1="126" x2="${118 + i * 58}" y2="252" stroke="rgba(20,156,149,0.22)" stroke-width="10" stroke-linecap="round"></line>`).join('')}
+        ${Array.from({ length: 4 }, (_, i) => `<line x1="102" y1="${142 + i * 34}" x2="538" y2="${142 + i * 34}" stroke="rgba(39,93,255,0.15)" stroke-width="10" stroke-linecap="round"></line>`).join('')}
+      `;
+    } else {
+      staticLayer.innerHTML = `
+        <rect x="90" y="70" width="460" height="220" rx="30" fill="#FFF7EB" stroke="#D9A335"></rect>
+        <text x="122" y="100" fill="#7B632A">locally coupled stochastic elements</text>
+        ${Array.from({ length: 5 }, (_, row) => Array.from({ length: 7 }, (_, col) => {
+          const x = 140 + col * 55;
+          const y = 135 + row * 34;
+          return `<circle cx="${x}" cy="${y}" r="11" fill="rgba(76,201,192,0.75)" stroke="rgba(25,50,113,0.25)"></circle>`;
+        }).join('')).join('')}
+        ${Array.from({ length: 5 }, (_, row) => Array.from({ length: 6 }, (_, col) => {
+          const x = 140 + col * 55;
+          const y = 135 + row * 34;
+          return `<line x1="${x}" y1="${y}" x2="${x + 55}" y2="${y}" stroke="rgba(240,90,79,0.16)" stroke-width="4"></line>`;
+        }).join('')).join('')}
+      `;
+    }
+  }
+
+  function drawPackets() {
+    frame += 1;
+    const t = frame / 60;
+    if (mode === 'gpu') {
+      const packets = Array.from({ length: 18 }, (_, i) => {
+        const p = (t * 0.25 + i / 18) % 1;
+        const x = 182 + p * 258;
+        const y = 132 + (i % 4) * 36 + Math.sin(t * 3 + i) * 6;
+        const color = i % 2 === 0 ? '#275DFF' : '#F05A4F';
+        return `<circle cx="${x}" cy="${y}" r="6" fill="${color}" opacity="0.88"></circle>`;
+      }).join('');
+      packetLayer.innerHTML = packets;
+    } else if (mode === 'imc') {
+      const pulses = Array.from({ length: 14 }, (_, i) => {
+        const p = (t * 0.18 + i / 14) % 1;
+        const col = i % 7;
+        const x = 118 + col * 58;
+        const y = 126 + p * 118;
+        return `<circle cx="${x}" cy="${y}" r="7" fill="#275DFF" opacity="0.7"></circle>`;
+      }).join('');
+      packetLayer.innerHTML = pulses;
+    } else {
+      const pulses = Array.from({ length: 12 }, (_, i) => {
+        const col = i % 4;
+        const row = Math.floor(i / 4);
+        const x = 168 + col * 92 + Math.sin(t * 2 + i) * 15;
+        const y = 136 + row * 56 + Math.cos(t * 2.4 + i * 0.7) * 10;
+        const r = 8 + 3 * (0.5 + 0.5 * Math.sin(t * 4 + i));
+        return `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(240,90,79,0.55)"></circle>`;
+      }).join('');
+      packetLayer.innerHTML = pulses;
+    }
+    requestAnimationFrame(drawPackets);
+  }
+
+  buttons.forEach((btn) => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    buttons.forEach((other) => other.classList.toggle('active', other === btn));
+    setText(modes[mode]);
+    drawStatic();
+  }));
+
+  setText(modes[mode]);
+  drawStatic();
+  requestAnimationFrame(drawPackets);
+})();
+
+(function pbitWidget() {
+  const biasEl = q('#pbit-bias');
+  const couplingEl = q('#pbit-coupling');
+  const tempEl = q('#pbit-temp');
+  const linksLayer = q('#pbit-links');
+  const cellsLayer = q('#pbit-cells');
+  const size = 6;
+  const cells = Array.from({ length: size * size }, () => (Math.random() > 0.5 ? 1 : -1));
+  const history = [];
+  const positions = [];
+
+  for (let r = 0; r < size; r += 1) {
+    for (let c = 0; c < size; c += 1) {
+      positions.push({ x: 76 + c * 54, y: 82 + r * 46, r, c });
+    }
+  }
+
+  const neighbors = positions.map((pos, idx) => {
+    const list = [];
+    positions.forEach((other, j) => {
+      if (idx === j) return;
+      const dx = Math.abs(pos.c - other.c);
+      const dy = Math.abs(pos.r - other.r);
+      if (dx + dy === 1) list.push(j);
+    });
+    return list;
+  });
+
+  linksLayer.innerHTML = neighbors.map((list, i) => list.map((j) => {
+    if (j < i) return '';
+    return `<line x1="${positions[i].x}" y1="${positions[i].y}" x2="${positions[j].x}" y2="${positions[j].y}" stroke="rgba(25,50,113,0.12)" stroke-width="4"></line>`;
+  }).join('')).join('');
+
+  function sigmoid(x) {
+    return 1 / (1 + Math.exp(-x));
+  }
+
+  function update() {
+    const bias = (Number(biasEl.value) - 50) / 50;
+    const coupling = Number(couplingEl.value);
+    const temp = Number(tempEl.value);
+
+    const biasMag = Math.abs(bias);
+    q('#pbit-bias-val').textContent =
+      biasMag < 0.08 ? 'neutral'
+      : `${biasMag < 0.33 ? 'slight' : biasMag < 0.66 ? 'medium' : 'strong'} toward ${bias > 0 ? '1' : '0'}`;
+    q('#pbit-coupling-val').textContent = coupling.toFixed(2);
+    q('#pbit-temp-val').textContent = temp.toFixed(2);
+
+    for (let step = 0; step < 10; step += 1) {
+      const i = Math.floor(Math.random() * cells.length);
+      const sum = neighbors[i].reduce((acc, j) => acc + cells[j], 0);
+      const field = bias + coupling * sum * 0.35;
+      const p1 = sigmoid((2 * field) / temp);
+      cells[i] = Math.random() < p1 ? 1 : -1;
+    }
+
+    const ones = cells.filter((v) => v === 1).length;
+    const ratio = ones / cells.length;
+    const meanSpin = cells.reduce((a, b) => a + b, 0) / cells.length;
+    let agreement = 0;
+    let edgeCount = 0;
+    neighbors.forEach((list, i) => list.forEach((j) => {
+      if (j < i) return;
+      edgeCount += 1;
+      if (cells[i] === cells[j]) agreement += 1;
+    }));
+    const coherence = agreement / Math.max(1, edgeCount);
+
+    history.push(ratio);
+    if (history.length > 80) history.shift();
+
+    q('#pbit-spin').textContent = meanSpin.toFixed(2);
+    q('#pbit-agreement').textContent =
+      coherence > 0.78 ? 'large clusters forming'
+      : coherence > 0.6 ? 'neighbors often align'
+      : 'mixed and restless';
+    q('#pbit-interpretation').textContent =
+      temp < 0.7 && coupling > 1.2 ? 'Low noise plus strong coupling makes the network settle into coherent patterns.'
+      : temp > 1.7 ? 'High noise keeps the network wandering, which can be useful for exploration.'
+      : 'The system is exploring many nearby states.';
+
+    const oneWidth = Math.max(8, ratio * 124);
+    const zeroWidth = Math.max(8, (1 - ratio) * 124);
+    q('#pbit-bar-one').setAttribute('width', oneWidth);
+    q('#pbit-bar-zero').setAttribute('width', zeroWidth);
+    q('#pbit-bar-one-label').textContent = '1s ' + Math.round(ratio * 100) + '%';
+    q('#pbit-bar-zero-label').textContent = '0s ' + Math.round((1 - ratio) * 100) + '%';
+
+    cellsLayer.innerHTML = positions.map((pos, i) => {
+      const on = cells[i] === 1;
+      const fill = on ? '#275DFF' : '#F05A4F';
+      const halo = on ? 'rgba(39,93,255,0.22)' : 'rgba(240,90,79,0.22)';
+      return `
+        <circle cx="${pos.x}" cy="${pos.y}" r="18" fill="${halo}"></circle>
+        <circle cx="${pos.x}" cy="${pos.y}" r="12" fill="${fill}"></circle>
+        <text x="${pos.x - 4.5}" y="${pos.y + 4.5}" fill="#ffffff">${on ? '1' : '0'}</text>
+      `;
+    }).join('');
+
+    requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(update);
+})();
+
+(function recallWidget() {
+  const patternButtons = qa('#recall-patterns .chip-btn[data-pattern]');
+  const noiseEl = q('#recall-noise');
+  const tempEl = q('#recall-temp');
+  const targetEl = q('#recall-target');
+  const clueEl = q('#recall-clue');
+  const stateEl = q('#recall-state');
+
+  const rawPatterns = {
+    x: [
+      1,0,0,0,0,1,
+      0,1,0,0,1,0,
+      0,0,1,1,0,0,
+      0,0,1,1,0,0,
+      0,1,0,0,1,0,
+      1,0,0,0,0,1,
+    ],
+    t: [
+      1,1,1,1,1,1,
+      0,0,1,1,0,0,
+      0,0,1,1,0,0,
+      0,0,1,1,0,0,
+      0,0,1,1,0,0,
+      0,0,1,1,0,0,
+    ],
+    o: [
+      0,1,1,1,1,0,
+      1,1,0,0,1,1,
+      1,1,0,0,1,1,
+      1,1,0,0,1,1,
+      1,1,0,0,1,1,
+      0,1,1,1,1,0,
+    ],
+  };
+  const labels = { x: 'Pattern X', t: 'Pattern T', o: 'Pattern O' };
+  const keys = Object.keys(rawPatterns);
+  const patterns = Object.fromEntries(keys.map((key) => [key, rawPatterns[key].map((v) => v ? 1 : -1)]));
+  const size = patterns.x.length;
+  const weights = Array.from({ length: size }, () => Array(size).fill(0));
+  keys.forEach((key) => {
+    const p = patterns[key];
+    for (let i = 0; i < size; i += 1) {
+      for (let j = 0; j < size; j += 1) {
+        if (i === j) continue;
+        weights[i][j] += (p[i] * p[j]) / size;
+      }
+    }
+  });
+
+  let activeKey = 'x';
+  let clue = [...patterns[activeKey]];
+  let state = [...patterns[activeKey]];
+
+  function sigmoid(x) {
+    return 1 / (1 + Math.exp(-x));
+  }
+
+  function score(key, arr) {
+    const p = patterns[key];
+    let dot = 0;
+    for (let i = 0; i < size; i += 1) dot += p[i] * arr[i];
+    return dot / size;
+  }
+
+  function nearestPattern(arr) {
+    return keys
+      .map((key) => ({ key, score: score(key, arr) }))
+      .sort((a, b) => b.score - a.score)[0];
+  }
+
+  function makeCells(arr, reference) {
+    return arr.map((v, i) => {
+      const classes = ['pattern-cell'];
+      if (v === 1) classes.push('on');
+      if (reference && v !== reference[i]) classes.push('mismatch');
+      return `<div class="${classes.join(' ')}"></div>`;
+    }).join('');
+  }
+
+  function rerollClue() {
+    const target = patterns[activeKey];
+    const noise = Number(noiseEl.value) / 100;
+    clue = target.map((v) => (Math.random() < noise ? -v : v));
+    state = [...clue];
+  }
+
+  function updateLabels() {
+    const noise = Number(noiseEl.value);
+    const temp = Number(tempEl.value);
+    const target = patterns[activeKey];
+    const clueMatch = clue.reduce((acc, v, i) => acc + (v === target[i] ? 1 : 0), 0) / size;
+    const stateMatch = state.reduce((acc, v, i) => acc + (v === target[i] ? 1 : 0), 0) / size;
+    const nearest = nearestPattern(state);
+
+    q('#recall-noise-val').textContent = noise + '%';
+    q('#recall-temp-val').textContent = temp.toFixed(2);
+    q('#recall-corruption').textContent = Math.round((1 - clueMatch) * 100) + '% of bits flipped';
+    q('#recall-match').textContent = Math.round(stateMatch * 100) + '% match to target';
+    q('#recall-nearest').textContent = labels[nearest.key];
+    q('#recall-note').textContent =
+      stateMatch > 0.92
+        ? 'The network has essentially recovered the stored pattern.'
+        : stateMatch > clueMatch + 0.18
+          ? 'The network is cleaning up the noisy clue by drifting toward a stored pattern.'
+          : temp > 1.5
+            ? 'High temperature keeps the system exploring instead of committing.'
+            : 'With this much noise, the clue is ambiguous and the network can wander or latch onto the wrong attractor.';
+    q('#recall-summary').textContent =
+      stateMatch > 0.92
+        ? 'Here the couplings are acting like a noisy memory: local stochastic flips are enough to reconstruct the intended pattern.'
+        : 'This toy is showing the core computational move: let local stochastic updates search for a low-energy, self-consistent state instead of computing the answer in one rigid pass.';
+  }
+
+  function render() {
+    const target = patterns[activeKey];
+    targetEl.innerHTML = makeCells(target);
+    clueEl.innerHTML = makeCells(clue, target);
+    stateEl.innerHTML = makeCells(state, target);
+    updateLabels();
+    patternButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.pattern === activeKey));
+  }
+
+  function tick() {
+    const temp = Number(tempEl.value);
+    const anchor = 1.1;
+    for (let step = 0; step < 7; step += 1) {
+      const i = Math.floor(Math.random() * size);
+      let field = anchor * clue[i];
+      for (let j = 0; j < size; j += 1) {
+        field += weights[i][j] * state[j];
+      }
+      const p1 = sigmoid((2 * field) / temp);
+      state[i] = Math.random() < p1 ? 1 : -1;
+    }
+    render();
+    requestAnimationFrame(tick);
+  }
+
+  patternButtons.forEach((btn) => btn.addEventListener('click', () => {
+    activeKey = btn.dataset.pattern;
+    rerollClue();
+    render();
+  }));
+  noiseEl.addEventListener('input', () => {
+    rerollClue();
+    render();
+  });
+  tempEl.addEventListener('input', render);
+
+  rerollClue();
+  render();
+  requestAnimationFrame(tick);
+})();
+
+(function landscapeWidget() {
+  const filterButtons = qa('#landscape-filters .chip-btn');
+  const cards = qa('#landscape-grid .startup-card');
+  const detail = q('#landscape-detail');
+  const data = {
+    extropic: {
+      title: 'Extropic',
+      body: 'Attacks probabilistic AI most directly. The company says TSUs make sampling a hardware primitive, with THRML and DTM forming the surrounding software-and-model story.',
+      badges: [
+        ['claim', 'simulation-heavy claim set'],
+        ['demo', 'prototype platform'],
+        ['roadmap', 'new software stack']
+      ]
+    },
+    normal: {
+      title: 'Normal Computing',
+      body: 'Frames thermodynamic computing as physics-based ASICs for diffusion-like and stochastic workloads. Notable for a real board demo followed by taped-out silicon.',
+      badges: [
+        ['demo', 'board experiment'],
+        ['public', 'taped-out chip'],
+        ['roadmap', 'diffusion roadmap']
+      ]
+    },
+    encharge: {
+      title: 'EnCharge AI',
+      body: 'Representative of the analog in-memory camp: compute where weights live, reduce data movement, and try to keep programmability high enough for real deployment.',
+      badges: [
+        ['public', 'published product posture'],
+        ['roadmap', 'memory-centric design']
+      ]
+    },
+    mythic: {
+      title: 'Mythic',
+      body: 'Also in the analog compute-in-memory family, but especially persuasive in edge settings where watts, size, and cooling are brutally constrained.',
+      badges: [
+        ['public', 'edge deployment story'],
+        ['claim', 'aggressive efficiency claims']
+      ]
+    },
+    ibm: {
+      title: 'IBM Research',
+      body: 'Useful as a reality anchor. The research argument is plain: moving weights is expensive, so collapsing memory and compute can buy large efficiency wins for specific transformer bottlenecks.',
+      badges: [
+        ['demo', 'research prototype'],
+        ['roadmap', 'transformer bottleneck focus']
+      ]
+    },
+    lightmatter: {
+      title: 'Lightmatter',
+      body: 'Takes aim at communication and bandwidth using photonics. The photonic thesis is especially compelling where electrical interconnect is turning the whole rack into a wiring tax.',
+      badges: [
+        ['public', 'deployed hardware narrative'],
+        ['roadmap', 'interconnect first']
+      ]
+    },
+    memryx: {
+      title: 'MemryX',
+      body: 'Less radical than thermodynamic computing, but important in the same macro story: edge-first accelerators that reduce the need to ship everything into centralized hot racks.',
+      badges: [
+        ['public', 'edge-first'],
+        ['roadmap', 'dataflow / at-memory']
+      ]
+    }
+  };
+
+  function renderBadges(items) {
+    return `<div class="badge-row">${items.map(([cls, label]) => `<span class="badge ${cls}">${label}</span>`).join('')}</div>`;
+  }
+
+  function selectCard(card) {
+    cards.forEach((other) => other.classList.toggle('active', other === card));
+    const info = data[card.dataset.key];
+    detail.innerHTML = `<h4>${info.title}</h4><p>${info.body}</p>${renderBadges(info.badges)}`;
+  }
+
+  function applyFilter(filter) {
+    cards.forEach((card) => {
+      const buckets = card.dataset.bucket.split(' ');
+      const show = filter === 'all' || buckets.includes(filter);
+      card.style.display = show ? '' : 'none';
+    });
+    const visibleActive = cards.find((card) => card.style.display !== 'none' && card.classList.contains('active'));
+    if (!visibleActive) {
+      const firstVisible = cards.find((card) => card.style.display !== 'none');
+      if (firstVisible) selectCard(firstVisible);
+    }
+  }
+
+  cards.forEach((card) => card.addEventListener('click', () => selectCard(card)));
+  filterButtons.forEach((btn) => btn.addEventListener('click', () => {
+    filterButtons.forEach((other) => other.classList.toggle('active', other === btn));
+    applyFilter(btn.dataset.filter);
+  }));
+  selectCard(cards[0]);
+  applyFilter('all');
+})();
+
+(function savingsWidget() {
+  const toggles = qa('.saving-toggle');
+  function render() {
+    let energy = 100;
+    toggles.forEach((toggle) => {
+      if (toggle.checked) energy *= 1 - Number(toggle.dataset.cut);
+    });
+    const rounded = Math.max(12, Math.round(energy));
+    const cooling = Math.round(20 + rounded * 0.75);
+    q('#savings-fill').style.width = rounded + '%';
+    q('#energy-index').textContent = rounded + ' / 100';
+    q('#cooling-index').textContent = cooling + ' / 100';
+    q('#savings-interpretation').textContent =
+      rounded > 72 ? 'Helpful, but still infrastructure-hungry.'
+      : rounded > 48 ? 'Substantial improvement, but not a miracle.'
+      : 'This is the kind of multi-layer win people are chasing.';
+    q('#savings-best').textContent =
+      rounded > 70 ? 'general efficiency work'
+      : rounded > 52 ? 'served inference before frontier training'
+      : 'heterogeneous inference and edge deployments';
+  }
+  toggles.forEach((toggle) => toggle.addEventListener('input', render));
+  render();
+})();
+</script>
+</body>
+</html>
